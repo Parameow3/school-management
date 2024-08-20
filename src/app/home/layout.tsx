@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
-import Dashboard from "@/app/components/Dashboard";
-import React from "react";
+import "../globals.css"; // Adjusted the path to reflect the correct location
+import Dashboard from "../../components/Dashboard";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-      <Dashboard>{children}</Dashboard>
+        <Dashboard>{children}</Dashboard>
       </body>
     </html>
   );
