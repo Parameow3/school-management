@@ -35,7 +35,6 @@ const Page = () => {
       <div className="ml-[219px] mt-20 flex flex-col">
         <div className="w-[1068px] h-[40px] p-4 bg-white rounded-md flex items-center justify-between">
           <span>Student | All student</span>
-
           <Link href={"/#"} passHref>
             <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
               <Image

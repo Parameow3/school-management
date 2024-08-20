@@ -294,7 +294,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       <div className="flex flex-col flex-grow">
         <div className="bg-[#213458] lg:w-full lg:h-16 w-[390px] h-[59px] fixed top-0 z-30">
           <div className="flex items-center h-16 justify-between px-4 shadow-sm">
-            <div className="flex items-center m-0 lg:ml-12">
+            <div className="flex items-center m-0 lg:ml-12 lg:gap-14">
               <Image
                 alt="Your Company"
                 src="/logo.png"
@@ -307,7 +307,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="text-gray-200 lg:mr-4 mr-16"
+                className="text-gray-200 lg:ml-3 mr-16"
               >
                 <Bars3Icon aria-hidden="true" className="h-6 w-6" />
               </button>

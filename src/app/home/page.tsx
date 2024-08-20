@@ -12,7 +12,7 @@ const page = () => {
         <div className="w-[1070px] lg:m-2 flex flex-row gap-10">
           <div className="lg:w-[800px] flex flex-col p-2 ">
             {/* <--welcome--> */}
-            <div className="lg:w-[618px]  w-[296px] bg-[#FF6F61] backdrop-opacity-75 lg:h-[112px] h-[94px] rounded-[8px] flex flex-row justify-between">
+            <div className="lg:w-[618px] w-[300px] bg-[#FF6F61] mr-4 backdrop-opacity-75 lg:h-[112px] h-[94px] rounded-[8px] flex flex-row justify-between">
               <div className="flex flex-col justify-center ml-4">
                 <h1 className=" text-white font-medium lg:text-xl">
                   Welcome back stella
@@ -26,10 +26,15 @@ const page = () => {
                 width={100}
                 height={100}
                 alt="public"
-                className="mr-7 w-[54px] h-[54px] lg:w-[100px] lg:h-[100px]"
+                className="mr-7 w-[74px] h-[74px] mt-4 lg:w-[100px] lg:h-[100px]"
               />
             </div>
-            <Card></Card>
+            <div className="grid grid-cols-2 mr-2 lg:flex lg:gap-4 lg:flex-wrap">
+              <Card title={"Students"} value={100} color={"#4CAF50"} />
+              <Card title={"Teachers"} value={50} color={"#869DCA"} />
+              <Card title={"Trails"} value={12} color={"#213458"} />
+              <Card title={"Classes"} value={5} color={"#3A6EA5"} />
+            </div>
             <Report></Report>
             <Report></Report>
           </div>
