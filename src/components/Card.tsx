@@ -6,10 +6,11 @@ interface CardProps {
   title: string;
   value: number;
   color: string;
+  className?: string;
 }
 
 // Define the StatsCard component
-const StatsCard: React.FC<CardProps> = ({ title, value, color }) => {
+const StatsCard: React.FC<CardProps> = ({ title, value, color,className }) => {
   return (
     <div
       className="p-3 w-[142px] h-[68px] rounded-lg relative"
@@ -23,10 +24,10 @@ const StatsCard: React.FC<CardProps> = ({ title, value, color }) => {
     </div>
   );
 };
-const Card: React.FC<CardProps> = ({ title, value, color }) => {
+const Card: React.FC<CardProps> = ({ title, value, color,className }) => {
   return (
     <div className="flex mt-5">
-      <StatsCard title={title} value={value} color={color} />
+      <StatsCard title={title} value={value} color={color} className={className} />
     </div>
   );
 };

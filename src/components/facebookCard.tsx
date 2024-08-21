@@ -2,7 +2,7 @@ import React from 'react';
 
 const FacebookCard: React.FC = () => {
   return (
-    <div className="flex items-center mt-4 w-[330px] h-[128px] justify-between p-4 bg-[#213458] text-white rounded-lg max-w-sm">
+    <div className="flex items-center w-[330px] h-[128px] justify-between p-4 bg-[#213458] text-white rounded-lg max-w-sm">
       <div className="flex items-center">
         <div className="bg-white rounded-full p-2">
           <svg

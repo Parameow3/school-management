@@ -5,10 +5,10 @@ const AbsentCard = ({ title, message }: { title: string, message: string }) => {
   return (
     <div className="lg:w-[618px] w-[300px] h-[114px] bg-gray-200 flex items-center justify-between relative p-4 rounded-lg shadow-lg">
       <div>
-        <h2 className="lg:text-16 text-[12px] font-semibold">{title}</h2>
+        <h2 className="lg:text-16 text-[12px] lg:text-[16px] font-semibold">{title}</h2>
         <div className="flex items-center justify-center ml-12 lg:ml-48 flex-col gap-2">
           <FaceFrownIcon className="h-6 w-6 text-gray-600 " />
-          <p className="text-gray-600 text-[12px] font-semibold ml-4 lg:mr-14">{message}</p>
+          <p className="text-gray-600 text-[12px] lg:text-[13px] font-semibold ml-4 lg:mr-14">{message}</p>
         </div>
       </div>
       <ChevronRightIcon className="h-6 w-6 text-gray-600 top-1" />

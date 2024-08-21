@@ -294,7 +294,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       <div className="flex flex-col flex-grow">
         <div className="bg-[#213458] lg:w-full lg:h-16 w-[390px] h-[59px] fixed top-0 z-30">
           <div className="flex items-center h-16 justify-between px-4 shadow-sm">
-            <div className="flex items-center m-0 lg:ml-12 lg:gap-14">
+            <div className="flex items-center m-0 lg:ml-12 lg:gap-16">
               <Image
                 alt="Your Company"
                 src="/logo.png"
@@ -302,18 +302,17 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                 height={80}
                 className="w-[61px] h-[54px lg:w-[80px] lg:h-[80px]]"
               />
-
+              <Searchinput />
               {/* Hamburger button to open sidebar */}
               <button
                 type="button"
                 onClick={toggleSidebar}
-                className="text-gray-200 lg:ml-3 mr-16"
+                className="text-gray-200 lg:ml-3 mr-16 flex-1 flex justify-end lg:absolute lg:left-[202px] lg:top-5"
               >
                 <Bars3Icon aria-hidden="true" className="h-6 w-6" />
               </button>
             </div>
             <div className="flex flex-1 justify-center items-center gap-x-4 mr-[30px]">
-              <Searchinput/>
               <div className="ml-[320px] flex-row flex lg:items-end gap-4">
                 <button
                   type="button"

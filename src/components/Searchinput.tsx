@@ -3,7 +3,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 const Searchinput = () => {
   return (
-    <div className="flex items-center border border-gray-300 p-2 rounded-md m-3">
+    <div className="flex items-center border lg:ml-16 border-gray-300 p-2 rounded-md m-3">
       <input
         type="text"
         className="outline-none border-none bg-transparent text-gray-200 placeholder-gray-300
