@@ -1,6 +1,9 @@
+'use client'
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { CheckIcon } from '@heroicons/react/24/outline';
+import Dropdown from '@/components/Dropdown';
 const page: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto p-8 ml-[212px] mt-12">
@@ -13,7 +16,7 @@ const page: React.FC = () => {
             </div>
           </Link>
         </div>
-      <h1 className="text-center text-2xl font-bold mb-8 mt-2">Admission Form</h1>
+      <h1 className="text-center text-2xl font-bold mb-8 mt-4">Admission Form</h1>
 
       <form className="space-y-8">
         {/* Student Information */}
@@ -28,7 +31,7 @@ const page: React.FC = () => {
                 type="text"
                 id="firstName"
                 name="firstName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -40,7 +43,7 @@ const page: React.FC = () => {
                 type="text"
                 id="lastName"
                 name="lastName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -52,7 +55,7 @@ const page: React.FC = () => {
                 type="text"
                 id="age"
                 name="age"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -63,7 +66,7 @@ const page: React.FC = () => {
               <select
                 id="gender"
                 name="gender"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               >
                 <option>Female</option>
                 <option>Male</option>
@@ -79,7 +82,7 @@ const page: React.FC = () => {
                 type="date"
                 id="admissionDate"
                 name="admissionDate"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -91,7 +94,7 @@ const page: React.FC = () => {
                 type="text"
                 id="class"
                 name="class"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -99,15 +102,7 @@ const page: React.FC = () => {
               <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
                 Branch:
               </label>
-              <select
-                id="branch"
-                name="branch"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              >
-                <option>Branch 1</option>
-                <option>Branch 2</option>
-                <option>Branch 3</option>
-              </select>
+              <Dropdown></Dropdown>
             </div>
 
             <div>
@@ -118,7 +113,7 @@ const page: React.FC = () => {
                 type="file"
                 id="uploadPicture"
                 name="uploadPicture"
-                className="mt-1 block w-full"
+                className="mt-1 block w-[272px] h-[40px]"
               />
             </div>
           </div>
@@ -136,7 +131,7 @@ const page: React.FC = () => {
                 type="date"
                 id="dob"
                 name="dob"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -148,7 +143,7 @@ const page: React.FC = () => {
                 type="text"
                 id="nationality"
                 name="nationality"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -160,7 +155,7 @@ const page: React.FC = () => {
                 type="text"
                 id="placeOfBirth"
                 name="placeOfBirth"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -172,7 +167,7 @@ const page: React.FC = () => {
                 type="text"
                 id="beltLevel"
                 name="beltLevel"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -184,7 +179,7 @@ const page: React.FC = () => {
                 type="text"
                 id="studentPassport"
                 name="studentPassport"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -196,7 +191,7 @@ const page: React.FC = () => {
                 type="text"
                 id="address"
                 name="address"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
           </div>
@@ -214,7 +209,7 @@ const page: React.FC = () => {
                 type="text"
                 id="fatherName"
                 name="fatherName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -226,7 +221,7 @@ const page: React.FC = () => {
                 type="text"
                 id="fatherOccupation"
                 name="fatherOccupation"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -238,7 +233,7 @@ const page: React.FC = () => {
                 type="tel"
                 id="phone"
                 name="phone"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -250,7 +245,7 @@ const page: React.FC = () => {
                 type="text"
                 id="motherName"
                 name="motherName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -262,7 +257,7 @@ const page: React.FC = () => {
                 type="text"
                 id="motherOccupation"
                 name="motherOccupation"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -274,23 +269,23 @@ const page: React.FC = () => {
                 type="text"
                 id="parentContact"
                 name="parentContact"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
           </div>
         </section>
 
         {/* Form Actions */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-center items-center space-x-4">
           <button
             type="button"
-            className="inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            className="inline-flex justify-center rounded-md border border-transparent bg-[#CF510E] py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="inline-flex justify-center gap-1 rounded-md border border-transparent bg-[#123458] py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Submit
           </button>

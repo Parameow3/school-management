@@ -50,8 +50,8 @@ const navigation: NavigationItem[] = [
         current: false,
       },
       {
-        name: "Trail Students",
-        href: "/student/trail-student",
+        name: "Trial Students",
+        href: "/student/trial-student",
         current: false,
       },
     ],

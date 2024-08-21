@@ -34,9 +34,9 @@ const Page = () => {
     <>
       <div className="ml-[219px] mt-20 flex flex-col">
         <div className="w-[1068px] h-[40px] p-4 bg-white rounded-md flex items-center justify-between">
-          <span>Student | All student</span>
+          <span className="flex flex-row gap-3">Student | <Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- All student</span>
           <Link href={"/#"} passHref>
-            <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
+            <div className="h-[23px] w-[57px] bg-[#1c2b47] flex items-center justify-center rounded-md">
               <Image
                 src={"/refresh.svg"}
                 width={16}
@@ -99,13 +99,12 @@ const Page = () => {
                       />
                   </Link>
                   {/* Delete Icon */}
-                  <button onClick={()=>handleDeleteClick(item.id)}>
                     <img
                       src="/delete.svg"
                       alt="Delete"
+                      onClick={()=>handleDeleteClick(item.id)}
                       style={{ width: "30px", height: "30px" }}
                     />
-                  </button>
                 </div>
               </CardFooter>
             </Card>
