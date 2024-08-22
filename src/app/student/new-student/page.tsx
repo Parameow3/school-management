@@ -8,7 +8,7 @@ const page: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto p-8 ml-[212px] mt-12">
       <div className="w-[1060px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-          <span>Student | All student</span>
+          <span>Student | New-student</span>
 
           <Link href={"/#"} passHref>
             <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
@@ -16,7 +16,7 @@ const page: React.FC = () => {
             </div>
           </Link>
         </div>
-      <h1 className="text-center text-2xl font-bold mb-8 mt-4">Admission Form</h1>
+      <h1 className="text-center text-2xl font-bold mb-8 mt-4 boder border-b-2">Admission Form</h1>
 
       <form className="space-y-8">
         {/* Student Information */}

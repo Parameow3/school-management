@@ -1,10 +1,10 @@
 "use client";
 import Dropdown from "@/components/Dropdown";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
 import { Card, CardBody, CardFooter } from "@nextui-org/react";
 import Modal from "@/components/Modal"; // Adjust the import path as necessary
+import Image from "next/image";
 
 const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,9 +32,9 @@ const Page = () => {
 
   return (
     <>
-      <div className="ml-[219px] mt-20 flex flex-col">
-        <div className="w-[1068px] h-[40px] p-4 bg-white rounded-md flex items-center justify-between">
-          <span className="flex flex-row gap-3">Student | <Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- All student</span>
+      <div className="lg:ml-[219px] mt-20 flex flex-col">
+        <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between">
+          <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">Student | <Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- All student</span>
           <Link href={"/#"} passHref>
             <div className="h-[23px] w-[57px] bg-[#1c2b47] flex items-center justify-center rounded-md">
               <Image
@@ -50,60 +50,58 @@ const Page = () => {
           <Dropdown />
         </div>
 
-        <div className="mt-5 grid grid-cols-4 gap-4">
+        <div className="mt-5 grid grid-cols-4 lg:gap-4 gap-44">
           {list.map((item) => (
             <Card
               shadow="sm"
               key={item.id}
               isPressable
               onPress={() => console.log("item pressed")}
-              className="w-[243px] h-[244px] shadow-sm bg-white rounded-[9px]"
+              className="lg:w-[243px] lg:h-[244px] w-[159px] h-[173px] shadow-sm bg-white rounded-[9px]"
             >
               <CardBody className="overflow-visible flex items-center p-4">
                 <Image
                   height={100}
                   width={100}
-                  className="rounded-full object-cover"
+                  className="rounded-full object-cover w-[50px] h-[50px] lg:w-[100px] lg:h-[100px] "
                   src={item.img}
                   alt={item.title}
                 />
-                <b className="flex items-center mt-2">{item.title}</b>
+                <b className="flex items-center text-12 lg:text-14 mt-2">{item.title}</b>
                 <p className="text-default-500">{item.job}</p>
               </CardBody>
-              <CardFooter className="justify-center items-center gap-2">
+              <CardFooter className="justify-center items-center lg:gap-2">
                 <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-around",
-                    width: "150px",
-                  }}
+                  className="flex w-[150px] lg:justify-between justify-center gap-4"
                 >
                   {/* View Icon */}
                   <Link href={`/student/all-student/view/${item.id}`} passHref>
-                      <img
+                      <Image
                         src="/view.svg"
                         alt="View"
-                        style={{ width: "30px", height: "30px" }}
+                        width={30}
+                        height={30}
+                        className="w-[12px] h-[12px] lg:w-[25px] lg:h-[25px]"
                       />
                   </Link>
                   {/* Edit Icon */}
                   <Link href={`/student/all-student/edit/${item.id}`} passHref>
-                      <img
+                      <Image
                         src="/edit.svg"
-                        alt="Edit"
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          padding: "2px",
-                        }}
+                        alt="public"
+                        width={50}
+                        height={50}
+                        className="w-[12px] h-[12px] lg:w-[25px] lg:h-[25px]"
                       />
                   </Link>
                   {/* Delete Icon */}
-                    <img
+                    <Image
                       src="/delete.svg"
-                      alt="Delete"
+                      alt="public"
                       onClick={()=>handleDeleteClick(item.id)}
-                      style={{ width: "30px", height: "30px" }}
+                      width={30}
+                      height={30}
+                      className="w-[12px] h-[12px] lg:w-[25px] lg:h-[25px]"
                     />
                 </div>
               </CardFooter>

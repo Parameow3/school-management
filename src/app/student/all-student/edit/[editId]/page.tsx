@@ -67,7 +67,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="firstName"
                 name="firstName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px]  outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -79,7 +79,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="lastName"
                 name="lastName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -91,7 +91,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="age"
                 name="age"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -102,7 +102,7 @@ const EditStudentPage: React.FC = () => {
               <select
                 id="gender"
                 name="gender"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               >
                 <option>Female</option>
                 <option>Male</option>
@@ -118,7 +118,7 @@ const EditStudentPage: React.FC = () => {
                 type="date"
                 id="admissionDate"
                 name="admissionDate"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -130,7 +130,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="class"
                 name="class"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -141,7 +141,7 @@ const EditStudentPage: React.FC = () => {
               <select
                 id="branch"
                 name="branch"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               >
                 <option>Branch 1</option>
                 <option>Branch 2</option>
@@ -157,7 +157,7 @@ const EditStudentPage: React.FC = () => {
                 type="file"
                 id="uploadPicture"
                 name="uploadPicture"
-                className="mt-1 block w-full"
+                className="mt-1 block w-[272px] h-[40px] outline-none"
               />
             </div>
           </div>
@@ -175,7 +175,7 @@ const EditStudentPage: React.FC = () => {
                 type="date"
                 id="dob"
                 name="dob"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -187,7 +187,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="nationality"
                 name="nationality"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -199,7 +199,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="placeOfBirth"
                 name="placeOfBirth"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -211,7 +211,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="beltLevel"
                 name="beltLevel"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -223,7 +223,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="studentPassport"
                 name="studentPassport"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -235,7 +235,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="address"
                 name="address"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
           </div>
@@ -253,7 +253,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="fatherName"
                 name="fatherName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -265,7 +265,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="fatherOccupation"
                 name="fatherOccupation"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -277,7 +277,7 @@ const EditStudentPage: React.FC = () => {
                 type="tel"
                 id="phone"
                 name="phone"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -289,7 +289,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="motherName"
                 name="motherName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -301,7 +301,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="motherOccupation"
                 name="motherOccupation"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -313,7 +313,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="parentContact"
                 name="parentContact"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
           </div>

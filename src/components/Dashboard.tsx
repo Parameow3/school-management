@@ -347,7 +347,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
             </div>
           </div>
         </div>
-        <main className="px-12 h-full overflow-auto bg-[#F0F4FA]">
+        <main className="lg:px-12 px-8 h-full overflow-auto bg-[#F0F4FA]">
           {children}
         </main>
       </div>

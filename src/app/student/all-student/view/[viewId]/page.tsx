@@ -49,35 +49,34 @@ const StudentPage = () => {
   const [student] = useState<Student>(mockupStudent);
 
   return (
-    <div className="ml-[219px] mt-20 flex flex-col">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-2xl mx-auto">
-        <div className="flex items-center mb-4">
+    <div className="lg:ml-[219px] mt-20 flex flex-col">
+      <div className="bg-white p-6 rounded-lg lg:gap-12 gap-4 flex lg:flex-row flex-col shadow-lg w-[345px] lg:w-[854px] max-w-2xl mx-auto">
+        <div className="flex lg:items-start items-center flex-col mb-4 ml-4">
           <img
             src={student.profilePicture}
             alt={`${student.firstName} ${student.lastName}`}
-            className="w-24 h-24 rounded-full mr-4"
+            className="lg:w-48 lg:h-48 w-16 h-16 mr-4"
           />
-          <h2 className="text-2xl font-bold">
-            {student.firstName} {student.lastName}
-          </h2>
+          <h3 className='mt-1 lg:ml-11 lg:font-bold mr-4 text-[12px] lg:text-[16px]'>{student.firstName} {student.lastName}</h3>
         </div>
         <div className="text-left">
-          <p><strong>Age:</strong> {student.age}</p>
-          <p><strong>Gender:</strong> {student.gender}</p>
-          <p><strong>Admission Date:</strong> {student.admissionDate}</p>
-          <p><strong>Class:</strong> {student.class}</p>
-          <p><strong>Date of Birth:</strong> {student.dateOfBirth}</p>
-          <p><strong>Address:</strong> {student.address}</p>
-          <p><strong>Place of Birth:</strong> {student.placeOfBirth}</p>
-          <p><strong>Nationality:</strong> {student.nationality}</p>
-          <p><strong>Student Passport:</strong> {student.studentPassport}</p>
-          <p><strong>Father's Name:</strong> {student.fatherName}</p>
-          <p><strong>Father's Occupation:</strong> {student.fatherOccupation}</p>
-          <p><strong>Father's Phone:</strong> {student.fatherPhone}</p>
-          <p><strong>Mother's Name:</strong> {student.motherName}</p>
-          <p><strong>Mother's Occupation:</strong> {student.motherOccupation}</p>
-          <p><strong>Mother's Phone:</strong> {student.motherPhone}</p>
-          <p><strong>Parent Contact:</strong> {student.parentContact}</p>
+          <h2 className="font-bold inline-block border-b-2 ml-28 lg:ml-0">About Me</h2>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Age:</strong> {student.age}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Gender:</strong> {student.gender}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Admission Date:</strong> {student.admissionDate}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Class:</strong>{student.class}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Date of Birth:</strong> {student.dateOfBirth}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Address:</strong> {student.address}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Place of Birth:</strong> {student.placeOfBirth}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Nationality:</strong> {student.nationality}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Student Passport:</strong> {student.studentPassport}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Father's Name:</strong> {student.fatherName}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Father's Occupation:</strong> {student.fatherOccupation}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Father's Phone:</strong> {student.fatherPhone}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Mother's Name:</strong> {student.motherName}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Mother's Occupation:</strong> {student.motherOccupation}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Mother's Phone:</strong> {student.motherPhone}</p>
+          <p className='p-2 text-[12px] lg:text-[16px]'><strong>Parent Contact:</strong> {student.parentContact}</p>
         </div>
       </div>
     </div>
