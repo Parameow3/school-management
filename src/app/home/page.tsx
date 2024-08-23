@@ -4,7 +4,6 @@ import Card from "@/components/Card";
 import Report from "@/components/Report";
 import Calender from "@/components/Calender";
 import FacebookCard from "@/components/facebookCard";
-
 const page = () => {
   return (
     <>

@@ -43,9 +43,9 @@ const EditStudentPage: React.FC = () => {
   }
 
   return (
-    <div className="ml-[219px] h-[1000px] mt-20 flex flex-col">
-      <div className="w-[1079px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-        <span className='flex flex-row gap-2'>Student | <Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- Update Student</span>
+    <div className="lg:ml-[219px] mt-20 flex flex-col">
+      <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
+        <span className='flex flex-row gap-2 text-[12px] lg:text-[16px]'>Student | <Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- Update Student</span>
         <Link href={"/#"} passHref>
             <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
               <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
@@ -53,12 +53,12 @@ const EditStudentPage: React.FC = () => {
           </Link>
       </div>
 
-      <h1 className="text-center text-2xl font-bold mb-8 mt-2">Edit Information Student Form</h1>
+      <h1 className="text-center lg:text-2xl text-[16px] font-bold mb-8 mt-4 lg:mt-2 boder border-b-2">Edit Information Student Form</h1>
 
       <form className="space-y-8" onSubmit={handleSubmit}>
       <section>
-          <h2 className="text-xl font-semibold mb-4">Student Information</h2>
-          <div className="grid grid-cols-3 gap-8">
+          <h2 className="lg:text-xl text-[16px] font-semibold  mb-4">Student Information</h2>
+          <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                 First Name:
@@ -67,7 +67,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="firstName"
                 name="firstName"
-                className="mt-1 block w-[272px]  outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -79,7 +79,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="lastName"
                 name="lastName"
-                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -91,7 +91,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="age"
                 name="age"
-                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -102,7 +102,7 @@ const EditStudentPage: React.FC = () => {
               <select
                 id="gender"
                 name="gender"
-                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               >
                 <option>Female</option>
                 <option>Male</option>
@@ -118,7 +118,7 @@ const EditStudentPage: React.FC = () => {
                 type="date"
                 id="admissionDate"
                 name="admissionDate"
-                className="mt-1 block w-[272px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -130,7 +130,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="class"
                 name="class"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -141,7 +141,7 @@ const EditStudentPage: React.FC = () => {
               <select
                 id="branch"
                 name="branch"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               >
                 <option>Branch 1</option>
                 <option>Branch 2</option>
@@ -157,7 +157,7 @@ const EditStudentPage: React.FC = () => {
                 type="file"
                 id="uploadPicture"
                 name="uploadPicture"
-                className="mt-1 block w-[272px] h-[40px] outline-none"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none"
               />
             </div>
           </div>
@@ -166,7 +166,7 @@ const EditStudentPage: React.FC = () => {
         {/* Other Information */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Other Information</h2>
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 flex-row gap-8">
             <div>
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth:
@@ -175,7 +175,7 @@ const EditStudentPage: React.FC = () => {
                 type="date"
                 id="dob"
                 name="dob"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -187,7 +187,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="nationality"
                 name="nationality"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -199,7 +199,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="placeOfBirth"
                 name="placeOfBirth"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -211,7 +211,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="beltLevel"
                 name="beltLevel"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -223,7 +223,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="studentPassport"
                 name="studentPassport"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -235,7 +235,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="address"
                 name="address"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
           </div>
@@ -244,7 +244,7 @@ const EditStudentPage: React.FC = () => {
         {/* Contact Information */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 flex-row gap-8">
             <div>
               <label htmlFor="fatherName" className="block text-sm font-medium text-gray-700">
                 Father's Name:
@@ -253,7 +253,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="fatherName"
                 name="fatherName"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -265,7 +265,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="fatherOccupation"
                 name="fatherOccupation"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -277,7 +277,7 @@ const EditStudentPage: React.FC = () => {
                 type="tel"
                 id="phone"
                 name="phone"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -289,7 +289,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="motherName"
                 name="motherName"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -301,7 +301,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="motherOccupation"
                 name="motherOccupation"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -313,7 +313,7 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="parentContact"
                 name="parentContact"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
           </div>

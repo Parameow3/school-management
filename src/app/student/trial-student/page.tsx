@@ -3,11 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "@/components/Dropdown";
-type MyComponentProps = {
-  selected: string;
-  onChange: (branch: any) => void;
-};
-const Page:React.FC<MyComponentProps> = ({selected,onChange}) => {
+const Page = () => {
   // State to manage form inputs
   const [formData, setFormData] = useState({
     firstName: "",

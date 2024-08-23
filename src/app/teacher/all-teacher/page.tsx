@@ -6,7 +6,7 @@ import { useState } from "react";
 import Dropdown from "@/components/Dropdown";
 import { Card, CardBody, CardFooter } from "@nextui-org/react";
 import Modal from "@/components/Modal";
-const page = () => {
+const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cardDelete,setCardDelete]= useState<string | null>(null);
   const list = [
@@ -75,30 +75,29 @@ const page = () => {
                 >
                   {/* View Icon */}
                   <Link href={`/student/all-student/view/${item.id}`} passHref>
-                      <img
+                      <Image
                         src="/view.svg"
                         alt="View"
-                        style={{ width: "30px", height: "30px" }}
+                        width={30}
+                        height={30}
                       />
                   </Link>
                   {/* Edit Icon */}
                   <Link href={`/student/all-student/edit/${item.id}`} passHref>
-                      <img
+                      <Image
                         src="/edit.svg"
                         alt="Edit"
-                        style={{
-                          width: "30px",
-                          height: "30px",
-                          padding: "2px",
-                        }}
+                        width={30}
+                        height={30}
                       />
                   </Link>
                   {/* Delete Icon */}
                   <button onClick={()=>handleDeleteClick(item.id)}>
-                    <img
+                    <Image
                       src="/delete.svg"
                       alt="Delete"
-                      style={{ width: "30px", height: "30px" }}
+                      width={30}
+                      height={30}
                     />
                   </button>
                 </div>
@@ -112,4 +111,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
