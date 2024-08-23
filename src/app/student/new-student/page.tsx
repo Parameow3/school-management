@@ -1,28 +1,61 @@
-'use client'
-import React from 'react';
+'use client';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { CheckIcon } from '@heroicons/react/24/outline';
 import Dropdown from '@/components/Dropdown';
-const page: React.FC = () => {
+const Page = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    age: '',
+    gender: 'Female',
+    admissionDate: '',
+    class: '',
+    branch: '',
+    uploadPicture: '',
+    dob: '',
+    nationality: '',
+    placeOfBirth: '',
+    beltLevel: '',
+    studentPassport: '',
+    address: '',
+    fatherName: '',
+    fatherOccupation: '',
+    phone: '',
+    motherName: '',
+    motherOccupation: '',
+    parentContact: '',
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(formData);
+  };
+
   return (
-    <div className="max-w-7xl mx-auto p-8 ml-[212px] mt-12">
-      <div className="w-[1060px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-          <span>Student | New-student</span>
+    <div className="lg:ml-[219px] mt-20 flex flex-col">
+      <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
+        <span className='flex flex-row gap-2 text-[12px] lg:text-[15px]'>Student | <Image src={"/home.svg"} width={15} height={15} alt="public" /> New-student</span>
 
-          <Link href={"/#"} passHref>
-            <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
-              <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
-            </div>
-          </Link>
-        </div>
-      <h1 className="text-center text-2xl font-bold mb-8 mt-4 boder border-b-2">Admission Form</h1>
+        <Link href={"/#"} passHref>
+          <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
+            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
+          </div>
+        </Link>
+      </div>
 
-      <form className="space-y-8">
+      <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">Admission Form</h1>
+
+      <form className="space-y-8" onSubmit={handleSubmit}>
         {/* Student Information */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Student Information</h2>
-          <div className="grid grid-cols-3 gap-8">
+          <h2 className="text-2xl font-bold mb-8 lg:mt-4 border-b-2">Student Information</h2>
+          <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
               <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
                 First Name:
@@ -31,7 +64,9 @@ const page: React.FC = () => {
                 type="text"
                 id="firstName"
                 name="firstName"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.firstName}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -43,7 +78,9 @@ const page: React.FC = () => {
                 type="text"
                 id="lastName"
                 name="lastName"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.lastName}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -55,7 +92,9 @@ const page: React.FC = () => {
                 type="text"
                 id="age"
                 name="age"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.age}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -66,11 +105,13 @@ const page: React.FC = () => {
               <select
                 id="gender"
                 name="gender"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.gender}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               >
-                <option>Female</option>
-                <option>Male</option>
-                <option>Other</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 
@@ -82,7 +123,9 @@ const page: React.FC = () => {
                 type="date"
                 id="admissionDate"
                 name="admissionDate"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.admissionDate}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -94,7 +137,9 @@ const page: React.FC = () => {
                 type="text"
                 id="class"
                 name="class"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.class}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -102,7 +147,7 @@ const page: React.FC = () => {
               <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
                 Branch:
               </label>
-              <Dropdown></Dropdown>
+              <Dropdown onChange={(value: any) => setFormData({ ...formData, branch: value })} />
             </div>
 
             <div>
@@ -113,7 +158,8 @@ const page: React.FC = () => {
                 type="file"
                 id="uploadPicture"
                 name="uploadPicture"
-                className="mt-1 block w-[272px] h-[40px]"
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px]"
               />
             </div>
           </div>
@@ -121,8 +167,8 @@ const page: React.FC = () => {
 
         {/* Other Information */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Other Information</h2>
-          <div className="grid grid-cols-3 gap-8">
+          <h2 className="text-2xl font-bold mb-8 mt-4 border-b-2">Other Information</h2>
+          <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth:
@@ -131,7 +177,9 @@ const page: React.FC = () => {
                 type="date"
                 id="dob"
                 name="dob"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                value={formData.dob}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -143,7 +191,9 @@ const page: React.FC = () => {
                 type="text"
                 id="nationality"
                 name="nationality"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.nationality}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -155,7 +205,9 @@ const page: React.FC = () => {
                 type="text"
                 id="placeOfBirth"
                 name="placeOfBirth"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.placeOfBirth}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -167,7 +219,9 @@ const page: React.FC = () => {
                 type="text"
                 id="beltLevel"
                 name="beltLevel"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.beltLevel}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -179,7 +233,9 @@ const page: React.FC = () => {
                 type="text"
                 id="studentPassport"
                 name="studentPassport"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.studentPassport}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
 
@@ -191,7 +247,9 @@ const page: React.FC = () => {
                 type="text"
                 id="address"
                 name="address"
-                className="mt-1 block w-[272px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                value={formData.address}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
           </div>
@@ -199,8 +257,8 @@ const page: React.FC = () => {
 
         {/* Contact Information */}
         <section>
-          <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-          <div className="grid grid-cols-3 gap-8">
+          <h2 className="text-xl font-semibold mb-4 border-b-2">Contact Information</h2>
+          <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
               <label htmlFor="fatherName" className="block text-sm font-medium text-gray-700">
                 Father's Name:
@@ -209,7 +267,9 @@ const page: React.FC = () => {
                 type="text"
                 id="fatherName"
                 name="fatherName"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                value={formData.fatherName}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px]outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -221,7 +281,9 @@ const page: React.FC = () => {
                 type="text"
                 id="fatherOccupation"
                 name="fatherOccupation"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                value={formData.fatherOccupation}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -233,7 +295,9 @@ const page: React.FC = () => {
                 type="tel"
                 id="phone"
                 name="phone"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -245,7 +309,9 @@ const page: React.FC = () => {
                 type="text"
                 id="motherName"
                 name="motherName"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                value={formData.motherName}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px]w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -257,7 +323,9 @@ const page: React.FC = () => {
                 type="text"
                 id="motherOccupation"
                 name="motherOccupation"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                value={formData.motherOccupation}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -269,7 +337,9 @@ const page: React.FC = () => {
                 type="text"
                 id="parentContact"
                 name="parentContact"
-                className="mt-1 block w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                value={formData.parentContact}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
           </div>
@@ -295,5 +365,4 @@ const page: React.FC = () => {
   );
 };
 
-export default page;
-
+export default Page;

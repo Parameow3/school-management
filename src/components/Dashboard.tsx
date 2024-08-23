@@ -63,7 +63,7 @@ const navigation: NavigationItem[] = [
     icon: BookOpenIcon,
     subItems: [
       { name: "All Teachers", href: "/teacher/all-teacher", current: false },
-      { name: "New Teachers", href: "/teachers/new-teacher", current: false },
+      { name: "New Teachers", href: "/teacher/new-teacher", current: false },
     ],
   },
   {
@@ -72,8 +72,8 @@ const navigation: NavigationItem[] = [
     current: false,
     icon: BuildingLibraryIcon,
     subItems: [
-      { name: "All Classes", href: "/classes/all", current: false },
-      { name: "New Class", href: "/classes/new", current: false },
+      { name: "All Classes", href: "/classes/all-class", current: false },
+      { name: "New Class", href: "/classes/new-class", current: false },
     ],
   },
   {

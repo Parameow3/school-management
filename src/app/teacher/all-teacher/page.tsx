@@ -31,9 +31,9 @@ const Page = () => {
 
 
   return (
-    <div className=" ml-[219px] mt-20 flex flex-col">
-      <div className="w-[1068px] h-[40px] p-4 bg-white rounded-md flex items-center justify-between">
-        <span>Teacher |<Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- All teacher</span>
+    <div className="lg:ml-[219px] mt-20 flex flex-col">
+      <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between">
+        <span className="flex flex-row gap-3">Teacher |<Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- All teacher</span>
         <Link href={"/#"} passHref>
           <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
             <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
@@ -45,14 +45,14 @@ const Page = () => {
         </div>
         <div>
           
-        <div className="mt-5 grid grid-cols-4 gap-4">
+        <div className="mt-5 grid grid-cols-4 lg:gap-4 gap-44">
           {list.map((item) => (
             <Card
               shadow="sm"
               key={item.id}
               isPressable
               onPress={() => console.log("item pressed")}
-              className="w-[243px] h-[244px] shadow-sm bg-white rounded-[9px]"
+              className="lg:w-[243px] lg:h-[244px] w-[159px] h-[173px] shadow-sm bg-white rounded-[9px]"
             >
               <CardBody className="overflow-visible flex items-center p-4">
                 <Image
@@ -92,14 +92,13 @@ const Page = () => {
                       />
                   </Link>
                   {/* Delete Icon */}
-                  <button onClick={()=>handleDeleteClick(item.id)}>
                     <Image
                       src="/delete.svg"
                       alt="Delete"
+                      onClick={()=>handleDeleteClick(item.id)}
                       width={30}
                       height={30}
                     />
-                  </button>
                 </div>
               </CardFooter>
             </Card>

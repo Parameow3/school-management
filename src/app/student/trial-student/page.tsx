@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -39,13 +39,13 @@ const Page = () => {
   ]);
 
   // Handle input changes
-  const handleChange = (e:any) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   // Handle form submission
-  const handleSubmit = (e:any) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     setStudents([...students, formData]);
     // Reset form after submission
@@ -61,33 +61,28 @@ const Page = () => {
   };
 
   return (
-    <div className="ml-[219px] mt-20 flex flex-col">
-      <div className="w-[1060px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-        <span className="flex flex-row gap-2">
+    <div className="lg:ml-[219px] mt-20 flex flex-col">
+      <div className="lg:w-[1079px] w-[330px] h-[40px]  p-4 bg-white flex items-center rounded-md justify-between">
+        <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
           Student |{" "}
-          <Image src={"/home.svg"} width={15} height={15} alt="public" /> - New
-          student
+          <Image src={"/home.svg"} width={15} height={15} alt="public" /> -
+          Trial student
         </span>
 
         <Link href={"/#"} passHref>
           <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
-            <Image
-              src={"/refresh.svg"}
-              width={16}
-              height={16}
-              alt="Refresh"
-            />
+            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
           </div>
         </Link>
       </div>
-      <h1 className="text-center text-2xl font-bold mb-8 mt-4 text-[#123458] border-b-2">
+      <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2 text-bg-[#123498]">
         Trial Form
       </h1>
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Student Information */}
         <section>
           <h2 className="text-xl font-semibold mb-4">Student Information</h2>
-          <div className="grid grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
               <label
                 htmlFor="firstName"
@@ -149,8 +144,7 @@ const Page = () => {
               >
                 Branch:
               </label>
-              <Dropdown
-              />
+              <Dropdown />
             </div>
 
             <div>
@@ -192,50 +186,52 @@ const Page = () => {
 
         {/* Table Section */}
         <section className="mt-12">
-          <h2 className="text-xl font-semibold mb-4">Trial Students</h2>
+          <h2 className="lg:text-xl text-[18px] font-semibold mb-4">
+            Trial Students
+          </h2>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="w-full sm:w-[330px] lg:min-w-full divide-y divide-gray-200">
               <thead className="bg-[#123458]">
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider"
+                    className="p-2 text-left lg:text-xs text-[5px] lg:font-medium text-gray-200 uppercase tracking-wider"
                   >
                     First Name
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider"
+                    className=" text-left lg:text-xs text-[5px] lg:font-medium text-gray-200 uppercase tracking-wider"
                   >
                     Last Name
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider"
+                    className="p-2 text-left lg:text-xs text-[8px] lg:font-medium text-gray-200 uppercase tracking-wider"
                   >
                     Gender
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider"
+                    className="p-2 text-left lg:text-xs text-[5px] lg:font-medium text-gray-200 uppercase tracking-wider"
                   >
                     Branch
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider"
+                    className="p-2 text-left lg:text-xs text-[5px] lg:font-medium text-gray-200 uppercase tracking-wider"
                   >
                     Trial Date
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider"
+                    className="p-2 text-left lg:text-xs text-[5px] lg:font-medium text-gray-200 uppercase tracking-wider"
                   >
                     Contact
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase tracking-wider"
+                    className="p-2 text-left lg:text-xs text-[5px] lg:font-medium text-gray-200 uppercase tracking-wider"
                   >
                     Status
                   </th>
@@ -244,27 +240,19 @@ const Page = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {students.map((student, index) => (
                   <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="p-2 whitespace-nowrap">
                       {student.firstName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="p-2 whitespace-nowrap">
                       {student.lastName}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {student.gender}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {student.branch}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="p-2 whitespace-nowrap">{student.gender}</td>
+                    <td className="p-2 whitespace-nowrap">{student.branch}</td>
+                    <td className="whitespace-nowrap">
                       {student.trialDate}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {student.contact}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {student.status}
-                    </td>
+                    <td className="p-2 whitespace-nowrap">{student.contact}</td>
+                    <td className="p-2 whitespace-nowrap">{student.status}</td>
                   </tr>
                 ))}
               </tbody>

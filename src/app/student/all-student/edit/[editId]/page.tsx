@@ -70,7 +70,6 @@ const EditStudentPage: React.FC = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
-
             <div>
               <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
                 Last Name:

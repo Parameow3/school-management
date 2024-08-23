@@ -13,13 +13,13 @@ const Page = () => {
     {
       id: "1", // Assuming you have unique IDs for each student
       title: "Lyseth",
-      img: "/photo.jpg",
+      pic: "/photo.jpg",
       job: "student",
     },
     {
       id: "2", // Assuming you have unique IDs for each student
       title: "Lyseth",
-      img: "/photo.jpg",
+      pic: "/photo.jpg",
       job: "student",
     },
     // Add more students here
@@ -64,7 +64,7 @@ const Page = () => {
                   height={100}
                   width={100}
                   className="rounded-full object-cover w-[50px] h-[50px] lg:w-[100px] lg:h-[100px] "
-                  src={item.img}
+                  src={item.pic}
                   alt={item.title}
                 />
                 <b className="flex items-center text-12 lg:text-14 mt-2">{item.title}</b>
