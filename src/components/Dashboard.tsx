@@ -72,8 +72,8 @@ const navigation: NavigationItem[] = [
     current: false,
     icon: BuildingLibraryIcon,
     subItems: [
-      { name: "All Classes", href: "/classes/all-class", current: false },
-      { name: "New Class", href: "/classes/new-class", current: false },
+      { name: "All Classes", href: "/class/all-class", current: false },
+      { name: "New Class", href: "/class/new-class", current: false },
     ],
   },
   {

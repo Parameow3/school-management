@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "../globals.css";
-import Dashboard from "../../components/Dashboard";
-
+import "../../globals.css"; // Adjusted the path to reflect the correct location
+import Dashboard from "@/components/Dashboard";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {

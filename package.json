@@ -11,14 +11,19 @@
   "dependencies": {
     "@headlessui/react": "^2.1.2",
     "@heroicons/react": "^2.1.5",
+    "@nextui-org/card": "^2.0.33",
     "@nextui-org/react": "^2.4.6",
+    "@nextui-org/system": "^2.2.5",
+    "@nextui-org/theme": "^2.2.9",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.3",
+    "framer-motion": "^11.3.30",
     "jquery": "^3.7.1",
     "moment": "^2.30.1",
     "next": "14.2.5",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "sharp": "^0.33.5"
   },
   "devDependencies": {
     "@types/node": "^20",
