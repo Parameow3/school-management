@@ -106,16 +106,16 @@ const navigation: NavigationItem[] = [
   },
   {
     name: "Setting",
-    href: "/settings",
+    href: "#",
     icon: Cog6ToothIcon,
     current: false,
     subItems: [
       {
         name: "Account Setting",
-        href: "/setting/general setting",
+        href: "/setting/account-setting",
         current: false,
       },
-      { name: "Logout", href: "/logout", current: false },
+      { name: "Logout", href: "/login", current: false },
     ],
   },
 ];

@@ -74,7 +74,7 @@ const Page = () => {
                   }}
                 >
                   {/* View Icon */}
-                  <Link href={`/student/all-student/view/${item.id}`} passHref>
+                  <Link href={`/teacher/all-teacher/view/${item.id}`} passHref>
                       <Image
                         src="/view.svg"
                         alt="View"
@@ -83,7 +83,7 @@ const Page = () => {
                       />
                   </Link>
                   {/* Edit Icon */}
-                  <Link href={`/student/all-student/edit/${item.id}`} passHref>
+                  <Link href={`/teacher/all-teacher/edit/${item.id}`} passHref>
                       <Image
                         src="/edit.svg"
                         alt="Edit"

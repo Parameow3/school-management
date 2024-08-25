@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react';
-
+import Image from 'next/image';
 interface Student {
   firstName: string;
   lastName: string;
@@ -52,9 +52,11 @@ const StudentPage = () => {
     <div className="lg:ml-[219px] mt-20 flex flex-col">
       <div className="bg-white p-6 rounded-lg lg:gap-12 gap-4 flex lg:flex-row flex-col shadow-lg w-[345px] lg:w-[854px] max-w-2xl mx-auto">
         <div className="flex lg:items-start items-center flex-col mb-4 ml-4">
-          <img
+          <Image
             src={student.profilePicture}
             alt={`${student.firstName} ${student.lastName}`}
+            width={48}
+            height={48}
             className="lg:w-48 lg:h-48 w-16 h-16 mr-4"
           />
           <h3 className='mt-1 lg:ml-11 lg:font-bold mr-4 text-[12px] lg:text-[16px]'>{student.firstName} {student.lastName}</h3>
