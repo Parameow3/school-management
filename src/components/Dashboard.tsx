@@ -36,7 +36,7 @@ type NavigationItem = {
 };
 
 const navigation: NavigationItem[] = [
-  { name: "Dashboard", href: "/home", icon: HomeIcon, current: true },
+  { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
   {
     name: "Student",
     href: "#",
