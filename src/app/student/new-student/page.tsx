@@ -269,7 +269,7 @@ const Page = () => {
                 name="fatherName"
                 value={formData.fatherName}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px]outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
