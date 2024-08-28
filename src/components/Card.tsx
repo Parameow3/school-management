@@ -1,15 +1,11 @@
 import React from "react";
 import Image from "next/image";
-
-// Define the CardProps interface
 interface CardProps {
   title: string;
   value: number;
   color: string;
   className?: string;
 }
-
-// Define the StatsCard component
 const StatsCard: React.FC<CardProps> = ({ title, value, color,className }) => {
   return (
     <div

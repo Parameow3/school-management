@@ -20,7 +20,7 @@ const mockupTeacher: Teacher = {
 const Page = () => {
   const [teacher, setTeacher] = useState<Teacher>(mockupTeacher);
   const [phone, setPhone] = useState<string>(teacher.phone);
-  const [password, setPassword] = useState<string>("");
+  const [password, setPassword] = useState<string>(teacher.password);
   const [passwordError, setPasswordError] = useState<string>("");
   const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
 
@@ -56,9 +56,11 @@ const Page = () => {
     console.log("Phone:", phone);
     console.log("Password:", password);
   };
+
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
+
   return (
     <div className="lg:ml-[219px] mt-20 flex flex-col">
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between">
@@ -111,23 +113,23 @@ const Page = () => {
                 <label className="w-28 font-medium">Phone:</label>
                 <input
                   type="text"
-                  value={teacher.phone}
+                  value={phone}
                   onChange={handlePhoneChange}
                   className="flex-1 px-3 py-2 border rounded-[12px] focus:outline-none focus:ring-2 focus:ring-pink-300"
                 />
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 relative">
                 <label className="w-28 font-medium">Password:</label>
                 <input
                   type={passwordVisible ? "text" : "password"}
-                  value={teacher.password}
+                  value={password}
                   onChange={handlePasswordChange}
-                  className="flex-1 px-3 py-2 border rounded-[12px] focus:outline-none focus:ring-2 focus:ring-pink-300"
+                  className="flex-1 px-3 py-2 border rounded-[12px] focus:outline-none focus:ring-2 focus:ring-pink-300 pr-10" // Added padding-right for icon
                 />
                 <button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="focus:outline-none"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none"
                 >
                   <Image
                     src={passwordVisible ? "/eye.svg" : "/eye-ff.svg"}

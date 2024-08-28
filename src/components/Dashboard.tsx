@@ -82,8 +82,8 @@ const navigation: NavigationItem[] = [
     current: false,
     icon: ClipboardDocumentListIcon,
     subItems: [
-      { name: "All Programs", href: "/programs/all", current: false },
-      { name: "New Programs", href: "/programs/new", current: false },
+      { name: "All Programs", href: "/program/all-program", current: false },
+      { name: "New Programs", href: "/program/new-program", current: false },
     ],
   },
   {
@@ -94,12 +94,12 @@ const navigation: NavigationItem[] = [
     subItems: [
       {
         name: "Student Attendance",
-        href: "/attendance/students",
+        href: "/attendance/student",
         current: false,
       },
       {
         name: "Teacher Attendance",
-        href: "/attendance/teachers",
+        href: "/attendance/teacher",
         current: false,
       },
     ],

@@ -1,62 +1,153 @@
-'use client';
+"use client";
+import React, { useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
 interface Student {
-  id: string;
-  name: string;
+  id: number;
+  firstName: string;
+  lastName: string;
+  age: number;
+  gender: string;
+  admissionDate: string;
+  class: string;
+  dateOfBirth: string;
+  address: string;
+  placeOfBirth: string;
+  nationality: string;
+  studentPassport: string;
+  fatherName: string;
+  fatherOccupation: string;
+  fatherPhone: string;
+  motherName: string;
+  motherOccupation: string;
+  motherPhone: string;
+  parentContact: string;
+  profilePicture: string;
 }
 
-const EditStudentPage: React.FC = () => {
-  const { editId } = useParams(); // Correctly get the dynamic route parameter
-  const router = useRouter(); // You can still use this for navigation if needed
+const mockupStudents: Student[] = [
+  {
+    id: 1,
+    firstName: "Lyseth",
+    lastName: "Pham",
+    age: 12,
+    gender: "Female",
+    admissionDate: "2024-08-12",
+    class: "Robotics",
+    dateOfBirth: "2012-04-12",
+    address: "1234 Example St, Example City",
+    placeOfBirth: "Example City",
+    nationality: "Example Nation",
+    studentPassport: "X987654321",
+    fatherName: "Sok",
+    fatherOccupation: "Business Man",
+    fatherPhone: "098465473",
+    motherName: "Sok",
+    motherOccupation: "Business Woman",
+    motherPhone: "098465473",
+    parentContact: "098465473",
+    profilePicture: "/photo.jpg",
+  },
+  {
+    id: 2,
+    firstName: "John",
+    lastName: "Doe",
+    age: 14,
+    gender: "Male",
+    admissionDate: "2023-09-01",
+    class: "Mathematics",
+    dateOfBirth: "2010-06-15",
+    address: "5678 Another St, Another City",
+    placeOfBirth: "Another City",
+    nationality: "Another Nation",
+    studentPassport: "A123456789",
+    fatherName: "Jane",
+    fatherOccupation: "Engineer",
+    fatherPhone: "0912345678",
+    motherName: "Anna",
+    motherOccupation: "Teacher",
+    motherPhone: "0912345678",
+    parentContact: "0912345678",
+    profilePicture: "/photo.jpg",
+  },
+];
 
-  const [student, setStudent] = useState<Student | null>(null);
-  const [loading, setLoading] = useState(true);
+const Page = () => {
+  const params = useParams();
+  const id = parseInt(params.editId as string, 10);
+  console.log("id", id);
 
-  useEffect(() => {
-    if (editId) {
-      // Simulate a fetch call to get student data based on the ID
-      const fetchStudent = async () => {
-        // Simulated delay
-        setTimeout(() => {
-          // Example data fetching
-          setStudent({ id: editId as string, name: 'John Doe' });
-          setLoading(false);
-        }, 1000);
-      };
+  // Always call the useState hook before any conditional return
+  const selectedStudent = mockupStudents.find((item) => item.id === id);
 
-      fetchStudent();
-    }
-  }, [editId]);
+  const [formData, setFormData] = useState({
+    firstName: selectedStudent?.firstName || "",
+    lastName: selectedStudent?.lastName || "",
+    age: selectedStudent?.age || "",
+    gender: selectedStudent?.gender || "Female",
+    admissionDate: selectedStudent?.admissionDate || "",
+    class: selectedStudent?.class || "",
+    dateOfBirth: selectedStudent?.dateOfBirth || "",
+    address: selectedStudent?.address || "",
+    placeOfBirth: selectedStudent?.placeOfBirth || "",
+    nationality: selectedStudent?.nationality || "",
+    studentPassport: selectedStudent?.studentPassport || "",
+    fatherName: selectedStudent?.fatherName || "",
+    fatherOccupation: selectedStudent?.fatherOccupation || "",
+    fatherPhone: selectedStudent?.fatherPhone || "",
+    motherName: selectedStudent?.motherName || "",
+    motherOccupation: selectedStudent?.motherOccupation || "",
+    motherPhone: selectedStudent?.motherPhone || "",
+    parentContact: selectedStudent?.parentContact || "",
+    profilePicture: selectedStudent?.profilePicture || "",
+    uploadPicture: "",
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Simulate form submission logic
-    alert(`Student ${student?.name} updated!`);
+  if (!selectedStudent) {
+    return <div className="text-center mt-20">Student not found</div>;
+  }
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, uploadPicture: file.name });
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    console.log(formData);
+  };
 
   return (
     <div className="lg:ml-[219px] mt-20 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-        <span className='flex flex-row gap-2 text-[12px] lg:text-[16px]'>Student | <Image src={"/home.svg"} width={15} height={15} alt="public"></Image>- Update Student</span>
+        <span className="flex flex-row gap-2 text-[12px] lg:text-[16px]">
+          Student | <Image src={"/home.svg"} width={15} height={15} alt="public" />{" "}
+          - Update Student
+        </span>
         <Link href={"/#"} passHref>
-            <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
-              <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
-            </div>
-          </Link>
+          <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
+            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
+          </div>
+        </Link>
       </div>
 
-      <h1 className="text-center lg:text-2xl text-[16px] font-bold mb-8 mt-4 lg:mt-2 boder border-b-2">Edit Information Student Form</h1>
+      <h1 className="text-center lg:text-2xl text-[16px] font-bold mb-8 mt-4 lg:mt-2 border-b-2">
+        Edit Information Student Form
+      </h1>
 
       <form className="space-y-8" onSubmit={handleSubmit}>
-      <section>
+        <section>
           <h2 className="lg:text-xl text-[16px] font-semibold  mb-4">Student Information</h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
@@ -67,6 +158,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="firstName"
                 name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -78,6 +171,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="lastName"
                 name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -90,6 +185,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="age"
                 name="age"
+                value={formData.age}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -101,11 +198,13 @@ const EditStudentPage: React.FC = () => {
               <select
                 id="gender"
                 name="gender"
+                value={formData.gender}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               >
-                <option>Female</option>
-                <option>Male</option>
-                <option>Other</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Other">Other</option>
               </select>
             </div>
 
@@ -117,6 +216,8 @@ const EditStudentPage: React.FC = () => {
                 type="date"
                 id="admissionDate"
                 name="admissionDate"
+                value={formData.admissionDate}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] outline-none h-[40px] rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -129,63 +230,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="class"
                 name="class"
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
-                Branch:
-              </label>
-              <select
-                id="branch"
-                name="branch"
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
-              >
-                <option>Branch 1</option>
-                <option>Branch 2</option>
-                <option>Branch 3</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="uploadPicture" className="block text-sm font-medium text-gray-700">
-                Upload Picture:
-              </label>
-              <input
-                type="file"
-                id="uploadPicture"
-                name="uploadPicture"
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none"
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Other Information */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4">Other Information</h2>
-          <div className="grid lg:grid-cols-3 flex-row gap-8">
-            <div>
-              <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
-                Date of Birth:
-              </label>
-              <input
-                type="date"
-                id="dob"
-                name="dob"
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">
-                Nationality:
-              </label>
-              <input
-                type="text"
-                id="nationality"
-                name="nationality"
+                value={formData.class}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -198,18 +244,22 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="placeOfBirth"
                 name="placeOfBirth"
+                value={formData.placeOfBirth}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
             <div>
-              <label htmlFor="beltLevel" className="block text-sm font-medium text-gray-700">
-                Belt Level:
+              <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">
+                Nationality:
               </label>
               <input
                 type="text"
-                id="beltLevel"
-                name="beltLevel"
+                id="nationality"
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -222,6 +272,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="studentPassport"
                 name="studentPassport"
+                value={formData.studentPassport}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -234,7 +286,22 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="address"
                 name="address"
+                value={formData.address}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="uploadPicture" className="block text-sm font-medium text-gray-700">
+                Upload Picture:
+              </label>
+              <input
+                type="file"
+                id="uploadPicture"
+                name="uploadPicture"
+                onChange={handleFileChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none"
               />
             </div>
           </div>
@@ -252,6 +319,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="fatherName"
                 name="fatherName"
+                value={formData.fatherName}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -264,18 +333,22 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="fatherOccupation"
                 name="fatherOccupation"
+                value={formData.fatherOccupation}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone:
+              <label htmlFor="fatherPhone" className="block text-sm font-medium text-gray-700">
+                Father's Phone:
               </label>
               <input
                 type="tel"
-                id="phone"
-                name="phone"
+                id="fatherPhone"
+                name="fatherPhone"
+                value={formData.fatherPhone}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -288,6 +361,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="motherName"
                 name="motherName"
+                value={formData.motherName}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -300,6 +375,22 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="motherOccupation"
                 name="motherOccupation"
+                value={formData.motherOccupation}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="motherPhone" className="block text-sm font-medium text-gray-700">
+                Mother's Phone:
+              </label>
+              <input
+                type="tel"
+                id="motherPhone"
+                name="motherPhone"
+                value={formData.motherPhone}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -312,6 +403,8 @@ const EditStudentPage: React.FC = () => {
                 type="text"
                 id="parentContact"
                 name="parentContact"
+                value={formData.parentContact}
+                onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
@@ -336,4 +429,4 @@ const EditStudentPage: React.FC = () => {
   );
 };
 
-export default EditStudentPage;
+export default Page;
