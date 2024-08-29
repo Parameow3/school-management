@@ -207,13 +207,11 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     setNavigationData(updatedNavigation);
   }, []);
 
-  console.log("data : ", navigationData);
-
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <div
-        className={`transition-transform transform ${
+        className={`transition-transform transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } fixed inset-y-0 lg:top-[62px] top-[59px] w-[232px] bg-[#213458] z-40 lg:block`}
       >
@@ -291,7 +289,11 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       </div>
 
       {/* Main content */}
-      <div className="flex flex-col flex-grow">
+      <div
+        className={`flex flex-col flex-grow transition-all duration-300 ease-in-out ${
+          sidebarOpen ? "ml-0" : "ml-0"
+        }`}
+      >
         <div className="bg-[#213458] lg:w-full lg:h-16 w-[390px] h-[59px] fixed top-0 z-30">
           <div className="flex items-center h-16 justify-between px-4 shadow-sm">
             <div className="flex items-center m-0 lg:ml-12 lg:gap-16">
@@ -347,8 +349,16 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
             </div>
           </div>
         </div>
-        <main className="lg:px-12 px-8 h-full overflow-auto bg-[#F0F4FA]">
-          {children}
+        <main className="flex lg:px-12 px-8 h-full overflow-auto bg-[#F0F4FA] flex-col flex-grow">
+          <div
+            className={`transition-all duration-300 ease-in-out ${
+              sidebarOpen
+                ? "opacity-100 transform translate-x-0"
+                : "opacity-1000 transform translate-x-[-10%]"
+            }`}
+          >
+            {children}
+          </div>
         </main>
       </div>
     </div>

@@ -45,7 +45,9 @@ const Page = () => {
     setIsModalOpen(true);
     setProfileToDelete(id);
   };
-
+  const handleCloseModal = () => {
+    setIsModalOpen(false); // Update isModalOpen to false when modal is closed
+  };
   return (
     <div className="lg:ml-[219px] mt-20 flex flex-col">
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between">
@@ -84,7 +86,7 @@ const Page = () => {
         ))}
       </div>
       {isModalOpen && (
-        <Modal />
+        <Modal onClose={handleCloseModal} />
       )}
     </div>
   );
