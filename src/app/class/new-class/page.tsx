@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "@/components/Dropdown";
+import Button from "@/components/Button";
 const ClassForm = () => {
   const [formData, setFormData] = useState({
     className: "",
@@ -26,7 +27,6 @@ const ClassForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form Data:", formData);
-    // Here you can handle the form submission, like sending the data to an API
   };
 
   return (
@@ -66,7 +66,6 @@ const ClassForm = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Section
@@ -79,7 +78,6 @@ const ClassForm = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Teacher Name
@@ -92,14 +90,12 @@ const ClassForm = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
-
             <div>
               <label className="block mt-1 text-sm font-medium text-gray-700">
                 Branch
               </label>
               <Dropdown></Dropdown>
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Student Name
@@ -112,7 +108,6 @@ const ClassForm = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Admission Date
@@ -126,17 +121,10 @@ const ClassForm = () => {
               />
             </div>
           </div>
-
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-orange-600 text-white rounded-md shadow-sm hover:bg-orange-500"
-          >
-            + Create
-          </button>
+          <Button bg="secondary">Create</Button>
         </form>
       </div>
     </div>
   );
 };
-
 export default ClassForm;

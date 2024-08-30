@@ -2,21 +2,19 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu } from "@headlessui/react";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
-
 const Page = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedProgram, setSelectedProgram] = useState("Programs");
-  const [selectedStatus, setSelectedStatus] = useState("P"); // State for selected circle
+  const [selectedStatus, setSelectedStatus] = useState("P");
+  const [showTable, setShowTable] = useState(false);
+  const [showHistory,setShowHistory]= useState(false);
 
-  const handleProgramSelect = (program: React.SetStateAction<string>) => {
-    setSelectedProgram(program);
-    setIsOpen(false); // Close the dropdown after selection
+  const handleSearchClick = () => {
+    setShowTable(true);
   };
-
+  const handleSubmitClick = ()=>{
+    setShowHistory(true)
+  }
   const handleStatusSelect = (status: React.SetStateAction<string>) => {
-    setSelectedStatus(status); // Set the selected status
+    setSelectedStatus(status);
   };
 
   return (
@@ -33,81 +31,20 @@ const Page = () => {
           </div>
         </Link>
       </div>
-      <div className="relative mt-2">
-        <Menu as="div" className="relative inline-block text-left">
-          <div>
-            <Menu.Button
-              onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex justify-between items-center lg:w-[272px] w-[329px] h-[40px] px-4 py-2 bg-[#FFFFFF] text-[#213458] text-sm font-medium rounded-md focus:outline-none"
-            >
-              {selectedProgram}
-              {isOpen ? (
-                <ChevronUpIcon className="ml-2 h-5 w-5" aria-hidden="true" />
-              ) : (
-                <ChevronDownIcon className="ml-2 h-5 w-5" aria-hidden="true" />
-              )}
-            </Menu.Button>
-          </div>
-
-          <Menu.Items className="absolute z-50 lg:w-56 origin-top-right rounded-md mt-2 bg-[#FFFFFF] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-            <div className="py-1">
-              <Menu.Item>
-                {({ active }) => (
-                  <a
-                    href="#Robotic"
-                    onClick={() => handleProgramSelect("Robotic")}
-                    className={`${
-                      active ? "bg-gray-100" : ""
-                    } block px-4 py-2 text-sm text-gray-700`}
-                  >
-                    Robotic
-                  </a>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <a
-                    href="#Takwando"
-                    onClick={() => handleProgramSelect("Takwando")}
-                    className={`${
-                      active ? "bg-gray-100" : ""
-                    } block px-4 py-2 text-sm text-gray-700`}
-                  >
-                    Takwando
-                  </a>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <a
-                    href="#Ballet"
-                    onClick={() => handleProgramSelect("Ballet")}
-                    className={`${
-                      active ? "bg-gray-100" : ""
-                    } block px-4 py-2 text-sm text-gray-700`}
-                  >
-                    Ballet
-                  </a>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <a
-                    href="#SAMBAR"
-                    onClick={() => handleProgramSelect("SAMBAR")}
-                    className={`${
-                      active ? "bg-gray-100" : ""
-                    } block px-4 py-2 text-sm text-gray-700`}
-                  >
-                    SAMBAR
-                  </a>
-                )}
-              </Menu.Item>
-            </div>
-          </Menu.Items>
-        </Menu>
-      </div>
-      <div className="overflow-x-auto mt-4">
+      <div className="flex items-center mt-4 gap-2">
+      <input
+        type="text"
+        placeholder="Search student"
+        className="w-[300px] h-[40px] p-2 rounded-l-[5px] border border-gray-300 focus:outline-none"
+      />
+      <button
+      onClick={handleSearchClick}
+        className="w-[100px] h-[40px] bg-[#213458] text-white font-medium rounded-r-[5px]"
+      >
+        Search
+      </button>
+    </div>
+      {showTable && (<div className="overflow-x-auto mt-7">
         <table className="min-w-full bg-white border border-gray-200">
           <thead className="bg-[#213458] text-white">
             <tr>
@@ -136,7 +73,7 @@ const Page = () => {
                   <div className="flex-shrink-0 h-10 w-10">
                     <Image
                       className="h-10 w-10 rounded-full"
-                      src="/your-photo-url-here.jpg" // Replace with your photo URL
+                      src="/photo.jpg" // Replace with your photo URL
                       alt="Teacher Photo"
                       width={40}
                       height={40}
@@ -184,13 +121,14 @@ const Page = () => {
           </tbody>
         </table>
         <button
+        onClick={handleSubmitClick}
           type="submit"
           className="w-28 py-2 justify-center mt-3 ml-[398px] bg-orange-600 text-white font-semibold rounded-md shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
         >
           Submit
         </button>
-      </div>
-      <div>
+      </div>)}
+      {showHistory && (<div>
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full bg-white border border-gray-200">
             <thead className="bg-[#213458] text-white">
@@ -220,7 +158,7 @@ const Page = () => {
                     <div className="flex-shrink-0 h-10 w-10">
                       <Image
                         className="h-10 w-10 rounded-full"
-                        src="/your-photo-url-here.jpg" // Replace with your photo URL
+                        src="/photo.jpg"
                         alt="Teacher Photo"
                         width={40}
                         height={40}
@@ -241,7 +179,7 @@ const Page = () => {
                     <div className="flex-shrink-0 h-10 w-10">
                       <Image
                         className="h-10 w-10 rounded-full"
-                        src="/your-photo-url-here.jpg" // Replace with your photo URL
+                        src="/photo.jpg" // Replace with your photo URL
                         alt="Teacher Photo"
                         width={40}
                         height={40}
@@ -258,7 +196,7 @@ const Page = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>)}
     </div>
   );
 };

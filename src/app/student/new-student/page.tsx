@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Dropdown from '@/components/Dropdown';
+import Button from '@/components/Button';
 const Page = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -347,18 +348,8 @@ const Page = () => {
 
         {/* Form Actions */}
         <div className="flex justify-center items-center space-x-4">
-          <button
-            type="button"
-            className="inline-flex justify-center rounded-md border border-transparent bg-[#CF510E] py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="inline-flex justify-center gap-1 rounded-md border border-transparent bg-[#123458] py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Submit
-          </button>
+        <Button bg="secondary">Cancel</Button>
+        <Button>Submit</Button>
         </div>
       </form>
     </div>

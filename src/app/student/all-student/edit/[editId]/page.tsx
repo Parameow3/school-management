@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import Button from "@/components/Button";
 
 interface Student {
   id: number;
@@ -411,18 +412,8 @@ const Page = () => {
           </div>
         </section>
         <div className="flex items-center justify-center space-x-4">
-          <button
-            type="button"
-            className="inline-flex justify-center rounded-md border border-transparent bg-red-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            Submit
-          </button>
+        <Button bg="secondary">Cancel</Button>
+        <Button>Submit</Button>
         </div>
       </form>
     </div>

@@ -4,6 +4,7 @@ import Card from "@/components/Card";
 import Report from "@/components/Report";
 import Calender from "@/components/Calender";
 import FacebookCard from "@/components/facebookCard";
+import Typography from "@/components/Typography";
 const page = () => {
   return (
     <>
@@ -13,9 +14,7 @@ const page = () => {
             {/* <--welcome--> */}
             <div className="lg:w-[618px] w-[300px] bg-[#FF6F61] mr-4 backdrop-opacity-75 lg:h-[112px] h-[94px] rounded-[8px] flex flex-row justify-between">
               <div className="flex flex-col justify-center ml-4">
-                <h1 className=" text-white font-medium lg:text-xl">
-                  Welcome back stella
-                </h1>
+                <Typography fontsize="24px" >Welcome back stella</Typography>
                 <h3 className="text-white font-medium text-[14px] ">
                   you work well , keep it up
                 </h3>

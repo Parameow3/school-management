@@ -299,7 +299,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
             <div className="flex items-center m-0 lg:ml-12 lg:gap-16">
               <Image
                 alt="Your Company"
-                src="/logo.png"
+                src="/AAA logo.png"
                 width={80}
                 height={80}
                 className="w-[61px] h-[54px lg:w-[80px] lg:h-[80px]]"
