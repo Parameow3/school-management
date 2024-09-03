@@ -45,10 +45,10 @@ const Page = () => {
 
   const handleProgramSelect = (program: string) => {
     setSelectedProgram(program);
-    setIsOpen(false); // Close the dropdown after selection
+    setIsOpen(false); 
   };
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Update isModalOpen to false when modal is closed
+    setIsModalOpen(false);
   };
   return (
     <div className="lg:ml-[219px] mt-20 flex flex-col">

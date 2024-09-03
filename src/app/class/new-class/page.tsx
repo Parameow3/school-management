@@ -23,12 +23,10 @@ const ClassForm = () => {
       [name]: value,
     });
   };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form Data:", formData);
   };
-
   return (
     <div className=" lg:ml-[219px] mt-20 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
@@ -44,7 +42,6 @@ const ClassForm = () => {
           </div>
         </Link>
       </div>
-
       <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">
         Class Form
       </h1>

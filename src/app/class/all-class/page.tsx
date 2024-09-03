@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Modal from "@/components/Modal";
+import { useRouter } from "next/navigation"; // Import useRouter from next/navigation
 
 interface Student {
   id: string;
@@ -18,14 +20,14 @@ interface StudentData {
 const studentData: StudentData = {
   Robotic: [
     {
-      id: "O1",
+      id: "1",
       name: "Lyseth",
       date: "8/09/2024",
       status: "P",
       photo: "/photo.jpg",
     },
     {
-      id: "O2",
+      id: "2",
       name: "John",
       date: "8/09/2024",
       status: "P",
@@ -34,7 +36,7 @@ const studentData: StudentData = {
   ],
   Robotic1: [
     {
-      id: "O3",
+      id: "3",
       name: "Alice",
       date: "8/09/2024",
       status: "A",
@@ -43,7 +45,7 @@ const studentData: StudentData = {
   ],
   Robotic2: [
     {
-      id: "O4",
+      id: "4",
       name: "Bob",
       date: "8/09/2024",
       status: "P",
@@ -52,7 +54,7 @@ const studentData: StudentData = {
   ],
   Robotic3: [
     {
-      id: "O5",
+      id: "5",
       name: "Charlie",
       date: "8/09/2024",
       status: "P",
@@ -61,7 +63,7 @@ const studentData: StudentData = {
   ],
   Robotic4: [
     {
-      id: "O6",
+      id: "6",
       name: "David",
       date: "8/09/2024",
       status: "P",
@@ -69,14 +71,28 @@ const studentData: StudentData = {
     },
   ],
 };
-
 const Page = () => {
-  const [selectedClass, setSelectedClass] = useState<
-    keyof typeof studentData | null
-  >(null);
+  const router = useRouter(); // Use useRouter hook
+  const [selectedClass, setSelectedClass] = useState<keyof typeof studentData | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
   const handleCardClick = (className: keyof typeof studentData) => {
     setSelectedClass(className);
+  };
+
+  const handleDeleteClick = (student: Student) => {
+    setStudentToDelete(student);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setStudentToDelete(null);
+  };
+
+  const handleEditClick = (id: string) => {
+    router.push(`/class/all-class/edit/${id}`); // Use router.push for navigation
   };
 
   return (
@@ -93,25 +109,35 @@ const Page = () => {
           </div>
         </Link>
       </div>
-
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         {Object.keys(studentData).map((className) => (
           <div
             key={className}
-            onClick={() =>
-              handleCardClick(className as keyof typeof studentData)
-            }
+            onClick={() => handleCardClick(className as keyof typeof studentData)}
             className="p-2 bg-white rounded-lg shadow-md cursor-pointer"
           >
             <div className="flex justify-between items-center">
               <h2 className="font-bold text-[16px]">{className}</h2>
               <div className="flex gap-2">
-                <Image src={"/edit.svg"} width={16} height={16} alt="Edit" />
+                <Image
+                  src={"/edit.svg"}
+                  width={16}
+                  height={16}
+                  alt="Edit"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditClick(studentData[className][0].id); // Pass the correct student ID
+                  }}
+                />
                 <Image
                   src={"/delete.svg"}
                   width={16}
                   height={16}
                   alt="Delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(studentData[className][0]); // Adjust as needed to delete the correct student
+                  }}
                 />
               </div>
             </div>
@@ -121,12 +147,7 @@ const Page = () => {
                 {studentData[className as keyof typeof studentData].length}{" "}
                 Students
               </p>
-              <Image
-                src={"/student.svg"}
-                width={20}
-                height={20}
-                alt="Students"
-              />
+              <Image src={"/student.svg"} width={20} height={20} alt="Students" />
             </div>
           </div>
         ))}
@@ -143,6 +164,7 @@ const Page = () => {
                 <th className="px-2 py-2 border">Student Name</th>
                 <th className="px-2 py-2 border">Date</th>
                 <th className="px-2 py-2 border">Status</th>
+                <th className="px-2 py-2 border">Actions</th>
               </tr>
             </thead>
             <tbody className="justify-center items-center text-center">
@@ -161,11 +183,25 @@ const Page = () => {
                   <td className="border px-2 py-2">{student.name}</td>
                   <td className="border px-2 py-2">{student.date}</td>
                   <td className="border px-2 py-2">{student.status}</td>
+                  <td className="border px-2 py-2">
+                    <button
+                      className="text-red-600"
+                      onClick={() => handleDeleteClick(student)}
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {isModalOpen && (
+        <Modal
+          onClose={closeModal}
+        />
       )}
     </div>
   );

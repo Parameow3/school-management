@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Dropdown from "@/components/Dropdown";
+import { useParams } from "next/navigation";
 
 interface ClassDataProp {
   id: string;
@@ -27,6 +28,9 @@ const Page = () => {
     },
   ]);
 
+  const params = useParams();
+  const id = params?.editId as string; 
+
   const [formData, setFormData] = useState<ClassDataProp>({
     id: "",
     className: "",
@@ -36,6 +40,12 @@ const Page = () => {
     studentName: "",
     admissionDate: "",
   });
+  useEffect(() => {
+    const selectedClass = classes.find((item) => item.id === id);
+    if (selectedClass) {
+      setFormData(selectedClass);
+    }
+  }, [id, classes]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -62,6 +72,7 @@ const Page = () => {
     );
     setClasses(updatedClasses);
   };
+
   return (
     <div className="lg:ml-[219px] mt-20 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
