@@ -13,12 +13,6 @@ const Page = () => {
   const [selectedProgram, setSelectedProgram] = useState("Programs"); // State to store the selected program
   const [cards, setCards] = useState([
     {
-      id: "0",
-      title: "Level1",
-      time: "1:30 - 3:00",
-      sessions: 4,
-    },
-    {
       id: "1",
       title: "Level2",
       time: "10:00 - 11:30",
@@ -146,7 +140,7 @@ const Page = () => {
                 <h4 className="font-bold text-large">{card.title}</h4>
                 <div className="flex space-x-2">
                   <span className="text-default-500 cursor-pointer">
-                    <Link href={`/class/all-class/edit/${card.id}`} passHref>
+                    <Link href={`/program/all-program/edit/${card.id}`} passHref>
                       <Image
                         src="/edit.svg"
                         alt="public"
