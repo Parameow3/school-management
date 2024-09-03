@@ -46,10 +46,10 @@ const Page = () => {
     setProfileToDelete(id);
   };
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Update isModalOpen to false when modal is closed
+    setIsModalOpen(false);
   };
   return (
-    <div className="lg:ml-[219px] mt-20 flex flex-col">
+    <div className="lg:ml-[219px] ml-[40px] mt-20 flex flex-col">
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
           Teacher | 
@@ -73,7 +73,7 @@ const Page = () => {
         />
       </div>
 
-      <div className="mt-5 grid grid-cols-4 lg:gap-4 gap-44">
+      <div className="mt-5 grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2">
         {profiles.map(profile => (
           <ProfileCard
             key={profile.id}

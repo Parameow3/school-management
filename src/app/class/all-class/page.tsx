@@ -71,8 +71,9 @@ const studentData: StudentData = {
     },
   ],
 };
+
 const Page = () => {
-  const router = useRouter(); // Use useRouter hook
+  const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<keyof typeof studentData | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
@@ -92,16 +93,19 @@ const Page = () => {
   };
 
   const handleEditClick = (id: string) => {
-    router.push(`/class/all-class/edit/${id}`); // Use router.push for navigation
+    router.push(`/class/all-class/edit/${id}`);
+  };
+
+  const handleShowAllCards = () => {
+    setSelectedClass(null);
   };
 
   return (
-    <div className="lg:ml-[219px] mt-20 flex flex-col">
+    <div className="lg:ml-[219px] ml-[45px] mt-20 flex flex-col">
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-2 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
           Class |
-          <Image src={"/home.svg"} width={15} height={15} alt="public" />- All
-          Classes
+          <Image src={"/home.svg"} width={15} height={15} alt="public" />- All Classes
         </span>
         <Link href={"/#"} passHref>
           <div className="h-[23px] w-[57px] bg-[#1c2b47] flex items-center justify-center rounded-md">
@@ -109,12 +113,13 @@ const Page = () => {
           </div>
         </Link>
       </div>
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+
+      <div className="mt-6 grid grid-cols-1 lg:w-[1070px] h-[64px] lg:h-[98px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
         {Object.keys(studentData).map((className) => (
           <div
             key={className}
             onClick={() => handleCardClick(className as keyof typeof studentData)}
-            className="p-2 bg-white rounded-lg shadow-md cursor-pointer"
+            className={`p-2 bg-white rounded-lg shadow-md cursor-pointer ${selectedClass && selectedClass !== className ? 'hidden' : ''}`}
           >
             <div className="flex justify-between items-center">
               <h2 className="font-bold text-[16px]">{className}</h2>
@@ -126,7 +131,7 @@ const Page = () => {
                   alt="Edit"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleEditClick(studentData[className][0].id); // Pass the correct student ID
+                    handleEditClick(studentData[className][0].id);
                   }}
                 />
                 <Image
@@ -136,7 +141,7 @@ const Page = () => {
                   alt="Delete"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteClick(studentData[className][0]); // Adjust as needed to delete the correct student
+                    handleDeleteClick(studentData[className][0]);
                   }}
                 />
               </div>
@@ -144,8 +149,7 @@ const Page = () => {
             <p className="text-[12px] font-normal mt-2">1:30 - 3:00</p>
             <div className="flex justify-between items-center mt-2">
               <p className="text-[14px] font-normal">
-                {studentData[className as keyof typeof studentData].length}{" "}
-                Students
+                {studentData[className as keyof typeof studentData].length} Students
               </p>
               <Image src={"/student.svg"} width={20} height={20} alt="Students" />
             </div>
@@ -154,7 +158,7 @@ const Page = () => {
       </div>
 
       {selectedClass && (
-        <div className="mt-8">
+        <div className="mt-8 lg:w-[1070px]">
           <h3 className="text-xl font-bold text-[#213458]">Class: {selectedClass}</h3>
           <table className="table-auto w-full mt-4 border-collapse">
             <thead className="bg-[#213458] text-white">
@@ -164,7 +168,6 @@ const Page = () => {
                 <th className="px-2 py-2 border">Student Name</th>
                 <th className="px-2 py-2 border">Date</th>
                 <th className="px-2 py-2 border">Status</th>
-                <th className="px-2 py-2 border">Actions</th>
               </tr>
             </thead>
             <tbody className="justify-center items-center text-center">
@@ -183,18 +186,17 @@ const Page = () => {
                   <td className="border px-2 py-2">{student.name}</td>
                   <td className="border px-2 py-2">{student.date}</td>
                   <td className="border px-2 py-2">{student.status}</td>
-                  <td className="border px-2 py-2">
-                    <button
-                      className="text-red-600"
-                      onClick={() => handleDeleteClick(student)}
-                    >
-                      Delete
-                    </button>
-                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {/* Button to show all cards again */}
+          <button
+            onClick={handleShowAllCards}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+          >
+            Show All Classes
+          </button>
         </div>
       )}
 

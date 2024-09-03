@@ -60,7 +60,7 @@ const ClassForm = () => {
                 name="className"
                 value={formData.className}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
               />
             </div>
             <div>
@@ -72,7 +72,7 @@ const ClassForm = () => {
                 name="section"
                 value={formData.section}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
               />
             </div>
             <div>
@@ -102,7 +102,7 @@ const ClassForm = () => {
                 name="studentName"
                 value={formData.studentName}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
               />
             </div>
             <div>
@@ -114,7 +114,7 @@ const ClassForm = () => {
                 name="admissionDate"
                 value={formData.admissionDate}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
               />
             </div>
           </div>

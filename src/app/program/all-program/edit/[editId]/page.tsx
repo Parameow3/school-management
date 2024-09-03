@@ -1,5 +1,6 @@
 "use client";
 import Button from "@/components/Button";
+import Typography from "@/components/Typography";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
@@ -37,7 +38,6 @@ const Page = () => {
       section: "C",
     },
   ];
-
   useEffect(() => {
     const selectedClass = classes.find((item) => item.id === id);
     if (selectedClass) {
@@ -64,7 +64,7 @@ const Page = () => {
     <div className="flex justify-center items-center h-screen ml-16 mt-4 bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-[90%] lg:w-[442px]">
         <h2 className="text-center text-xl font-bold text-[#213458] mb-6">
-          Edit Programs
+          {/* Edit Programs */} <Typography>Edit Programs</Typography>
         </h2>
         <form
           onSubmit={handleSubmit}
@@ -78,7 +78,7 @@ const Page = () => {
               name="className"
               value={formData.className}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:ring-2 focus:ring-slate-700"
             >
               <option value="" disabled>
                 Select a class
@@ -100,10 +100,9 @@ const Page = () => {
               name="programName"
               value={formData.programName}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Session
@@ -113,7 +112,7 @@ const Page = () => {
               name="session"
               value={formData.session}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
           </div>
 
@@ -126,7 +125,7 @@ const Page = () => {
               name="section"
               value={formData.section}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
           </div>
           <Button>Create</Button>

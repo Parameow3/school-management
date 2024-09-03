@@ -43,7 +43,7 @@ const Page = () => {
               name="className"
               value={formData.className}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:ring-2 focus:ring-slate-700"
             >
               <option value="" disabled>
                 Select a class
@@ -63,7 +63,7 @@ const Page = () => {
               name="programName"
               value={formData.programName}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
           </div>
 
@@ -76,7 +76,7 @@ const Page = () => {
               name="session"
               value={formData.session}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
           </div>
 
@@ -89,7 +89,7 @@ const Page = () => {
               name="section"
               value={formData.section}
               onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
             />
           </div>
           <Button>Create</Button>

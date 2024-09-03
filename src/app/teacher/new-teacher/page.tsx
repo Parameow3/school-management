@@ -29,7 +29,7 @@ const Page = () => {
     console.log(formData);
   };
   return (
-    <div className="lg:ml-[219px] mt-20 flex flex-col">
+    <div className="lg:ml-[219px] ml-[45px] mt-20 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
           Teacher |{" "}
@@ -43,14 +43,10 @@ const Page = () => {
           </div>
         </Link>
       </div>
-{/* 
-      <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">
-
-      </h1> */}
-      <Typography fontsize="24px" className="text-center text-black text-2xl font-bold mb-8 mt-4 border-b-2">Teacher form</Typography>
+      <Typography className="text-center text-black lg:text-2xl text-[15px] font-bold lg:mb-8 mb-4 mt-4 lg:border-b-2">Teacher form</Typography>
       <form className="space-y-8" onClick={handleSubmit}>
         <section>
-          <Typography fontsize="24px" className=" text-black font-bold mb-8 lg:mt-4 border-b-2">Teacher Information</Typography>
+          <Typography className=" text-black font-bold mb-8 text-[12px] lg:mt-4 border-b-2">Teacher Information</Typography>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
               <label
@@ -68,7 +64,6 @@ const Page = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
-
             <div>
               <label
                 htmlFor="lastName"
@@ -85,7 +80,6 @@ const Page = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
-
             <div>
               <label
                 htmlFor="age"
@@ -102,7 +96,6 @@ const Page = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
-
             <div>
               <label
                 htmlFor="gender"
@@ -171,7 +164,7 @@ const Page = () => {
             </div>
           </div>
         </section>
-        <div className="flex justify-center items-center space-x-4">
+        <div className="flex justify-center items-center lg:space-x-4 space-x-2">
           <Button bg="secondary">Cancel</Button>
           <Button>Submit</Button>
         </div>

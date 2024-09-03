@@ -46,14 +46,10 @@ const Page = () => {
       branch: "LA",
     },
   ];
-
   const params = useParams();
   const id = parseInt(params.editId as string, 10);
   console.log("id", id);
-
-  // Always call the useState hook before any conditional return
   const selectedTeacher = mockupTeachers.find((item) => item.id === id);
-
   const [formData, setFormData] = useState({
     firstName: selectedTeacher?.firstName || "",
     lastName: selectedTeacher?.lastName || "",
@@ -63,30 +59,25 @@ const Page = () => {
     phone: "",
     uploadPicture: "",
   });
-
   if (!selectedTeacher) {
     return <div className="text-center mt-20">Teacher not found</div>;
   }
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData({ ...formData, uploadPicture: file.name });
     }
   };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(formData);
   };
-
   return (
     <div className="lg:ml-[219px] mt-20 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
@@ -162,7 +153,6 @@ const Page = () => {
                 className="mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
-
             <div>
               <label
                 htmlFor="program"
@@ -182,7 +172,6 @@ const Page = () => {
                 <option value="Science">Science</option>
               </select>
             </div>
-
             <div>
               <label
                 htmlFor="branch"
