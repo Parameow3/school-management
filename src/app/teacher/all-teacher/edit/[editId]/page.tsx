@@ -79,7 +79,7 @@ const Page = () => {
     console.log(formData);
   };
   return (
-    <div className="lg:ml-[219px] mt-20 flex flex-col">
+    <div className="lg:ml-[219px] ml-[40px] mt-20 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
           Teacher |{" "}
@@ -94,12 +94,12 @@ const Page = () => {
         </Link>
       </div>
 
-      <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">
+      <h1 className="text-center lg:text-2xl text-[16px] font-bold mb-8 mt-4 border-b-2">
         Update Teacher Form
       </h1>
       <form className="space-y-8" onSubmit={handleSubmit}>
         <section>
-          <h2 className="text-2xl font-bold mb-8 lg:mt-4 border-b-2">
+          <h2 className="lg:text-2xl text-[15px] font-bold mb-8 lg:mt-4 border-b-2">
             Teacher Information
           </h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">

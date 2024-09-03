@@ -8,7 +8,7 @@ import Typography from "@/components/Typography";
 const page = () => {
   return (
     <>
-      <div className="flex justify-center lg:ml-56 mt-16">
+      <div className="flex justify-center lg:ml-56 ml-[120px] mt-16">
         <div className="w-[1070px] lg:m-2 flex lg:flex-row flex-col">
           <div className="lg:w-[800px] flex flex-col p-2 ">
             {/* <--welcome--> */}

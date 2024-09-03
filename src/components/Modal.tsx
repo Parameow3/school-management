@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+import Typography from './Typography';
 const Modal = ({ onClose }: { onClose: () => void }) => {
   const [open, setOpen] = useState(true);
   const handleClose = () => {
@@ -9,14 +10,14 @@ const Modal = ({ onClose }: { onClose: () => void }) => {
   };
   return (
     <Dialog open={open} onClose={handleClose} className="relative z-10">
-      <div className="fixed inset-0 w-[232px] h-[117px] bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" />
+      <div className="fixed inset-0 lg:w-[232px] w-[180px] h-[117px] bg-opacity-75 transition-opacity" aria-hidden="true" />
       <div className="fixed inset-0 z-10 overflow-y-auto">
-        <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div className="flex min-h-full lg:items-center justify-center p-4 text-center items-center sm:p-0">
           <DialogPanel className="relative transform overflow-hidden lg:w-[232px] rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
             <div>
               <div className="mt-3 text-center sm:mt-5">
                 <DialogTitle as="h4" className="text-[15px] font-semibold leading-6 text-gray-900">
-                Are you sure to delete this card?
+                <Typography className='text-black'>Are you sure to delete this card?</Typography>
                 </DialogTitle>
               </div>
             </div>

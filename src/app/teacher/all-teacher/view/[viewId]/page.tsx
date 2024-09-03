@@ -55,7 +55,7 @@ const Page = () => {
   }
 
   return (
-    <div className="lg:ml-[219px] mt-20 flex flex-col">
+    <div className="lg:ml-[219px] mt-20 ml-[25px] flex flex-col">
       <div className="bg-white p-6 rounded-lg lg:gap-12 gap-4 h-[450px] flex lg:flex-row flex-col shadow-lg w-[345px] lg:w-[654px] max-w-2xl mx-auto">
         <div className="flex lg:items-start items-center lg:justify-start flex-col mb-4 ml-4">
           <Image
