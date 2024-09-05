@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { Card, CardBody, CardFooter } from "@nextui-org/react";
+
 interface ProfileCardProps {
   pic: string;
   name: string;
@@ -11,9 +12,10 @@ interface ProfileCardProps {
   editPath: string;
   viewPath: string; 
 }
+
 const ProfileCard: React.FC<ProfileCardProps> = ({ pic, name, job, editPath, viewPath, onViewClick, onEditClick, onDeleteClick }) => {
   return (
-    <Card className="lg:w-[243px] lg:h-[244px] w-[159px] h-[173px] shadow-sm bg-white rounded-[9px]"> 
+    <Card className="lg:w-[243px] lg:h-[244px] w-[159px] h-[173px] shadow-sm bg-white rounded-[9px] transition-transform transform hover:scale-105 hover:shadow-lg hover:bg-gray-100"> 
       <CardBody className="flex flex-col items-center p-4 overflow-hidden"> 
         <Image
           height={100}
@@ -26,7 +28,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ pic, name, job, editPath, vie
         <p className="text-default-500 text-center">{job}</p>
       </CardBody>
       <CardFooter className="flex justify-center gap-4">
-        <button onClick={() => onViewClick(viewPath)}>
+        <button 
+          onClick={() => onViewClick(viewPath)}
+          className="hover:scale-110 transition-transform transform hover:bg-gray-200 p-1 rounded-full"
+        >
           <Image
             src="/view.svg"
             alt="View"
@@ -35,7 +40,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ pic, name, job, editPath, vie
             className="w-[25px] h-[25px]"
           />
         </button>
-        <button onClick={() => onEditClick(editPath)}>
+        <button 
+          onClick={() => onEditClick(editPath)}
+          className="hover:scale-110 transition-transform transform hover:bg-gray-200 p-1 rounded-full"
+        >
           <Image
             src="/edit.svg"
             alt="Edit"
@@ -44,7 +52,10 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ pic, name, job, editPath, vie
             className="w-[25px] h-[25px]"
           />
         </button>
-        <button onClick={onDeleteClick}>
+        <button 
+          onClick={onDeleteClick}
+          className="hover:scale-110 transition-transform transform hover:bg-gray-200 p-1 rounded-full"
+        >
           <Image
             src="/delete.svg"
             alt="Delete"
@@ -54,8 +65,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ pic, name, job, editPath, vie
           />
         </button>
       </CardFooter>
-      
     </Card>
   );
 };
+
 export default ProfileCard;

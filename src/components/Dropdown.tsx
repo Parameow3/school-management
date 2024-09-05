@@ -18,7 +18,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <MenuButton className="inline-flex lg:w-[272px] w-[329px] h-[40px] justify-between gap-x-1.5 rounded-md bg-[#FFFFFF] px-3 py-2 text-sm font-semibold text-[#213458] shadow-sm ring-1 ring-inset ring-gray-300">
+        <MenuButton className="inline-flex lg:w-[225px] w-[329px] h-[40px] justify-between gap-x-1.5 rounded-md bg-[#FFFFFF] px-3 py-2 text-sm font-semibold text-[#213458] shadow-sm ring-1 ring-inset ring-gray-300">
           {selectedValue}
           <ChevronUpIcon aria-hidden="true" className="-mr-1 h-5 w-10 text-[#213458]" />
         </MenuButton>

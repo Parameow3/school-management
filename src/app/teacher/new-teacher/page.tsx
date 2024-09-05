@@ -29,7 +29,7 @@ const Page = () => {
     console.log(formData);
   };
   return (
-    <div className="lg:ml-[219px] ml-[45px] mt-20 flex flex-col">
+    <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
           Teacher |{" "}

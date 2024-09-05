@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Modal from "@/components/Modal";
-import { useRouter } from "next/navigation"; // Import useRouter from next/navigation
+import { useRouter } from "next/navigation";
+import Dropdown from "@/components/Dropdown";
 
 interface Student {
   id: string;
@@ -101,7 +102,7 @@ const Page = () => {
   };
 
   return (
-    <div className="lg:ml-[219px] ml-[45px] mt-20 flex flex-col">
+    <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-2 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
           Class |
@@ -113,21 +114,25 @@ const Page = () => {
           </div>
         </Link>
       </div>
-
-      <div className="mt-6 grid grid-cols-1 lg:w-[1070px] h-[64px] lg:h-[98px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div className="relative mt-4">
+          <Dropdown />
+        </div>
+      <div className="mt-4 grid grid-cols-1 lg:w-[1070px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Object.keys(studentData).map((className) => (
           <div
             key={className}
             onClick={() => handleCardClick(className as keyof typeof studentData)}
-            className={`p-2 bg-white rounded-lg shadow-md cursor-pointer ${selectedClass && selectedClass !== className ? 'hidden' : ''}`}
+            className={`p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between ${
+              selectedClass && selectedClass !== className ? "hidden" : ""
+            }`}
           >
             <div className="flex justify-between items-center">
-              <h2 className="font-bold text-[16px]">{className}</h2>
+              <h2 className="font-bold text-[18px]">{className}</h2>
               <div className="flex gap-2">
                 <Image
                   src={"/edit.svg"}
-                  width={16}
-                  height={16}
+                  width={20}
+                  height={20}
                   alt="Edit"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -136,8 +141,8 @@ const Page = () => {
                 />
                 <Image
                   src={"/delete.svg"}
-                  width={16}
-                  height={16}
+                  width={20}
+                  height={20}
                   alt="Delete"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -146,12 +151,12 @@ const Page = () => {
                 />
               </div>
             </div>
-            <p className="text-[12px] font-normal mt-2">1:30 - 3:00</p>
-            <div className="flex justify-between items-center mt-2">
-              <p className="text-[14px] font-normal">
+            <p className="text-[14px] font-normal mt-2">1:30 - 3:00</p>
+            <div className="flex justify-between items-center mt-auto">
+              <p className="text-[16px] font-medium">
                 {studentData[className as keyof typeof studentData].length} Students
               </p>
-              <Image src={"/student.svg"} width={20} height={20} alt="Students" />
+              <Image src={"/student.svg"} width={24} height={24} alt="Students" />
             </div>
           </div>
         ))}
@@ -190,20 +195,16 @@ const Page = () => {
               ))}
             </tbody>
           </table>
-          {/* Button to show all cards again */}
           <button
             onClick={handleShowAllCards}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+            className="mt-4 px-4 py-2 bg-[#213458] text-white rounded-md"
           >
             Show All Classes
           </button>
         </div>
       )}
-
       {isModalOpen && (
-        <Modal
-          onClose={closeModal}
-        />
+        <Modal onClose={closeModal} />
       )}
     </div>
   );

@@ -49,7 +49,7 @@ const Page = () => {
     setIsModalOpen(false);
   };
   return (
-    <div className="lg:ml-[219px] ml-[45px] mt-20 flex flex-col">
+    <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
           Teacher | 

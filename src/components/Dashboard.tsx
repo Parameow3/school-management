@@ -126,13 +126,16 @@ function classNames(...classes: string[]) {
 
 interface DashboardProps {
   children: ReactNode;
+  userName?:string;
+  userUrl?:string;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ children }) => {
+const Dashboard: React.FC<DashboardProps> = ({ children}) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [navigationData, setNavigationData] = useState(navigation);
-
+  const userName = "John Doe";
+  const userUrl = "/photo.jpg";
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -160,8 +163,6 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
           })),
         };
       }
-
-      // Set `current` to false for non-matching items
       return {
         ...item,
         current: false,
@@ -173,7 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     });
 
     setNavigationData(updatedNavigation);
-    if (!subItemName) handleToggle(name); // Toggle menu only if no sub-item is clicked
+    if (!subItemName) handleToggle(name); 
   };
 
   useEffect(() => {
@@ -335,10 +336,10 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                 <Menu as="div" className="relative">
                   <MenuButton className="flex items-center">
                     <span className="sr-only">Open user menu</span>
-                    <h1 className="text-white mr-3">Stella</h1>
+                    <h1 className="text-white mr-3">{userName}</h1>
                     <Image
-                      alt=""
-                      src="/photo.jpg"
+                      alt={userName}
+                      src= {userUrl}
                       className="h-8 w-8 rounded-full bg-gray-800"
                       width={20}
                       height={20}
