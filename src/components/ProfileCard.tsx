@@ -15,17 +15,17 @@ interface ProfileCardProps {
 
 const ProfileCard: React.FC<ProfileCardProps> = ({ pic, name, job, editPath, viewPath, onViewClick, onEditClick, onDeleteClick }) => {
   return (
-    <Card className="lg:w-[243px] lg:h-[244px] w-[159px] h-[173px] shadow-sm bg-white rounded-[9px] transition-transform transform hover:scale-105 hover:shadow-lg hover:bg-gray-100"> 
+    <Card className="lg:w-[243px] lg:h-[244px] w-[139px] h-[173px] shadow-sm bg-white rounded-[9px] transition-transform transform hover:scale-105 hover:shadow-lg hover:bg-gray-100"> 
       <CardBody className="flex flex-col items-center p-4 overflow-hidden"> 
         <Image
           height={100}
           width={100}
-          className="rounded-full object-cover"
+          className="rounded-full object-cover lg:w-[100px] lg:h-[100px] w-[70px] h-[70px]"
           src={pic}
           alt={name}
         />
-        <b className="flex items-center text-lg mt-4 text-center">{name}</b> 
-        <p className="text-default-500 text-center">{job}</p>
+        <b className="flex items-center lg:text-lg text-[12px] lg:mt-4 text-center">{name}</b> 
+        <p className="text-default-500 lg:text-[18px] text-[11px] text-center">{job}</p>
       </CardBody>
       <CardFooter className="flex justify-center gap-4">
         <button 

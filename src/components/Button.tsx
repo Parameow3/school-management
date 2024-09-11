@@ -3,10 +3,12 @@ import React from 'react';
 interface ButtonProps {
   children: string;
   bg?: 'primary' | 'secondary';
+  className?: string;
+  onClick?: () => void; // Corrected the type of onClick
 }
 
-const Button: React.FC<ButtonProps> = ({ children, bg = 'primary' }) => {
-  const Buttonbg = (bg: string) => {
+const Button: React.FC<ButtonProps> = ({ children, bg = 'primary', className = '', onClick }) => {
+  const getButtonBg = (bg: 'primary' | 'secondary') => {
     switch (bg) {
       case 'primary':
         return 'bg-[#213458]';
@@ -16,11 +18,13 @@ const Button: React.FC<ButtonProps> = ({ children, bg = 'primary' }) => {
         return '';
     }
   };
-  const ButtonbgStyle = Buttonbg(bg);
+
+  const buttonBgStyle = getButtonBg(bg);
 
   return (
     <button
-      className={`w-[89px] h-[39px] text-center text-white p-2 rounded-[5px] font-medium mt-4 ${ButtonbgStyle}`}
+      onClick={onClick} // Ensuring onClick is passed to the button
+      className={`w-[89px] h-[39px] text-center text-white p-2 font-medium ${buttonBgStyle} ${className}`}
     >
       {children}
     </button>

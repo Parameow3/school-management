@@ -6,36 +6,40 @@ import React, { useEffect, useState } from "react";
 
 const Page = () => {
   const params = useParams();
-  const id = params?.editId as string; 
+  const id = params?.editId as string;
 
   const [formData, setFormData] = useState({
     className: "",
     programName: "",
     session: "",
-    section: "",
+    section:"",
+    description: "",
   });
 
   const classes = [
     {
       id: "1",
-      className: "Level 2",   // Changed title to className for consistency
+      className: "Level 2", // Changed title to className for consistency
       programName: "Program 1", // Added programName for consistency
-      session: "8",  // Changed to string for consistency with other fields
-      section: "A",  // Added section for consistency
+      session: "8",
+      section: "11:30 - 13:00", // Changed to string for consistency with other fields
+      description:"Lego", // Added section for consistency
     },
     {
       id: "2",
       className: "Level 2",
       programName: "Program 2",
       session: "8",
-      section: "B",
+      section: "11:30 - 13:00",
+      description: "B",
     },
     {
       id: "3",
       className: "Level 3",
       programName: "Program 3",
       session: "8",
-      section: "C",
+      section: "11:30 - 13:00",
+      description: "C",
     },
   ];
   useEffect(() => {
@@ -61,77 +65,96 @@ const Page = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen ml-16 mt-4 bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-[90%] lg:w-[442px]">
-        <h2 className="text-center text-xl font-bold text-[#213458] mb-6">
-          {/* Edit Programs */} <Typography>Edit Programs</Typography>
-        </h2>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 justify-center items-center gap-2 flex flex-col "
+<div className="flex justify-center ml-[4%] lg:mt-14 items-center min-h-screen bg-gray-100 py-4">
+  <div className="bg-white p-8 rounded-lg ml-[11%] lg:ml-0 shadow-lg w-full max-w-lg">
+    <h2 className="text-center text-2xl font-bold text-[#213458] mb-6">
+      Edit Programs
+    </h2>
+    <form onSubmit={handleSubmit} className="space-y-6 w-full">
+      {/* Choose Class Field */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Choose the class
+        </label>
+        <select
+          name="className"
+          value={formData.className}
+          onChange={handleChange}
+          className="block w-full h-10 px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
         >
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Choose the class
-            </label>
-            <select
-              name="className"
-              value={formData.className}
-              onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:ring-2 focus:ring-slate-700"
-            >
-              <option value="" disabled>
-                Select a class
-              </option>
-              {classes.map((classItem) => (
-                <option key={classItem.id} value={classItem.className}>
-                  {classItem.className}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Program's Name
-            </label>
-            <input
-              type="text"
-              name="programName"
-              value={formData.programName}
-              onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Session
-            </label>
-            <input
-              type="text"
-              name="session"
-              value={formData.session}
-              onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Section
-            </label>
-            <input
-              type="text"
-              name="section"
-              value={formData.section}
-              onChange={handleChange}
-              className="mt-1 block w-[352px] h-[40px] p-2 rounded-md border-black shadow-lg focus:outline-none focus:ring-2 focus:ring-slate-700"
-            />
-          </div>
-          <Button>Create</Button>
-        </form>
+          <option value="" disabled>
+            Select a class
+          </option>
+          {classes.map((classItem) => (
+            <option key={classItem.id} value={classItem.className}>
+              {classItem.className}
+            </option>
+          ))}
+        </select>
       </div>
-    </div>
+
+      {/* Program's Name Field */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Program's Name
+        </label>
+        <input
+          type="text"
+          name="programName"
+          value={formData.programName}
+          onChange={handleChange}
+          className="block w-full h-10 px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Enter the program name"
+        />
+      </div>
+
+      {/* Session Field */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Session</label>
+        <input
+          type="text"
+          name="session"
+          value={formData.session}
+          onChange={handleChange}
+          className="block w-full h-10 px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Enter the session"
+        />
+      </div>
+
+      {/* Section Field */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
+        <input
+          type="text"
+          name="Section"
+          value={formData.section}
+          onChange={handleChange}
+          className="block w-full h-10 px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Enter the section"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+        <input
+          type="text"
+          name="Description"
+          value={formData.description}
+          onChange={handleChange}
+          className="block w-full h-10 px-3 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Enter the description"
+        />
+      </div>
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="w-full h-10 bg-[#213458] hover:bg-[#213498] text-white font-bold rounded-md shadow-md transition-colors"
+      >
+        Create
+      </button>
+    </form>
+  </div>
+</div>
+
   );
 };
 export default Page;

@@ -86,7 +86,7 @@ const Page = () => {
         </Link>
       </div>
 
-      <div className="bg-white mt-6 p-6 rounded-lg shadow-lg w-[90%] lg:w-[700px] max-w-2xl">
+      <div className="bg-white mt-6 lg:ml-[22%] p-6 rounded-lg shadow-lg w-[90%] lg:w-[700px] max-w-2xl">
         <div className="flex flex-col lg:flex-row items-center lg:items-start">
           <div className="flex flex-col items-center mb-4 lg:mb-0 lg:mr-8">
             <Image

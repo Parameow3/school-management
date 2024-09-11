@@ -64,7 +64,7 @@ const Page = () => {
 
   return (
     <>
-      <div className="lg:ml-[16%] mt-20 flex flex-col">
+      <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
         {/* Header Section */}
         <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between shadow-sm">
           <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px] items-center">
@@ -88,23 +88,22 @@ const Page = () => {
         <div className="relative mt-4">
           <Dropdown />
         </div>
-
         {/* Profile Cards Section */}
-        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {profiles.map(profile => (
-            <ProfileCard
-              key={profile.id}
-              pic={profile.pic}
-              name={profile.name}
-              job={profile.job}
-              onViewClick={() => handleViewClick(profile.id)}
-              onEditClick={() => handleEditClick(profile.id)}
-              onDeleteClick={() => handleDeleteClick(profile.id)}
-              editPath=""
-              viewPath=""
-            />
-          ))}
-        </div>
+        <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
+  {profiles.map(profile => (
+    <ProfileCard
+      key={profile.id}
+      pic={profile.pic}
+      name={profile.name}
+      job={profile.job}
+      onViewClick={() => handleViewClick(profile.id)}
+      onEditClick={() => handleEditClick(profile.id)}
+      onDeleteClick={() => handleDeleteClick(profile.id)}
+      editPath=""
+      viewPath=""
+    />
+  ))}
+</div>
 
         {/* Modal Section */}
         {isModalOpen && (

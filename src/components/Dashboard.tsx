@@ -214,7 +214,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children}) => {
       <div
         className={`transition-transform transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 lg:top-[62px] top-[59px] w-[232px] bg-[#213458] z-40 lg:block`}
+        } fixed inset-y-0 lg:top-[62px]  top-[59px] w-[232px] bg-[#213458] z-40 lg:block`}
       >
         <div className="flex flex-col gap-y-5 overflow-y-auto px-6 pb-4 mt-3">
           <nav className="flex flex-1 flex-col">

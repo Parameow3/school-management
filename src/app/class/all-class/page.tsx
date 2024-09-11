@@ -102,7 +102,7 @@ const Page = () => {
   };
 
   return (
-    <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
+    <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-2 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
           Class |
@@ -117,7 +117,7 @@ const Page = () => {
       <div className="relative mt-4">
           <Dropdown />
         </div>
-      <div className="mt-4 grid grid-cols-1 lg:w-[1070px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="mt-4 grid grid-cols-1 lg:w-[1070px] w-[330px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Object.keys(studentData).map((className) => (
           <div
             key={className}
@@ -163,16 +163,16 @@ const Page = () => {
       </div>
 
       {selectedClass && (
-        <div className="mt-8 lg:w-[1070px]">
+        <div className="mt-8 lg:w-[1070px] w-[330px]">
           <h3 className="text-xl font-bold text-[#213458]">Class: {selectedClass}</h3>
           <table className="table-auto w-full mt-4 border-collapse">
             <thead className="bg-[#213458] text-white">
               <tr className="text-center">
-                <th className="px-2 py-2 border">ID</th>
-                <th className="px-2 py-2 border">Photo</th>
-                <th className="px-2 py-2 border">Student Name</th>
-                <th className="px-2 py-2 border">Date</th>
-                <th className="px-2 py-2 border">Status</th>
+                <th className="px-2 py-2 border text-[10px] lg:text-[15px]">ID</th>
+                <th className="px-2 py-2 border text-[10px] lg:text-[15px]">Photo</th>
+                <th className="px-2 py-2 border text-[10px] lg:text-[15px]">Student Name</th>
+                <th className="px-2 py-2 border text-[10px] lg:text-[15px]">Date</th>
+                <th className="px-2 py-2 border text-[10px] lg:text-[15px]">Status</th>
               </tr>
             </thead>
             <tbody className="justify-center items-center text-center">
@@ -197,7 +197,7 @@ const Page = () => {
           </table>
           <button
             onClick={handleShowAllCards}
-            className="mt-4 px-4 py-2 bg-[#213458] text-white rounded-md"
+            className="mt-4 px-4 py-2 bg-[#213458] lg:text-[16px] text-[12px] text-white rounded-md"
           >
             Show All Classes
           </button>
