@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { ChevronUpIcon } from '@heroicons/react/24/solid';
-
 interface DropdownProps {
-  onChange?: (value: string) => void;
-  value?: string;
+  onChange?: (value: number) => void;
+  value?: number;
 }
-
 const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
-  const [selectedValue, setSelectedValue] = useState('Branch');
+  const [selectedValue, setSelectedValue] = useState<string | number>('Branch');
 
-  const handleSelect = (value: string) => {
-    setSelectedValue(value); // Update the displayed value
-    onChange(value); // Call the onChange handler if provided
+  const handleSelect = (value:number) => {
+    setSelectedValue(value); 
+    onChange(value); 
   };
 
   return (
@@ -30,7 +28,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
             {({ active }) => (
               <button
                 type="button"
-                onClick={() => handleSelect('Fun Mall')}
+                onClick={() => handleSelect(1)}
                 className={`block px-4 py-2 text-sm text-[#213458] ${
                   active ? ' text-[#213458]' : ''
                 }`}
@@ -43,7 +41,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
             {({ active }) => (
               <button
                 type="button"
-                onClick={() => handleSelect('OCIC')}
+                onClick={() => handleSelect(2)}
                 className={`block px-4 py-2 text-sm text-[#213458] ${
                   active ? ' text-[#213458]' : ''
                 }`}
@@ -56,7 +54,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
             {({ active }) => (
               <button
                 type="button"
-                onClick={() => handleSelect('PH')}
+                onClick={() => handleSelect(3)}
                 className={`block px-4 py-2 text-sm text-[#213458] ${
                   active ? ' text-[#213458]' : ''
                 }`}

@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Dropdown from '@/components/Dropdown';
 import Button from '@/components/Button';
+import axios from 'axios'; // Import axios to make HTTP requests
+
 const Page = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -13,7 +15,6 @@ const Page = () => {
     admissionDate: '',
     class: '',
     branch: '',
-    uploadPicture: '',
     dob: '',
     nationality: '',
     placeOfBirth: '',
@@ -33,19 +34,55 @@ const Page = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
+    console.log("data",formData)
+    try {
+      // Make the POST request to your API endpoint
+      const response = await axios.post('http://127.0.0.1:8000/api/academics/students/', {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        age: formData.age,
+        gender: formData.gender,
+        admission_date: formData.admissionDate,
+        class: formData.class,
+        branch: formData.branch,  
+        dob: formData.dob,
+        nationality: formData.nationality,
+        place_of_birth: formData.placeOfBirth,
+        belt_level: formData.beltLevel,
+        student_passport: formData.studentPassport,
+        address: formData.address,
+        father_name: formData.fatherName,
+        father_occupation: formData.fatherOccupation,
+        phone: formData.phone,
+        mother_name: formData.motherName,
+        mother_occupation: formData.motherOccupation,
+        parent_contact: formData.parentContact,
+      }, {
+        headers: {
+          'Content-Type': 'application/json', // Sending JSON data
+        },
+      });
+
+      console.log('Response:', response.data);
+      alert('Form submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting the form:', error);
+      alert('Failed to submit the form.');
+    }
   };
 
   return (
-    <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
-      <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-        <span className='flex flex-row gap-2 text-[12px] lg:text-[15px]'>Student | <Image src={"/home.svg"} width={15} height={15} alt="public" /> New-student</span>
+    <div className="lg:ml-[18%] ml-[11%] mt-20 flex flex-col">
+      <div className="lg:w-[840px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
+        <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
+          Student | <Image src="/home.svg" width={15} height={15} alt="public" /> New-student
+        </span>
 
-        <Link href={"/#"} passHref>
+        <Link href="/#" passHref>
           <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
-            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
+            <Image src="/refresh.svg" width={16} height={16} alt="Refresh" />
           </div>
         </Link>
       </div>
@@ -67,7 +104,7 @@ const Page = () => {
                 name="firstName"
                 value={formData.firstName}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
               />
             </div>
 
@@ -81,7 +118,7 @@ const Page = () => {
                 name="lastName"
                 value={formData.lastName}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
               />
             </div>
 
@@ -150,23 +187,8 @@ const Page = () => {
               </label>
               <Dropdown onChange={(value: any) => setFormData({ ...formData, branch: value })} />
             </div>
-
-            <div>
-              <label htmlFor="uploadPicture" className="block text-sm font-medium text-gray-700">
-                Upload Picture:
-              </label>
-              <input
-                type="file"
-                id="uploadPicture"
-                name="uploadPicture"
-                onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px]"
-              />
-            </div>
           </div>
         </section>
-
-        {/* Other Information */}
         <section>
           <h2 className="text-2xl font-bold mb-8 mt-4 border-b-2">Other Information</h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
@@ -348,8 +370,8 @@ const Page = () => {
 
         {/* Form Actions */}
         <div className="flex justify-center items-center space-x-4">
-        <Button bg="secondary">Cancel</Button>
-        <Button>Submit</Button>
+          <Button bg="secondary">Cancel</Button>
+          <Button >Submit</Button>
         </div>
       </form>
     </div>

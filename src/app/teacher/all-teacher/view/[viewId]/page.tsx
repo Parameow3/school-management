@@ -1,56 +1,50 @@
-'use client'
-import { useParams } from "next/navigation";
-import Image from "next/image";
-interface TeacherProp {
+'use client';
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Image from 'next/image';
+import axios from 'axios';
+
+// Define the structure of the data from the backend
+interface TeacherData {
   id: number;
-  firstName: string;
-  lastName: string;
-  userName: string;
-  program: string;
-  profilePicture: string;
-  branch: string;
+  user: {
+    username: string;
+    email: string;
+  };
+  school: number;
+  specialization: string;
+  hire_date: string;
 }
 
-const mockupTeachers: TeacherProp[] = [
-  {
-    id: 1,
-    firstName: "Lyseth",
-    lastName: "Pham",
-    userName: "Potio",
-    program: "Robotics",
-    profilePicture: "/photo.jpg",
-    branch: "FM",
-  },
-  {
-    id: 2,
-    firstName: "John",
-    lastName: "Doe",
-    userName: "jdoe",
-    program: "Mathematics",
-    profilePicture: "/photo.jpg",
-    branch: "NY",
-  },
-  {
-    id: 3,
-    firstName: "Jane",
-    lastName: "Smith",
-    userName: "jsmith",
-    program: "Science",
-    profilePicture: "/photo.jpg",
-    branch: "LA",
-  },
-];
-
 const Page = () => {
-  const params = useParams();
-  const id = parseInt(params.viewId as string, 10);
-  const selectedTeacher = mockupTeachers.find((item) => {
-    if (item.id == id) {
-      return item;
-    }
-  });
+  const { viewId } = useParams(); // Assuming viewId is passed in the URL
+  const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchTeacherData = async () => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/api/auth/teacher/${viewId}/`);
+        setTeacherData(response.data); // Populate state with API data
+      } catch (error) {
+        setError('Failed to load teacher data.');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (!selectedTeacher) {
+    fetchTeacherData();
+  }, [viewId]);
+
+  if (loading) {
+    return <div className="text-center mt-20">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center mt-20">{error}</div>;
+  }
+
+  if (!teacherData) {
     return <div className="text-center mt-20">Teacher not found</div>;
   }
 
@@ -59,7 +53,7 @@ const Page = () => {
       <div className="bg-white p-6 rounded-lg lg:gap-12 gap-4 h-[450px] flex lg:flex-row flex-col shadow-lg w-[345px] lg:w-[654px] max-w-2xl mx-auto">
         <div className="flex lg:items-start items-center lg:justify-start flex-col mb-4 ml-4">
           <Image
-            src={selectedTeacher.profilePicture}
+            src="/photo.jpg" // You can replace this with the actual photo URL if provided by the backend
             alt="Profile Picture"
             width={192}
             height={192}
@@ -71,19 +65,19 @@ const Page = () => {
             About Me
           </h2>
           <p className="p-2 text-[12px] lg:text-[16px]">
-            <strong>LastName:</strong> {selectedTeacher.lastName}
+            <strong>UserName:</strong> {teacherData.user.username}
           </p>
           <p className="p-2 text-[12px] lg:text-[16px]">
-            <strong>FirstName:</strong> {selectedTeacher.firstName}
+            <strong>Email:</strong> {teacherData.user.email}
           </p>
           <p className="p-2 text-[12px] lg:text-[16px]">
-            <strong>UserName:</strong> {selectedTeacher.userName}
+            <strong>Specialization:</strong> {teacherData.specialization}
           </p>
           <p className="p-2 text-[12px] lg:text-[16px]">
-            <strong>Program:</strong> {selectedTeacher.program}
+            <strong>Hire Date:</strong> {new Date(teacherData.hire_date).toLocaleDateString()}
           </p>
           <p className="p-2 text-[12px] lg:text-[16px]">
-            <strong>Branch:</strong> {selectedTeacher.branch}
+            <strong>School ID:</strong> {teacherData.school}
           </p>
         </div>
       </div>

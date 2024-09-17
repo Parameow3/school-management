@@ -1,201 +1,173 @@
 "use client";
-import React, { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Button from "@/components/Button";
 
 const Page = () => {
-  const [selectedStatus, setSelectedStatus] = useState("P");
-  const [showTable, setShowTable] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [attendanceData, setAttendanceData] = useState<any[]>([]); // Holds new attendance and history
 
-  const handleStatusSelect = (status: React.SetStateAction<string>) => {
-    setSelectedStatus(status);
-  };
+  // useEffect to fetch attendance data from the backend when the component is loaded
+  useEffect(() => {
+    const fetchAttendanceData = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/api/academics/attendances/?page=1");
+        setAttendanceData(response.data.results); // Assuming the API returns a `results` array
+      } catch (error) {
+        console.error("Error fetching attendance data:", error);
+        alert("Error fetching attendance data. Please try again.");
+      }
+    };
 
-  const handleSearchClick = () => {
-    setShowTable(true);
-  };
+    // Fetch the attendance data when the component loads
+    fetchAttendanceData();
+  }, []); // Empty dependency array means this runs once when the component mounts
 
-  const handleSubmitClick = () => {
-    setShowHistory(true);
+  // Function to handle submission
+  const handleSubmitClick = async () => {
+    // Get data from input fields by ID
+    const studentId: string | null = (document.getElementById("studentId") as HTMLInputElement)?.value;
+    const classInstance: string | null = (document.getElementById("classInstance") as HTMLInputElement)?.value;
+    const date: string | null = (document.getElementById("date") as HTMLInputElement)?.value;
+    const status: string | null = (document.getElementById("status") as HTMLSelectElement)?.value;
+    const notes: string | null = (document.getElementById("notes") as HTMLInputElement)?.value;
+
+    if (!studentId || !classInstance || !date || !status) {
+      alert("Please fill all required fields.");
+      return;
+    }
+
+    const data = {
+      student: parseInt(studentId), // Student ID as integer
+      class_instance: parseInt(classInstance), // Class instance as integer
+      date: date, // Date as string
+      status: status, // Status as string (e.g., "present", "absent", "late")
+      notes: notes || "", // Notes can be an empty string
+    };
+
+    try {
+      // Send the POST request to submit attendance data
+      await axios.post("http://127.0.0.1:8000/api/academics/attendances/", data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Add new attendance record to the current state
+      setAttendanceData((prevData) => [...prevData, data]);
+
+      alert("Attendance submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting attendance data:", error);
+      alert("Error submitting attendance data. Please try again.");
+    }
   };
 
   return (
-    <div className="lg:ml-[16%] ml-[8%] mt-20 flex flex-col w-full">
+    <div className="lg:ml-[16%] ml-[8%] mt-20 flex flex-col w-full bg-gray-50 py-8">
       {/* Header */}
-      <div className="w-full lg:w-[1068px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between shadow-md">
-        <span className="flex flex-row gap-2 text-[12px] lg:text-[16px]">
-          Attendance |
-          <Image src={"/home.svg"} width={15} height={15} alt="public" />
-          Student-Attendance
+      <div className="w-full lg:w-[1068px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between shadow-md mb-8">
+        <span className="flex flex-row gap-2 text-[14px] lg:text-[18px] font-semibold text-gray-700">
+          Attendance | Submit Attendance
         </span>
-        <Link href={"/#"} passHref>
-          <div className="h-[23px] w-[57px] bg-[#1c2b47] flex items-center justify-center rounded-md">
-            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
+      </div>
+
+      {/* Form for input data */}
+      <div className="flex flex-col lg:w-[1068px] w-full p-6 bg-white rounded-lg shadow-md mb-10 space-y-4">
+        {/* First Row */}
+        <div className="flex flex-col lg:flex-row lg:space-x-4">
+          {/* Student ID */}
+          <div className="flex flex-col lg:w-1/3">
+            <label htmlFor="studentId" className="text-sm font-medium text-gray-700">Student ID (required)</label>
+            <input
+              id="studentId"
+              type="number"
+              placeholder="Enter Student ID"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-        </Link>
-      </div>
-      <div className="flex items-center mt-4 gap-2 w-full">
-        <input
-          type="text"
-          placeholder="Search Student"
-          className="w-full lg:w-[300px] lg:h-[40px] h-[35px] p-2 rounded-l-[5px] border border-gray-300 focus:outline-none"
-        />
-        <Button onClick={handleSearchClick} className="lg:h-[40px] h-[35px] px-4 bg-[#213458] text-white font-medium rounded-r-[5px]"> Search</Button>
-      </div>
-      {showTable && (
-        <div className="overflow-x-auto mt-4 w-full">
-          <table className="min-w-full ml-2 bg-white border border-gray-200">
-          <thead className="bg-[#213458] text-white">
-              <tr>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Photo
-                </th>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Student Name
-                </th>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="lg:lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="bg-gray-100 border-b border-gray-200">
-                <td className="lg:px-2 lg:py-3 p-1">01</td>
-                <td className="px-2 py-3">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10">
-                      <Image
-                        className="rounded-full lg:w-[40px] lg:h-[40px] w-[30px] h-[30px]"
-                        src="/photo.jpg"
-                        alt="Student Photo"
-                        width={40}
-                        height={40}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="lg:px-2 lg:py-3 p-1">Lyseth</td>
-                <td className="lg:px-2 lg:py-3 p-1">8/09/2024</td>
-                <td className="lg:px-2 lg:py-3 p-1">
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleStatusSelect("P")}
-                      className={`lg:w-8 lg:h-8 w-4 h-4 rounded-full font-bold ${
-                        selectedStatus === "P"
-                          ? "bg-[#213458] text-white lg:text-[8px] text-[5px]"
-                          : "border border-black text-gray-800 lg:text-[8px] text-[5px]"
-                      }`}
-                    >
-                      P
-                    </button>
-                    <button
-                      onClick={() => handleStatusSelect("L")}
-                      className={`lg:w-8 lg:h-8 w-4 h-4 rounded-full font-bold ${
-                        selectedStatus === "L"
-                          ? "bg-[#213458] text-white lg:text-[8px] text-[5px]"
-                          : "border border-black text-gray-800 lg:text-[8px] text-[5px]"
-                      }`}
-                    >
-                      L
-                    </button>
-                    <button
-                      onClick={() => handleStatusSelect("A")}
-                      className={`lg:w-8 lg:h-8 w-4 h-4 rounded-full font-bold ${
-                        selectedStatus === "A"
-                          ? "bg-[#213458] text-white lg:text-[8px] text-[5px]"
-                          : "border border-black text-gray-800 lg:text-[8px] text-[5px]"
-                      }`}
-                    >
-                      A
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="flex justify-center mt-3">
-            <button
-              onClick={handleSubmitClick}
-              className="lg:w-28 w-28 py-2 bg-orange-600 text-white font-semibold rounded-md shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              Submit
-            </button>
+
+          {/* Class Instance */}
+          <div className="flex flex-col lg:w-1/3">
+            <label htmlFor="classInstance" className="text-sm font-medium text-gray-700">Class Instance (required)</label>
+            <input
+              id="classInstance"
+              type="number"
+              placeholder="Enter Class Instance"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          {/* Date */}
+          <div className="flex flex-col lg:w-1/3">
+            <label htmlFor="date" className="text-sm font-medium text-gray-700">Date (required)</label>
+            <input
+              id="date"
+              type="date"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         </div>
-      )}
-      {showHistory && (
-        <div className="overflow-x-auto mt-4">
-          <table className="min-w-full bg-white border border-gray-200">
-            <thead className="bg-[#213458] text-white">
+
+        {/* Second Row (Status and Notes) */}
+        <div className="flex flex-col lg:flex-row lg:space-x-4">
+          {/* Status */}
+          <div className="flex flex-col lg:w-1/3">
+            <label htmlFor="status" className="text-sm font-medium text-gray-700">Status (required)</label>
+            <select
+              id="status"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="present">Present</option>
+              <option value="absent">Absent</option>
+              <option value="late">Late</option>
+            </select>
+          </div>
+
+          {/* Notes */}
+          <div className="flex flex-col lg:w-1/3">
+            <label htmlFor="notes" className="text-sm font-medium text-gray-700">Notes (optional)</label>
+            <input
+              id="notes"
+              type="text"
+              placeholder="Enter any notes"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <Button
+          onClick={handleSubmitClick}
+          className="lg:h-[40px] h-[40px] flex justify-center items-center px-6 py-2 bg-[#213458] text-white font-medium rounded hover:bg-blue-500"
+        >
+          Submit
+        </Button>
+      </div>
+
+      {/* Display the new attendance and history */}
+      {attendanceData.length > 0 && (
+        <div className="lg:w-[1068px] w-full mt-8 bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-700 mb-4">Attendance History</h3>
+          <table className="min-w-full mt-4 border border-gray-300 rounded-lg">
+            <thead className="bg-gray-100">
               <tr>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Photo
-                </th>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Student Name
-                </th>
-                <th className="lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="lg:lg:px-2 lg:py-2 p-1 text-left text-[8px] lg:text-xs font-medium uppercase tracking-wider">
-                  Status
-                </th>
+                <th className="border px-4 py-2 text-left text-sm text-gray-700">Student ID</th>
+                <th className="border px-4 py-2 text-left text-sm text-gray-700">Class Instance</th>
+                <th className="border px-4 py-2 text-left text-sm text-gray-700">Date</th>
+                <th className="border px-4 py-2 text-left text-sm text-gray-700">Status</th>
+                <th className="border px-4 py-2 text-left text-sm text-gray-700">Notes</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="bg-gray-100 border-b border-gray-200">
-                <td className="px-2 py-3">01</td>
-                <td className="px-2 py-3">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10">
-                      <Image
-                        className="rounded-full lg:w-[40px] lg:h-[40px] w-[30px] h-[30px]"
-                        src="/photo.jpg"
-                        alt="Student Photo"
-                        width={40}
-                        height={40}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="px-2 py-3 ">Lyseth</td>
-                <td className="px-2 py-3">8/09/2024</td>
-                <td className="px-2 py-3">
-                  <div className="flex space-x-2">P</div>
-                </td>
-              </tr>
-              <tr className="bg-gray-100 border-b border-gray-200">
-                <td className="px-2 py-3">02</td>
-                <td className="px-2 py-3">
-                  <div className="flex items-center">
-                    <div className="h-10 w-10">
-                      <Image
-                        className="rounded-full lg:w-[40px] lg:h-[40px] w-[30px] h-[30px]"
-                        src="/photo.jpg"
-                        alt="Student Photo"
-                        width={40}
-                        height={40}
-                      />
-                    </div>
-                  </div>
-                </td>
-                <td className="px-2 py-3">Lyseth</td>
-                <td className="px-2 py-3">8/09/2024</td>
-                <td className="px-2 py-3">
-                  <div className="flex space-x-2">P</div>
-                </td>
-              </tr>
+              {attendanceData.map((record, index) => (
+                <tr key={index} className="hover:bg-gray-100 transition-colors">
+                  <td className="border px-4 py-2">{record.student}</td>
+                  <td className="border px-4 py-2">{record.class_instance}</td>
+                  <td className="border px-4 py-2">{record.date}</td>
+                  <td className="border px-4 py-2">{record.status}</td>
+                  <td className="border px-4 py-2">{record.notes}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

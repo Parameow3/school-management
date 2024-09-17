@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation'; // Added useSearchParams to extract the id
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/Button';
 import ProgramDropdown from '@/components/programDropdown';
-import { useRouter } from "next/navigation";
-import axios from 'axios'; // Import Axios
+import axios from 'axios'; // Importing axios
 
 const Page = () => {
-  const router = useRouter(); // Corrected this line to properly call the hook
+  const router = useRouter();
+  const searchParams = useSearchParams(); // Use this to get the dynamic id from the URL
+  const id = searchParams.get("id"); // Extract the ID from the query string
 
   const [formData, setFormData] = useState({
     client: '',
@@ -20,6 +22,20 @@ const Page = () => {
     assign_by: 1, 
     handle_by: [] as number[],
   });
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      if (id) {
+        try {
+          const response = await axios.get(`http://127.0.0.1:8000/api/academics/student_trail/${id}/`);
+          setFormData(response.data); // Pre-fill the form with existing data
+        } catch (error) {
+          console.error('Error fetching student data:', error);
+          alert('Failed to fetch student data.');
+        }
+      }
+    };
+    fetchStudentData();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -33,30 +49,22 @@ const Page = () => {
     }
   };
 
-  const handleViewClick = () => {
-    router.push(`/student/trial-student/view`); // This is now correctly using `router.push`
-  };
-
-  // Handle form submission using Axios
+  // Handle form submission (update existing student)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      // Submit data using Axios
-      const response = await axios.post('http://127.0.0.1:8000/api/trial', formData, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
+      const response = await axios.put(`http://127.0.0.1:8000/api/academics/student_trail/${id}/`, formData);
+      
       if (response.status === 200) {
-        alert('Trial information submitted successfully!');
+        alert('Student information updated successfully!');
+        router.push('/student/trial-student'); // Redirect to another page after successful update
       } else {
-        alert('Failed to submit trial information.');
+        alert('Failed to update student information.');
       }
     } catch (error) {
-      console.error('Error submitting the form:', error);
-      alert('Error submitting the form.');
+      console.error('Error updating the form:', error);
+      alert('Error updating the form.');
     }
   };
 
@@ -65,7 +73,7 @@ const Page = () => {
       {/* Header Section */}
       <div className="lg:w-[1060px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
-          Student | <Image src="/home.svg" width={15} height={15} alt="public" /> New-student
+          Student | <Image src="/home.svg" width={15} height={15} alt="public" /> Edit-student
         </span>
 
         <Link href="/#" passHref>
@@ -76,14 +84,11 @@ const Page = () => {
       </div>
       
       <div className='flex flex-row justify-between p-3'>
-        <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">Trial Form</h1>
-        <Button className='w-[150px] p-2' onClick={() => handleViewClick()}>
-          View Trial
-        </Button>
+        <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">Update Trial Form</h1>
       </div>
 
       {/* Form */}
-      <form className=" grid grid-cols-1 lg:grid-cols-3 gap-8" onSubmit={handleSubmit}>
+      <form className="grid grid-cols-1 lg:grid-cols-3 gap-8" onSubmit={handleSubmit}>
         {/* Client (Student Name) */}
         <div>
           <label htmlFor="client" className="block text-sm font-medium text-gray-700">
@@ -129,12 +134,16 @@ const Page = () => {
             required
           />
         </div>
+
+        {/* Programs */}
         <div>
           <label htmlFor="programs" className="block text-sm font-medium text-gray-700">
             Programs
           </label>
           <ProgramDropdown />
         </div>
+
+        {/* Status */}
         <div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
             Status
@@ -152,6 +161,8 @@ const Page = () => {
             <option value="Completed">Completed</option>
           </select>
         </div>
+
+        {/* Assign By */}
         <div>
           <label htmlFor="assign_by" className="block text-sm font-medium text-gray-700">
             Assigned By (ID)
@@ -184,7 +195,7 @@ const Page = () => {
         </div>
         <div className="lg:col-span-3 flex justify-center items-center space-x-4">
           <Button className="lg:h-[40px] h-[40px] flex justify-center items-center px-6 py-2 bg-[#213458] text-white font-medium rounded hover:bg-blue-500">
-            Submit
+            Update
           </Button>
         </div>
       </form>

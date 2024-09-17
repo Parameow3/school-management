@@ -32,7 +32,7 @@ const Modal = ({ onClose }: { onClose: () => void }) => {
               <button
                 type="button"
                 onClick={handleClose}
-                className="mt-3 inline-flex w-full justify-center rounded-md  bg-[#213458] px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0"
+                className="mt-3 inline-flex w-full justify-center rounded-md  bg-[#213458] px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 sm:col-start-1 sm:mt-0"
               >
                 Yes
               </button>

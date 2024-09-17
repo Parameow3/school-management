@@ -1,86 +1,68 @@
-"use client";
-import React, { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import Dropdown from "@/components/Dropdown";
-import { useParams } from "next/navigation";
-import Button from "@/components/Button";
-
-interface TeacherProp {
-  id: number;
-  firstName: string;
-  lastName: string;
-  userName: string;
-  program: string;
-  profilePicture: string;
-  branch: string;
-}
-
+'use client';
+import { useState } from 'react';
+import axios from 'axios';
+import Image from 'next/image';
+import Link from 'next/link';
 const Page = () => {
-  const mockupTeachers: TeacherProp[] = [
-    {
-      id: 1,
-      firstName: "Lyseth",
-      lastName: "Pham",
-      userName: "Potio",
-      program: "Robotics",
-      profilePicture: "/photo.jpg",
-      branch: "FM",
-    },
-    {
-      id: 2,
-      firstName: "John",
-      lastName: "Doe",
-      userName: "jdoe",
-      program: "Mathematics",
-      profilePicture: "/photo.jpg",
-      branch: "NY",
-    },
-    {
-      id: 3,
-      firstName: "Jane",
-      lastName: "Smith",
-      userName: "jsmith",
-      program: "Science",
-      profilePicture: "/photo.jpg",
-      branch: "LA",
-    },
-  ];
-  const params = useParams();
-  const id = parseInt(params.editId as string, 10);
-  console.log("id", id);
-  const selectedTeacher = mockupTeachers.find((item) => item.id === id);
   const [formData, setFormData] = useState({
-    firstName: selectedTeacher?.firstName || "",
-    lastName: selectedTeacher?.lastName || "",
-    userName: selectedTeacher?.userName || "",
-    program: selectedTeacher?.program || "",
-    branch: selectedTeacher?.branch || "",
-    phone: "",
-    uploadPicture: "",
+    user: {
+      username: '',
+      email: '',
+      password: '', // Password can be updated here if needed
+    },
+    school: 1, // Assuming this is the valid school ID, you can adjust it accordingly
+    specialization: '',
+    hire_date: new Date().toISOString().split('T')[0], // Formatted date
   });
-  if (!selectedTeacher) {
-    return <div className="text-center mt-20">Teacher not found</div>;
-  }
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Handle form input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData({ ...formData, uploadPicture: file.name });
+
+    if (name === 'username' || name === 'email' || name === 'password') {
+      setFormData({
+        ...formData,
+        user: { ...formData.user, [name]: value },
+      });
+    } else {
+      setFormData({ ...formData, [name]: value });
     }
   };
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+  // Handle form submission for PUT request
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(formData);
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Perform the PUT request to update teacher data
+      const response = await axios.put('http://127.0.0.1:8000/api/auth/teacher/1/', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Update response:', response.data);
+      alert('Teacher information updated successfully!');
+    } catch (error: any) {
+      console.error('Error updating the teacher:', error);
+      if (error.response && error.response.data) {
+        setError(`Error: ${error.response.data.detail || 'An error occurred.'}`);
+      } else {
+        setError('Failed to update the teacher information.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
-    <div className="lg:ml-[219px] ml-[40px] mt-20 flex flex-col">
-      <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
+    <div className="lg:ml-[16%] mt-20 ml-[11%] flex flex-col">
+            <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
           Teacher |{" "}
           <Image src={"/home.svg"} width={15} height={15} alt="public" />{" "}
@@ -97,118 +79,115 @@ const Page = () => {
       <h1 className="text-center lg:text-2xl text-[16px] font-bold mb-8 mt-4 border-b-2">
         Update Teacher Form
       </h1>
-      <form className="space-y-8" onSubmit={handleSubmit}>
-        <section>
-          <h2 className="lg:text-2xl text-[15px] font-bold mb-8 lg:mt-4 border-b-2">
-            Teacher Information
-          </h2>
-          <div className="grid lg:grid-cols-3 flex-col gap-8">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                First Name:
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                className="mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Last Name:
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                className="mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="userName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                User Name
-              </label>
-              <input
-                type="text"
-                id="userName"
-                name="userName"
-                value={formData.userName}
-                onChange={handleChange}
-                className="mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="program"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Program
-              </label>
-              <select
-                id="program"
-                name="program"
-                value={formData.program}
-                onChange={handleChange}
-                className="mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-              >
-                <option value="Robotics">Robotics</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Science">Science</option>
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="branch"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Branch:
-              </label>
-              <Dropdown
-                value={formData.branch}
-                onChange={(value: string) =>
-                  setFormData({ ...formData, branch: value })
-                }
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="uploadPicture"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Upload Picture:
-              </label>
-              <input
-                type="file"
-                id="uploadPicture"
-                name="uploadPicture"
-                onChange={handleFileChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px]"
-              />
-            </div>
+      <div className="">
+        <form className="space-y-8" onSubmit={handleSubmit}>
+          <div className='grid lg:grid-cols-3 flex-col gap-8'>
+          {/* Username */}
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.user.username}
+              onChange={handleChange}
+              className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+              required
+            />
           </div>
-        </section>
-        <div className="flex justify-center items-center space-x-4">
-        <Button bg="secondary">Cancel</Button>
-        <Button>Submit</Button>
-        </div>
-      </form>
+
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.user.email}
+              onChange={handleChange}
+              className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+              required
+            />
+          </div>
+
+          {/* Password */}
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password (Leave blank if not changing)
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.user.password}
+              onChange={handleChange}
+              className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+            />
+          </div>
+
+          {/* School */}
+          <div>
+            <label htmlFor="school" className="block text-sm font-medium text-gray-700">
+              School ID
+            </label>
+            <input
+              type="number"
+              id="school"
+              name="school"
+              value={formData.school}
+              onChange={handleChange}
+              className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+              required
+            />
+          </div>
+
+          {/* Specialization */}
+          <div>
+            <label htmlFor="specialization" className="block text-sm font-medium text-gray-700">
+              Specialization
+            </label>
+            <input
+              type="text"
+              id="specialization"
+              name="specialization"
+              value={formData.specialization}
+              onChange={handleChange}
+              className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+              required
+            />
+          </div>
+
+          {/* Hire Date */}
+          <div>
+            <label htmlFor="hire_date" className="block text-sm font-medium text-gray-700">
+              Hire Date
+            </label>
+            <input
+              type="date"
+              id="hire_date"
+              name="hire_date"
+              value={formData.hire_date}
+              onChange={handleChange}
+              className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+              required
+            />
+          </div>
+          </div>
+          {/* Submit Button */}
+          <div className="flex justify-center items-center space-x-4">
+            <button type="submit" className="bg-[#213458] text-white px-4 py-2 rounded-md" disabled={loading}>
+              {loading ? 'Updating...' : 'Update Teacher'}
+            </button>
+          </div>
+        </form>
+
+        {/* Error message */}
+        {error && <div className="text-red-500 mt-4">{error}</div>}
+      </div>
     </div>
   );
 };

@@ -67,16 +67,6 @@ const navigation: NavigationItem[] = [
     ],
   },
   {
-    name: "Class",
-    href: "#",
-    current: false,
-    icon: BuildingLibraryIcon,
-    subItems: [
-      { name: "All Classes", href: "/class/all-class", current: false },
-      { name: "New Class", href: "/class/new-class", current: false },
-    ],
-  },
-  {
     name: "Program",
     href: "#",
     current: false,
@@ -84,6 +74,16 @@ const navigation: NavigationItem[] = [
     subItems: [
       { name: "All Programs", href: "/program/all-program", current: false },
       { name: "New Programs", href: "/program/new-program", current: false },
+    ],
+  },
+  {
+    name: "Class",
+    href: "#",
+    current: false,
+    icon: BuildingLibraryIcon,
+    subItems: [
+      { name: "All Classes", href: "/class/all-class", current: false },
+      { name: "New Class", href: "/class/new-class", current: false },
     ],
   },
   {
