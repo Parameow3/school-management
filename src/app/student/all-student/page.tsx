@@ -16,10 +16,9 @@ const Page = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
-  // const [branches, setBranches] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<number | null>(null); // State to store selected branch
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null); 
   const [availablePrograms, setAvailablePrograms] = useState<any[]>([]); // Available programs
   const [formData, setFormData] = useState({
     programs: [] as number[], // Stores selected program IDs

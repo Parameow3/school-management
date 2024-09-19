@@ -10,6 +10,7 @@ import Modal from "@/components/Modal";
 
 // Define the structure of the teacher profile data
 interface TeacherProfile {
+  branch: number;
   id: number;
   pic: string;
   user: {
@@ -21,17 +22,14 @@ interface TeacherProfile {
 
 const Page = () => {
   const router = useRouter();
-  
-  // State for modal visibility and selected profile to delete
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null); 
   const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
   const [profiles, setProfiles] = useState<TeacherProfile[]>([]);
-
-  // Fetch teacher profiles when the component mounts
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher?page=1");
+        const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher");
         const fetchedProfiles = response.data.results.map((teacher: any) => ({
           id: teacher.id,
           pic: "/photo.jpg", // Placeholder for the teacher's profile picture
@@ -66,6 +64,13 @@ const Page = () => {
     setIsModalOpen(false);
     setProfileToDelete(null);
   };
+  const handleBranchChange = (branchId: number) => {
+    setSelectedBranch(branchId);  
+  };
+  
+  useEffect(() => {
+    console.log("branch", selectedBranch);
+  }, [selectedBranch]);
   const handleConfirmDelete = async () => {
     if (profileToDelete !== null) {
       try {
@@ -77,7 +82,10 @@ const Page = () => {
       }
     }
   };
-
+  const filteredProfiles = selectedBranch
+  
+  ? profiles.filter((profile) => profile.branch === selectedBranch) // Filter profiles by branch_id
+  : profiles;
   return (
     <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
       {/* Header section */}
@@ -98,15 +106,11 @@ const Page = () => {
           </div>
         </Link>
       </div>
-
-      {/* Dropdown */}
       <div className="relative mt-2">
-        <Dropdown />
+        <Dropdown onChange={handleBranchChange} />
       </div>
-
-      {/* Profiles grid */}
       <div className="mt-5 grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2">
-        {profiles.map(profile => (
+        {filteredProfiles.map(profile => (
           <ProfileCard
             key={profile.id}
             pic={profile.pic}
