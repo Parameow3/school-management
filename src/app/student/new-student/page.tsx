@@ -1,10 +1,16 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Dropdown from '@/components/Dropdown';
 import Button from '@/components/Button';
 import axios from 'axios'; // Import axios to make HTTP requests
+
+// Define the Classroom interface to match the structure of the API response
+interface Classroom {
+  id: number;
+  name: string;
+}
 
 const Page = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +35,33 @@ const Page = () => {
     parentContact: '',
   });
 
+  // Correctly define classrooms with the Classroom type
+  const [classrooms, setClassrooms] = useState<Classroom[]>([]); 
+  const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null); 
+  const [loading, setLoading] = useState<boolean>(true); 
+  const [error, setError] = useState<string | null>(null); 
+
+  // Fetch classrooms from the API
+  useEffect(() => {
+    const fetchClassrooms = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/api/academics/classroom/?page=1');
+        setClassrooms(response.data.results || []); // Assuming the response is paginated
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch classrooms');
+        setLoading(false);
+      }
+    };
+
+    fetchClassrooms();
+  }, []);
+
+  const handleClassroomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedClassroom(parseInt(e.target.value, 10));
+    setFormData((prevData) => ({ ...prevData, class: e.target.value }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -36,9 +69,8 @@ const Page = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("data",formData)
+    console.log("Submitted data:", formData);
     try {
-      // Make the POST request to your API endpoint
       const response = await axios.post('http://127.0.0.1:8000/api/academics/students/', {
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -46,7 +78,7 @@ const Page = () => {
         gender: formData.gender,
         admission_date: formData.admissionDate,
         class: formData.class,
-        branch: formData.branch,  
+        branch: formData.branch,
         dob: formData.dob,
         nationality: formData.nationality,
         place_of_birth: formData.placeOfBirth,
@@ -168,17 +200,25 @@ const Page = () => {
             </div>
 
             <div>
-              <label htmlFor="class" className="block text-sm font-medium text-gray-700">
-                Class:
+              <label htmlFor="classroom" className="block text-sm font-medium text-gray-700">
+                Classroom:
               </label>
-              <input
-                type="text"
-                id="class"
-                name="class"
-                value={formData.class}
-                onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-              />
+              <select
+                id="classroom"
+                name="classroom"
+                value={selectedClassroom || ''}
+                onChange={handleClassroomChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md border-gray-300 shadow-sm"
+              >
+                <option value="" disabled>
+                  Select a classroom
+                </option>
+                {classrooms.map((classroom) => (
+                  <option key={classroom.id} value={classroom.id}>
+                    {classroom.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -189,6 +229,8 @@ const Page = () => {
             </div>
           </div>
         </section>
+
+        {/* Other Information */}
         <section>
           <h2 className="text-2xl font-bold mb-8 mt-4 border-b-2">Other Information</h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
@@ -334,7 +376,7 @@ const Page = () => {
                 name="motherName"
                 value={formData.motherName}
                 onChange={handleChange}
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px]w-[272px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] outline-none rounded-md border-gray-300 shadow-sm"
               />
             </div>
 
@@ -371,7 +413,7 @@ const Page = () => {
         {/* Form Actions */}
         <div className="flex justify-center items-center space-x-4">
           <Button bg="secondary">Cancel</Button>
-          <Button >Submit</Button>
+          <Button>Submit</Button>
         </div>
       </form>
     </div>

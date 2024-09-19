@@ -75,6 +75,23 @@ const Page = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setProfileToDelete(null); // Reset profile to delete
+  };
+
+  const handleConfirmDelete = async () => {
+    if (profileToDelete !== null) {
+      try {
+        await axios.delete(
+          `http://127.0.0.1:8000/api/academics/students/${profileToDelete}/`
+        );
+        // After deleting, refetch the profiles or remove the deleted one from the state
+        setProfiles(profiles.filter((profile) => profile.id !== profileToDelete));
+      } catch (err: any) {
+        setError("Failed to delete the profile.");
+      } finally {
+        setIsModalOpen(false); // Close modal after deletion
+      }
+    }
   };
 
   return (
@@ -135,7 +152,13 @@ const Page = () => {
         </div>
 
         {/* Modal for Deleting */}
-        {isModalOpen && <Modal onClose={handleCloseModal} />}
+        {isModalOpen && (
+          <Modal
+            onClose={handleCloseModal}
+            onConfirm={handleConfirmDelete} // Pass the confirm delete function to Modal
+            message="Are you sure you want to delete this card?" // Optional message to display in the modal
+          />
+        )}
       </div>
     </>
   );

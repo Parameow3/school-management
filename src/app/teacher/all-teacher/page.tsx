@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import axios from 'axios';
 import Dropdown from "@/components/Dropdown";
 import Link from "next/link";
@@ -46,24 +46,36 @@ const Page = () => {
         console.error("Error fetching profiles:", error);
       }
     };
-
-    // Calling the fetchProfiles function
     fetchProfiles();
   }, []); 
+
   const handleViewClick = (id: number) => {
     router.push(`/teacher/all-teacher/view/${id}`);
   };
+
   const handleEditClick = (id: number) => {
     router.push(`/teacher/all-teacher/edit/${id}`);
   };
 
-  // Handler for deleting a teacher's profile
   const handleDeleteClick = (id: number) => {
     setIsModalOpen(true);
     setProfileToDelete(id);
   };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setProfileToDelete(null);
+  };
+  const handleConfirmDelete = async () => {
+    if (profileToDelete !== null) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/api/auth/teacher/${profileToDelete}/`);
+        setProfiles(profiles.filter(profile => profile.id !== profileToDelete));
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error("Error deleting profile:", error);
+      }
+    }
   };
 
   return (
@@ -111,12 +123,14 @@ const Page = () => {
 
       {/* Modal for confirming profile deletion */}
       {isModalOpen && (
-        <Modal onClose={handleCloseModal} />
+        <Modal
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmDelete} // Pass the confirm delete function to Modal
+          message="Are you sure you want to delete this teacher?" // Custom message for the delete action
+        />
       )}
     </div>
   );
 };
 
 export default Page;
-
-

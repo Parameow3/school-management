@@ -30,7 +30,7 @@ const Page = () => {
   const [programs, setPrograms] = useState<Program[]>([]); // Store fetched programs
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null); // Store selected program
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [programToDelete, setProgramToDelete] = useState<Program | null>(null);
+  const [programToDelete, setProgramToDelete] = useState<Program | null>(null); // Store the program to delete
 
   const [loading, setLoading] = useState<boolean>(true); // State to manage loading
   const [error, setError] = useState<string | null>(null); // State to manage errors
@@ -58,13 +58,28 @@ const Page = () => {
   };
 
   const handleDeleteClick = (program: Program) => {
-    setProgramToDelete(program);
-    setIsModalOpen(true);
+    setProgramToDelete(program); // Store the program to delete
+    setIsModalOpen(true); // Open the confirmation modal
   };
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setProgramToDelete(null);
+    setIsModalOpen(false); // Close the modal
+    setProgramToDelete(null); // Clear the program to delete
+  };
+
+  const handleDeleteProgram = async () => {
+    if (programToDelete) {
+      try {
+        // Send DELETE request to delete the program
+        await axios.delete(`http://127.0.0.1:8000/api/academics/program/${programToDelete.id}/`);
+        // Remove the deleted program from the state
+        setPrograms(programs.filter((program) => program.id !== programToDelete.id));
+        closeModal(); // Close the modal after deletion
+      } catch (err) {
+        console.error("Failed to delete program", err);
+        setError("Failed to delete program");
+      }
+    }
   };
 
   const handleEditClick = (id: number) => {
@@ -81,7 +96,7 @@ const Page = () => {
 
   const handleAddCourse = (Id: number) => {
     router.push(`/program/all-program/course/add/${Id}`);
-  };  
+  };
 
   const handleEditCourse = (Id: number) => {
     router.push(`/program/all-program/course/edit/${Id}`);
@@ -153,7 +168,7 @@ const Page = () => {
                   alt="Delete"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteClick(program);
+                    handleDeleteClick(program); // Trigger delete modal
                   }}
                 />
               </div>
@@ -274,7 +289,13 @@ const Page = () => {
           )}
         </div>
       </div>
-      {isModalOpen && <Modal onClose={closeModal} />}
+      {isModalOpen && (
+        <Modal
+          onClose={closeModal}
+          onConfirm={handleDeleteProgram} 
+          message={`Are you sure you want to delete the program "${programToDelete?.name}"?`}
+        />
+      )}
     </div>
   );
 };

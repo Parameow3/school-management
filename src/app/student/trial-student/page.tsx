@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import axios from 'axios'; // Import Axios
 
 const Page = () => {
-  const router = useRouter(); // Corrected this line to properly call the hook
+  const router = useRouter(); 
 
   const [formData, setFormData] = useState({
     client: '',
@@ -23,10 +23,8 @@ const Page = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
-    // Handle comma-separated lists for programs and handle_by
     if (name === 'programs' || name === 'handle_by') {
-      const values = value.split(',').map(Number); // Convert comma-separated strings to numbers
+      const values = value.split(',').map(Number); 
       setFormData({ ...formData, [name]: values });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -34,16 +32,16 @@ const Page = () => {
   };
 
   const handleViewClick = () => {
-    router.push(`/student/trial-student/view`); // This is now correctly using `router.push`
+    router.push(`/student/trial-student/view`); 
   };
 
   // Handle form submission using Axios
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    console.log("Responce",Response)
     try {
       // Submit data using Axios
-      const response = await axios.post('http://127.0.0.1:8000/api/trial', formData, {
+      const response = await axios.post('http://127.0.0.1:8000/api/academics/student_trail/', formData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -77,8 +75,8 @@ const Page = () => {
       
       <div className='flex flex-row justify-between p-3'>
         <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">Trial Form</h1>
-        <Button className='w-[150px] p-2' onClick={() => handleViewClick()}>
-          View Trial
+        <Button className='w-[180px] p-2' onClick={() => handleViewClick()}>
+          View 
         </Button>
       </div>
 
