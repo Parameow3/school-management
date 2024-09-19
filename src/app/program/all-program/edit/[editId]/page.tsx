@@ -128,7 +128,7 @@ const EditProgramPage = () => {
           </div>
           <button
             type="submit"
-            className="w-[316px] h-[44px] bg-[#213458] hover:bg-[#213498] text-white font-bold rounded-lg shadow-md transition-colors"
+            className="w-[316px] h-[44px] bg-[#213458] hover:bg-[#213478] text-white font-bold rounded-lg shadow-md transition-colors"
           >
             Update Program
           </button>

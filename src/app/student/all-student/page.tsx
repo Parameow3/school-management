@@ -8,15 +8,18 @@ import ProfileCard from "@/components/ProfileCard";
 import Modal from "@/components/Modal";
 import axios from "axios";
 import ProgramDropdown from "@/components/programDropdown";
+import Button from "@/components/Button";
+import { profile } from "console";
 
 const Page = () => {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
+  // const [branches, setBranches] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null); // State to store selected branch
   const [availablePrograms, setAvailablePrograms] = useState<any[]>([]); // Available programs
   const [formData, setFormData] = useState({
     programs: [] as number[], // Stores selected program IDs
@@ -29,7 +32,11 @@ const Page = () => {
         const response = await axios.get(
           "http://127.0.0.1:8000/api/academics/students/?page=1"
         );
+       
         setProfiles(response.data.results);
+        // setBranches(res_branch.data.results);
+        // console.log("branch " , res_branch.data.results)
+        console.log("student " , response.data.results)
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -43,7 +50,8 @@ const Page = () => {
         const response = await axios.get(
           "http://127.0.0.1:8000/api/academics/program/?page=1"
         );
-        setAvailablePrograms(response.data.results); // Assuming the programs come in a `results` array
+        setAvailablePrograms(response.data.results);
+        // Assuming the programs come in a `results` array
       } catch (err: any) {
         setError(err.message);
       }
@@ -51,7 +59,17 @@ const Page = () => {
 
     fetchProfiles();
     fetchPrograms();
+    
   }, []);
+
+// Function to handle branch selection (defined outside useEffect)
+const handleBranchChange = (branchId: number) => {
+  setSelectedBranch(branchId);  
+};
+
+useEffect(() => {
+  console.log("branch", selectedBranch);
+}, [selectedBranch]); // This useEffect will trigger whenever `selectedBranch` changes
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map((option) =>
@@ -72,7 +90,12 @@ const Page = () => {
     setIsModalOpen(true);
     setProfileToDelete(id);
   };
-
+  const handleClickNew = ()=>{
+    router.push(`/student/new-student`)
+  }
+  const handleClickTrial = ()=>{
+    router.push(`/student/trial-student`)
+  }
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setProfileToDelete(null); // Reset profile to delete
@@ -93,6 +116,11 @@ const Page = () => {
       }
     }
   };
+
+  const filteredProfiles = selectedBranch
+  
+  ? profiles.filter((profile) => profile.branch === selectedBranch) // Filter profiles by branch_id
+  : profiles;
 
   return (
     <>
@@ -122,21 +150,25 @@ const Page = () => {
           </Link>
         </div>
 
-        <div className="relative mt-4 ml-4 flex flex-row space-x-2 items-center">
+        <div className="relative mt-4 ml-4 flex flex-row space-x-2 items-center justify-between">
           {/* Branch Dropdown */}
           <div className="w-full lg:w-[300px]">
-            <Dropdown />
+            <Dropdown onChange={handleBranchChange}/>
           </div>
 
           {/* Program Dropdown */}
-          <div className="w-full lg:w-[300px]">
+          {/* <div className="w-full lg:w-[300px]">
             <ProgramDropdown />
+          </div> */}
+          <div className="flex flex-row gap-2">
+            <Button onClick = {handleClickNew} className="w-[150px] rounded-sm">New Student</Button>
+            <Button onClick = {handleClickTrial} className="rounded-sm">New Trial</Button>
           </div>
         </div>
 
-        {/* Profiles List */}
-        <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
-          {profiles.map((profile) => (
+          {/* Profiles List */}
+          <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
+          {filteredProfiles.map((profile) => (
             <ProfileCard
               key={profile.id}
               pic={profile.pic || "/photo.jpg"} // Fallback to a default profile image if not provided
@@ -149,7 +181,7 @@ const Page = () => {
               viewPath=""
             />
           ))}
-        </div>
+          </div>
 
         {/* Modal for Deleting */}
         {isModalOpen && (

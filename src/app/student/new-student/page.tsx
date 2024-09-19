@@ -106,8 +106,8 @@ const Page = () => {
   };
 
   return (
-    <div className="lg:ml-[18%] ml-[11%] mt-20 flex flex-col">
-      <div className="lg:w-[840px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
+    <div className="lg:ml-[18%] ml-[11%] mt-20 h-[1040px] flex flex-col">
+      <div className="lg:w-[1040px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
           Student | <Image src="/home.svg" width={15} height={15} alt="public" /> New-student
         </span>
