@@ -157,7 +157,7 @@ const Page = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md"
+            className="w-full bg-[#213458] hover:bg-blue-600 text-white py-2 rounded-md"
           >
             Create Course
           </button>

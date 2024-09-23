@@ -18,7 +18,7 @@ const Page = () => {
   const [profiles, setProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<number | null>(null); 
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [availablePrograms, setAvailablePrograms] = useState<any[]>([]); // Available programs
   const [formData, setFormData] = useState({
     programs: [] as number[], // Stores selected program IDs
@@ -31,11 +31,11 @@ const Page = () => {
         const response = await axios.get(
           "http://127.0.0.1:8000/api/academics/students/?page=1"
         );
-       
+
         setProfiles(response.data.results);
         // setBranches(res_branch.data.results);
         // console.log("branch " , res_branch.data.results)
-        console.log("student " , response.data.results)
+        console.log("student ", response.data.results);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -58,17 +58,16 @@ const Page = () => {
 
     fetchProfiles();
     fetchPrograms();
-    
   }, []);
 
-// Function to handle branch selection (defined outside useEffect)
-const handleBranchChange = (branchId: number) => {
-  setSelectedBranch(branchId);  
-};
+  // Function to handle branch selection (defined outside useEffect)
+  const handleBranchChange = (branchId: number) => {
+    setSelectedBranch(branchId);
+  };
 
-useEffect(() => {
-  console.log("branch", selectedBranch);
-}, [selectedBranch]); // This useEffect will trigger whenever `selectedBranch` changes
+  useEffect(() => {
+    console.log("branch", selectedBranch);
+  }, [selectedBranch]); // This useEffect will trigger whenever `selectedBranch` changes
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map((option) =>
@@ -89,12 +88,12 @@ useEffect(() => {
     setIsModalOpen(true);
     setProfileToDelete(id);
   };
-  const handleClickNew = ()=>{
-    router.push(`/student/new-student`)
-  }
-  const handleClickTrial = ()=>{
-    router.push(`/student/trial-student`)
-  }
+  const handleClickNew = () => {
+    router.push(`/student/new-student`);
+  };
+  const handleClickTrial = () => {
+    router.push(`/student/trial-student`);
+  };
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setProfileToDelete(null); // Reset profile to delete
@@ -107,7 +106,9 @@ useEffect(() => {
           `http://127.0.0.1:8000/api/academics/students/${profileToDelete}/`
         );
         // After deleting, refetch the profiles or remove the deleted one from the state
-        setProfiles(profiles.filter((profile) => profile.id !== profileToDelete));
+        setProfiles(
+          profiles.filter((profile) => profile.id !== profileToDelete)
+        );
       } catch (err: any) {
         setError("Failed to delete the profile.");
       } finally {
@@ -117,9 +118,8 @@ useEffect(() => {
   };
 
   const filteredProfiles = selectedBranch
-  
-  ? profiles.filter((profile) => profile.branch === selectedBranch) // Filter profiles by branch_id
-  : profiles;
+    ? profiles.filter((profile) => profile.branch === selectedBranch) // Filter profiles by branch_id
+    : profiles;
 
   return (
     <>
@@ -152,7 +152,7 @@ useEffect(() => {
         <div className="relative mt-4 ml-4 flex flex-row space-x-2 items-center justify-between">
           {/* Branch Dropdown */}
           <div className="w-full lg:w-[300px]">
-            <Dropdown onChange={handleBranchChange}/>
+            <Dropdown onChange={handleBranchChange} />
           </div>
 
           {/* Program Dropdown */}
@@ -160,13 +160,18 @@ useEffect(() => {
             <ProgramDropdown />
           </div> */}
           <div className="flex flex-row gap-2">
-            <Button onClick = {handleClickNew} className="w-[150px] rounded-sm">New Student</Button>
-            <Button onClick = {handleClickTrial} className="rounded-sm">New Trial</Button>
+            <Button className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#213458] transition-all duration-300 mr-4">
+              New Student
+            </Button>
+
+            <Button className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#213458] transition-all duration-300">
+              New Trial
+            </Button>
           </div>
         </div>
 
-          {/* Profiles List */}
-          <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
+        {/* Profiles List */}
+        <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
           {filteredProfiles.map((profile) => (
             <ProfileCard
               key={profile.id}
@@ -180,7 +185,7 @@ useEffect(() => {
               viewPath=""
             />
           ))}
-          </div>
+        </div>
 
         {/* Modal for Deleting */}
         {isModalOpen && (

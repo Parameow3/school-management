@@ -21,6 +21,7 @@ import {
   ClipboardDocumentListIcon,
   BuildingLibraryIcon,
   CheckBadgeIcon,
+  LightBulbIcon,
 } from "@heroicons/react/24/outline";
 import Searchinput from "./Searchinput";
 import Image from "next/image";
@@ -38,22 +39,24 @@ type NavigationItem = {
 const navigation: NavigationItem[] = [
   { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
   {
+    name: "School",
+    href: "#",
+    current: false,
+    icon: LightBulbIcon,
+    subItems: [
+      { name: "School", href: "/school/school", current: false },
+      { name: "Branch", href: "/school/branch", current: false },
+    ],
+  },
+  {
     name: "Student",
     href: "#",
     current: false,
     icon: AcademicCapIcon,
     subItems: [
       { name: "All Students", href: "/student/all-student", current: false },
-      {
-        name: "Add New Students",
-        href: "/student/new-student",
-        current: false,
-      },
-      {
-        name: "Trial Students",
-        href: "/student/trial-student",
-        current: false,
-      },
+      { name: "Add New Students", href: "/student/new-student", current: false },
+      { name: "Trial Students", href: "/student/trial-student", current: false },
     ],
   },
   {
@@ -92,29 +95,18 @@ const navigation: NavigationItem[] = [
     current: false,
     icon: CheckBadgeIcon,
     subItems: [
-      {
-        name: "Student Attendance",
-        href: "/attendance/student",
-        current: false,
-      },
-      {
-        name: "Teacher Attendance",
-        href: "/attendance/teacher",
-        current: false,
-      },
+      { name: "Student Attendance", href: "/attendance/student", current: false },
+      { name: "Teacher Attendance", href: "/attendance/teacher", current: false },
     ],
   },
+
   {
     name: "Setting",
     href: "#",
-    icon: Cog6ToothIcon,
     current: false,
+    icon: Cog6ToothIcon,
     subItems: [
-      {
-        name: "Account Setting",
-        href: "/setting/account-setting",
-        current: false,
-      },
+      { name: "Account Setting", href: "/setting/account-setting", current: false },
       { name: "Logout", href: "/login", current: false },
     ],
   },
@@ -126,16 +118,15 @@ function classNames(...classes: string[]) {
 
 interface DashboardProps {
   children: ReactNode;
-  userName?:string;
-  userUrl?:string;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ children}) => {
+const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [navigationData, setNavigationData] = useState(navigation);
   const userName = "John Doe";
   const userUrl = "/photo.jpg";
+
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
@@ -145,14 +136,12 @@ const Dashboard: React.FC<DashboardProps> = ({ children}) => {
   };
 
   const handleClick = (name: string, subItemName?: string) => {
-    // Reset all `current` properties to `false`
     const updatedNavigation = navigationData.map((item) => {
       const isCurrentParent = item.name === name;
       const isCurrentSubItem = item.subItems?.some(
         (subItem) => subItem.name === subItemName
       );
 
-      // Set `current` for parent item
       if (isCurrentParent || isCurrentSubItem) {
         return {
           ...item,
@@ -174,34 +163,31 @@ const Dashboard: React.FC<DashboardProps> = ({ children}) => {
     });
 
     setNavigationData(updatedNavigation);
-    if (!subItemName) handleToggle(name); 
+    if (!subItemName) handleToggle(name);
   };
 
   useEffect(() => {
     const currentPath = window.location.pathname;
 
     const updatedNavigation = navigation.map((item) => {
-      // Check if the current path matches the parent item or any of its sub-items
-      const isParentCurrent = !!(
-        item.href && currentPath.startsWith(item.href)
-      ); // Ensure boolean value
+      const isParentCurrent = !!(item.href && currentPath.startsWith(item.href));
       const subItemCurrent =
         item.subItems?.some((subItem) =>
           currentPath.startsWith(subItem.href)
-        ) || false; // Ensure boolean value, default to false if undefined
+        ) || false;
 
       if (subItemCurrent) {
-        setOpenMenu(item.name); // Open the menu if a sub-item is active
+        setOpenMenu(item.name);
       }
 
       return {
         ...item,
-        current: isParentCurrent || subItemCurrent, // This will always be a boolean
+        current: isParentCurrent || subItemCurrent,
         subItems:
           item.subItems?.map((subItem) => ({
             ...subItem,
-            current: currentPath.startsWith(subItem.href), // This will always be a boolean
-          })) || [], // Ensure subItems is defined as an array
+            current: currentPath.startsWith(subItem.href),
+          })) || [],
       };
     });
 
@@ -214,7 +200,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children}) => {
       <div
         className={`transition-transform transform duration-300 ease-in-out ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } fixed inset-y-0 lg:top-[62px]  top-[59px] w-[232px] bg-[#213458] z-40 lg:block`}
+        } fixed inset-y-0 lg:top-[62px] top-[59px] w-[232px] bg-[#213458] z-40 lg:block`}
       >
         <div className="flex flex-col gap-y-5 overflow-y-auto px-6 pb-4 mt-3">
           <nav className="flex flex-1 flex-col">
@@ -290,11 +276,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children}) => {
       </div>
 
       {/* Main content */}
-      <div
-        className={`flex flex-col flex-grow transition-all duration-300 ease-in-out ${
-          sidebarOpen ? "ml-0" : "ml-0"
-        }`}
-      >
+      <div className="flex flex-col flex-grow transition-all duration-300 ease-in-out ml-0">
         <div className="bg-[#213458] lg:w-full lg:h-16 w-[390px] h-[59px] fixed top-0 z-30">
           <div className="flex items-center h-16 justify-between px-4 shadow-sm">
             <div className="flex items-center m-0 lg:ml-12 lg:gap-16">
@@ -317,21 +299,6 @@ const Dashboard: React.FC<DashboardProps> = ({ children}) => {
             </div>
             <div className="flex flex-1 justify-center items-center gap-x-4 mr-[30px]">
               <div className="ml-[320px] flex-row flex lg:items-end gap-4">
-                <button
-                  type="button"
-                  className="-m-2.5 p-2.5 text-gray-200 hover:text-gray-300 ml-2"
-                >
-                  <BellIcon className="h-6 w-6" aria-hidden="true" />
-                </button>
-                <button
-                  type="button"
-                  className="-m-2.5 p-2.5 text-gray-200 hover:text-gray-300"
-                >
-                  <PhoneArrowUpRightIcon
-                    className="h-6 w-6"
-                    aria-hidden="true"
-                  />
-                </button>
                 <div aria-hidden="true" className="h-6 w-px ml-2 bg-gray-200" />
                 <Menu as="div" className="relative">
                   <MenuButton className="flex items-center">
@@ -339,7 +306,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children}) => {
                     <h1 className="text-white mr-3">{userName}</h1>
                     <Image
                       alt={userName}
-                      src= {userUrl}
+                      src={userUrl}
                       className="h-8 w-8 rounded-full bg-gray-800"
                       width={20}
                       height={20}

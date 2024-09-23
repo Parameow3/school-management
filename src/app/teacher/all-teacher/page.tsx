@@ -32,7 +32,7 @@ const Page = () => {
         const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher");
         const fetchedProfiles = response.data.results.map((teacher: any) => ({
           id: teacher.id,
-          pic: "/photo.jpg", // Placeholder for the teacher's profile picture
+          pic: "/photo.jpg", 
           user: {
             username: teacher.user.username,
             email: teacher.user.email,

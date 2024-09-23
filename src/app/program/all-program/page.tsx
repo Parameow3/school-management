@@ -40,7 +40,7 @@ const Page = () => {
     const fetchPrograms = async () => {
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/api/academics/program/?page=1"
+          "http://127.0.0.1:8000/api/academics/program/"
         );
         setPrograms(response.data.results || []); // Adjusted to match the structure
         setLoading(false); // Set loading to false once data is fetched
@@ -70,9 +70,7 @@ const Page = () => {
   const handleDeleteProgram = async () => {
     if (programToDelete) {
       try {
-        // Send DELETE request to delete the program
         await axios.delete(`http://127.0.0.1:8000/api/academics/program/${programToDelete.id}/`);
-        // Remove the deleted program from the state
         setPrograms(programs.filter((program) => program.id !== programToDelete.id));
         closeModal(); // Close the modal after deletion
       } catch (err) {
@@ -86,6 +84,10 @@ const Page = () => {
     router.push(`/program/all-program/edit/${id}`);
   };
 
+  const handleviewCourse = (courseId: number) => {
+    router.push(`/program/all-program/course/view/${courseId}`);
+  };
+
   const handleShowAllPrograms = () => {
     setSelectedProgram(null);
   };
@@ -94,16 +96,16 @@ const Page = () => {
     router.push(`/program/new-program`);
   };
 
-  const handleAddCourse = (Id: number) => {
-    router.push(`/program/all-program/course/add/${Id}`);
+  const handleAddCourse = (programId: number) => {
+    router.push(`/program/all-program/course/add/${programId}`);
   };
 
-  const handleEditCourse = (Id: number) => {
-    router.push(`/program/all-program/course/edit/${Id}`);
+  const handleEditCourse = (courseId: number) => {
+    router.push(`/program/all-program/course/edit/${courseId}`);
   };
 
-  const handleDeleteCourse = (Id: number) => {
-    alert(`Delete course with ID: ${Id}`);
+  const handleDeleteCourse = (courseId: number) => {
+    alert(`Delete course with ID: ${courseId}`);
   };
 
   return (
@@ -252,13 +254,25 @@ const Page = () => {
                       <td className="flex flex-row gap-5 items-center justify-center border border-black px-2 py-2">
                         <div className="">
                           <Image
+                            src={"/view.svg"}
+                            width={15}
+                            height={15}
+                            alt="view"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleviewCourse(course.id); // Pass course.id for viewing
+                            }}
+                          />
+                        </div>
+                        <div className="">
+                          <Image
                             src={"/update.svg"}
                             width={15}
                             height={15}
                             alt="edit"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleEditCourse(selectedProgram.id);
+                              handleEditCourse(course.id); // Pass course.id for editing
                             }}
                           />
                         </div>
@@ -270,7 +284,7 @@ const Page = () => {
                             alt="delete"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDeleteCourse(selectedProgram.id);
+                              handleDeleteCourse(course.id); // Pass course.id for deletion
                             }}
                           />
                         </div>

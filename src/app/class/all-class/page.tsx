@@ -17,6 +17,13 @@ interface Class {
   end_date: string;
 }
 
+interface Student {
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+}
+
 const Page = () => {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
@@ -24,7 +31,9 @@ const Page = () => {
   const [studentToDelete, setStudentToDelete] = useState<Class | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [classData, setClassData] = useState<Class[]>([]);
+  const [studentData, setStudentData] = useState<Student[]>([]); // New state for student data
   const [loading, setLoading] = useState(true); 
+  const [studentLoading, setStudentLoading] = useState(false); // Loading state for students
   const [error, setError] = useState<string | null>(null); 
 
   useEffect(() => {
@@ -43,8 +52,22 @@ const Page = () => {
     fetchData();
   }, []);
 
+  // Fetch students when a class is clicked
+  const fetchStudents = async (classId: number) => {
+    setStudentLoading(true);
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/academics/classroom/${classId}/students`);
+      setStudentData(response.data.results); // Update student data based on response
+      setStudentLoading(false);
+    } catch (err: any) {
+      console.error("Error fetching students:", err);
+      setStudentLoading(false);
+    }
+  };
+
   const handleCardClick = (classId: number) => {
     setSelectedClass(classId);
+    fetchStudents(classId); // Fetch students when a class is clicked
   };
 
   const handleDeleteClick = (classInfo: Class) => {
@@ -103,9 +126,7 @@ const Page = () => {
           <div
             key={classInfo.id}
             onClick={() => handleCardClick(classInfo.id)}
-            className={`p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between 
-              // selectedClass && selectedClass !== classInfo.id ? "hidden" : ""
-            }`}
+            className={`p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between`}
           >
             <div className="flex justify-between items-center">
               <h2 className="font-bold text-[18px]">{classInfo.name}</h2>
@@ -153,6 +174,25 @@ const Page = () => {
         ))}
       </div>
 
+      {/* Display students if a class is selected */}
+      {selectedClass && (
+        <div className="mt-6">
+          <h3 className="font-bold text-xl">Students in Class {selectedClass}</h3>
+          {studentLoading ? (
+            <p>Loading students...</p>
+          ) : studentData.length === 0 ? (
+            <p>No students found for this class.</p>
+          ) : (
+            <ul className="mt-4">
+              {studentData.map((student) => (
+                <li key={student.id} className="p-2 bg-white rounded-md shadow-md my-2">
+                  {student.first_name} {student.last_name} ({student.email})
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
       {isModalOpen && <Modal onClose={closeModal} />}
     </div>
   );

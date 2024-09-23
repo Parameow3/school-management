@@ -24,7 +24,7 @@ const Button: React.FC<ButtonProps> = ({ children, bg = 'primary', className = '
   return (
     <button
       onClick={onClick} // Ensuring onClick is passed to the button
-      className={`w-[89px] h-[39px] text-center text-white p-2 font-medium ${buttonBgStyle} ${className}`}
+      className={`w-[149px] h-[39px] text-center text-white p-2 font-medium ${buttonBgStyle} ${className}`}
     >
       {children}
     </button>

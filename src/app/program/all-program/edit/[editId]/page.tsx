@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation"; // Use 'useParams' and 'useRouter' for navigation
 
-const EditProgramPage = () => {
+const Page = () => {
   const { editId } = useParams(); // Get the dynamic route parameter (program ID)
   const router = useRouter(); // For navigation
 
@@ -138,4 +138,4 @@ const EditProgramPage = () => {
   );
 };
 
-export default EditProgramPage;
+export default Page;
