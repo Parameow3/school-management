@@ -14,7 +14,9 @@ const page = () => {
             {/* <--welcome--> */}
             <div className="lg:w-[618px] w-[300px] bg-[#FF6F61] mr-4 backdrop-opacity-75 lg:h-[112px] h-[94px] rounded-[8px] flex flex-row justify-between">
               <div className="flex flex-col justify-center ml-4">
-                <Typography className="text-[15px] lg:text-[24px]" >Welcome back stella</Typography>
+                <Typography className="text-[15px] lg:text-[24px]">
+                  Welcome back stella
+                </Typography>
                 <h3 className="text-white font-medium lg:text-[14px] text-[8px]">
                   you work well , keep it up
                 </h3>
@@ -93,7 +95,7 @@ const page = () => {
               </div>
             </div>
             <div className="mt-4">
-            <FacebookCard></FacebookCard>
+              <FacebookCard></FacebookCard>
             </div>
           </div>
         </div>

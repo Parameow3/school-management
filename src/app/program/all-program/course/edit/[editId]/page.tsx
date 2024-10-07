@@ -10,19 +10,17 @@ const Page = () => {
     code: '',
     description: '',
     credits: '',
-    program: '',  // Default is empty, user must select a program
-    school: 1     // Default to school 1, adjust based on available schools
+    program: '', 
+    school: 1  
   });
 
   const [programs, setPrograms] = useState([]);   // To store available programs
   const [loadingPrograms, setLoadingPrograms] = useState(true); // For handling loading state for programs
   const [error, setError] = useState(null);  // For handling errors
-
-  // Fetch the programs and course when the component mounts
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const programResponse = await axios.get('http://127.0.0.1:8000/api/academics/program/?page=1');
+        const programResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program`);
         setPrograms(programResponse.data.results);
         setLoadingPrograms(false);  
       } catch (error) {
@@ -33,7 +31,7 @@ const Page = () => {
 
     const fetchCourse = async () => {
       try {
-        const courseResponse = await axios.get(`http://127.0.0.1:8000/api/academics/course/${editId}/`);
+        const courseResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${editId}/`);
         const courseData = courseResponse.data;
         setFormData({
           name: courseData.name,
@@ -64,7 +62,7 @@ const Page = () => {
     e.preventDefault();
     try {
       // Send a PUT request to update the course
-      const response = await axios.put(`http://127.0.0.1:8000/api/academics/course/${editId}/`, formData);
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${editId}/`, formData);
       console.log("Course Updated:", response.data);
       alert("Course Updated Successfully");
     } catch (error) {

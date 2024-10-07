@@ -27,31 +27,43 @@ interface Program {
 
 const Page = () => {
   const router = useRouter();
-  const [programs, setPrograms] = useState<Program[]>([]); // Store fetched programs
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null); // Store selected program
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null); 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [programToDelete, setProgramToDelete] = useState<Program | null>(null); // Store the program to delete
+  const [programToDelete, setProgramToDelete] = useState<Program | null>(null);
 
-  const [loading, setLoading] = useState<boolean>(true); // State to manage loading
-  const [error, setError] = useState<string | null>(null); // State to manage errors
-
-  // Fetch programs from the API
+  const [loading, setLoading] = useState<boolean>(true); 
+  const [error, setError] = useState<string | null>(null); 
+  const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
+  useEffect(() => {
+    if (!token) return; 
+
     const fetchPrograms = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/api/academics/program/"
-        );
-        setPrograms(response.data.results || []); // Adjusted to match the structure
-        setLoading(false); // Set loading to false once data is fetched
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setPrograms(response.data.results || []); 
       } catch (err) {
         setError("Failed to fetch programs");
-        setLoading(false); // Stop loading if an error occurs
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchPrograms();
-  }, []);
+  }, [token]);
 
   const handleCardClick = (program: Program) => {
     setSelectedProgram(program);
@@ -68,9 +80,13 @@ const Page = () => {
   };
 
   const handleDeleteProgram = async () => {
-    if (programToDelete) {
+    if (programToDelete && token) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/api/academics/program/${programToDelete.id}/`);
+        await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${programToDelete.id}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setPrograms(programs.filter((program) => program.id !== programToDelete.id));
         closeModal(); // Close the modal after deletion
       } catch (err) {
@@ -84,7 +100,7 @@ const Page = () => {
     router.push(`/program/all-program/edit/${id}`);
   };
 
-  const handleviewCourse = (courseId: number) => {
+  const handleViewCourse = (courseId: number) => {
     router.push(`/program/all-program/course/view/${courseId}`);
   };
 
@@ -110,6 +126,7 @@ const Page = () => {
 
   return (
     <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
+      {/* Page Header */}
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-2 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
           Program |{" "}
@@ -122,21 +139,23 @@ const Page = () => {
           </div>
         </Link>
       </div>
+
+      {/* Dropdown and Add Button */}
       <div className="relative mt-4 flex justify-between">
         <Dropdown />
-        <div className="w-[40px] h-[40px] p-2 bg-[#213458] flex justify-center items-center">
+        <div className="w-[40px] h-[40px] p-2 bg-[#213458] flex justify-center items-center cursor-pointer" onClick={handleAddClick}>
           <Image
             src={"/add.svg"}
             width={20}
             height={20}
             alt="add"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleAddClick();
-            }}
           />
         </div>
       </div>
+
+      {/* Loading or Error Message */}
+      {loading && <p>Loading programs...</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
       {/* Program Cards */}
       <div className="mt-4 grid grid-cols-1 lg:w-[1070px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -193,6 +212,7 @@ const Page = () => {
         ))}
       </div>
 
+      {/* Program Details and Courses Table */}
       <div className="flex flex-col">
         <div>
           {selectedProgram && (
@@ -203,10 +223,8 @@ const Page = () => {
                     Program: {selectedProgram.name}
                   </h3>
                   <div className="flex flex-row gap-6">
-                    <div className="flex flex-row w-[80px] h-[40px] bg-[#213458] p-2">
-                      <label htmlFor="" className="text-white">
-                        New
-                      </label>
+                    <div className="flex flex-row w-[80px] h-[40px] bg-[#213458] p-2 cursor-pointer">
+                      <label className="text-white mr-2">New</label>
                       <Image
                         src={"/add.svg"}
                         width={20}
@@ -252,42 +270,36 @@ const Page = () => {
                         {course.description}
                       </td>
                       <td className="flex flex-row gap-5 items-center justify-center border border-black px-2 py-2">
-                        <div className="">
-                          <Image
-                            src={"/view.svg"}
-                            width={15}
-                            height={15}
-                            alt="view"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleviewCourse(course.id); // Pass course.id for viewing
-                            }}
-                          />
-                        </div>
-                        <div className="">
-                          <Image
-                            src={"/update.svg"}
-                            width={15}
-                            height={15}
-                            alt="edit"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditCourse(course.id); // Pass course.id for editing
-                            }}
-                          />
-                        </div>
-                        <div className="">
-                          <Image
-                            src={"/delete.svg"}
-                            width={20}
-                            height={20}
-                            alt="delete"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCourse(course.id); // Pass course.id for deletion
-                            }}
-                          />
-                        </div>
+                        <Image
+                          src={"/view.svg"}
+                          width={15}
+                          height={15}
+                          alt="view"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewCourse(course.id); // Pass course.id for viewing
+                          }}
+                        />
+                        <Image
+                          src={"/update.svg"}
+                          width={15}
+                          height={15}
+                          alt="edit"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditCourse(course.id); // Pass course.id for editing
+                          }}
+                        />
+                        <Image
+                          src={"/delete.svg"}
+                          width={20}
+                          height={20}
+                          alt="delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCourse(course.id); // Pass course.id for deletion
+                          }}
+                        />
                       </td>
                     </tr>
                   ))}
@@ -303,6 +315,8 @@ const Page = () => {
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal for Deleting Program */}
       {isModalOpen && (
         <Modal
           onClose={closeModal}

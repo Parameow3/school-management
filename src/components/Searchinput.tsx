@@ -1,6 +1,5 @@
 import React from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-
 const Searchinput = () => {
   return (
     <div className="flex items-center border lg:ml-16 border-gray-300 p-2 rounded-md m-3">

@@ -30,6 +30,16 @@ const Page: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [token, setToken] = useState<string | null>(null); // Store token here
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      // Redirect to login if no token
+      router.push("/login");
+    }
+  }, [router]);
   const handleAdd = () => {
     router.push(`/school/branch/add/`);
   };
@@ -37,7 +47,11 @@ const Page: React.FC = () => {
   useEffect(() => {
     const fetchBranches = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/branches/');
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`,{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setBranches(response.data.results);
         setLoading(false);
       } catch (err) {

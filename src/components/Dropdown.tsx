@@ -21,7 +21,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
     // Fetch branches from the API
     const fetchBranches = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/branches/?page=1');
+        const response = await fetch('http://127.0.0.1:8000/api/branches/');
         const data = await response.json();
         setBranches(data.results); // Assuming the API returns a results array
         setIsLoading(false);

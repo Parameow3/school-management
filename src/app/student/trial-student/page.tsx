@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/Button';
@@ -9,21 +9,42 @@ import { useRouter } from "next/navigation";
 import axios from 'axios'; // Import Axios
 
 const Page = () => {
-  const router = useRouter(); 
+  const router = useRouter();
+  
+  // State to store the token
+  const [token, setToken] = useState<string | null>(null);
+
+  // Fetch token from localStorage when the component mounts
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage); // Set token in state
+    } else {
+      // Redirect to login if no token found
+      router.push("/login");
+    }
+  }, [router]);
 
   const [formData, setFormData] = useState({
     client: '',
     phone: '',
     number_student: 1,
     programs: [] as number[], 
-    status: 'Active', 
+    status: 'Pending',  // Default to "Pending" as per your backend structure
     assign_by: 1, 
     handle_by: [] as number[],
   });
 
+  // Function to update formData when programs are selected
+  const handleProgramSelect = (selectedPrograms: number[]) => {
+    setFormData((prevData) => ({ ...prevData, programs: selectedPrograms }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === 'programs' || name === 'handle_by') {
+
+    if (name === 'handle_by') {
+      // Convert comma-separated values to an array of numbers
       const values = value.split(',').map(Number); 
       setFormData({ ...formData, [name]: values });
     } else {
@@ -32,29 +53,43 @@ const Page = () => {
   };
 
   const handleViewClick = () => {
-    router.push(`/student/trial-student/view`); 
+    router.push(`/student/trial-student/view`);
   };
 
   // Handle form submission using Axios
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Responce",Response)
+
+    if (!token) {
+      alert('Authorization token is missing. Please log in.');
+      return;
+    }
+    console.log("Posting data:", formData);
+
     try {
-      // Submit data using Axios
+      // Submit data using Axios, including token in the header
       const response = await axios.post('http://127.0.0.1:8000/api/academics/student_trail/', formData, {
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Add token to Authorization header
         },
       });
 
-      if (response.status === 200) {
+      // Log the response after successful posting
+      console.log("API Response:", response.data);
+
+      if (response.status === 201) { // HTTP 201 Created
         alert('Trial information submitted successfully!');
       } else {
         alert('Failed to submit trial information.');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting the form:', error);
-      alert('Error submitting the form.');
+      if (error.response && error.response.status === 403) {
+        alert('Authorization error: 403 Forbidden. Please check your token.');
+      } else {
+        alert('Error submitting the form.');
+      }
     }
   };
 
@@ -75,13 +110,13 @@ const Page = () => {
       
       <div className='flex flex-row justify-between p-3'>
         <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">Trial Form</h1>
-        <Button className='w-[180px] p-2' onClick={() => handleViewClick()}>
+        <Button className='w-[180px] p-2' onClick={handleViewClick}>
           View 
         </Button>
       </div>
 
       {/* Form */}
-      <form className=" grid grid-cols-1 lg:grid-cols-3 gap-8" onSubmit={handleSubmit}>
+      <form className="grid grid-cols-1 lg:grid-cols-3 gap-8" onSubmit={handleSubmit}>
         {/* Client (Student Name) */}
         <div>
           <label htmlFor="client" className="block text-sm font-medium text-gray-700">
@@ -93,7 +128,7 @@ const Page = () => {
             name="client"
             value={formData.client}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px]  p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
             required
           />
         </div>
@@ -109,10 +144,12 @@ const Page = () => {
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px]  p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
             required
           />
         </div>
+
+        {/* Number of Students */}
         <div>
           <label htmlFor="number_student" className="block text-sm font-medium text-gray-700">
             Number of Students
@@ -123,16 +160,20 @@ const Page = () => {
             name="number_student"
             value={formData.number_student}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px]  p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
             required
           />
         </div>
+
+        {/* Programs */}
         <div>
           <label htmlFor="programs" className="block text-sm font-medium text-gray-700">
             Programs
           </label>
-          <ProgramDropdown />
+          <ProgramDropdown onSelect={handleProgramSelect} />
         </div>
+
+        {/* Status */}
         <div>
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
             Status
@@ -142,7 +183,7 @@ const Page = () => {
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px]  p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
           >
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
@@ -150,6 +191,8 @@ const Page = () => {
             <option value="Completed">Completed</option>
           </select>
         </div>
+
+        {/* Assigned By */}
         <div>
           <label htmlFor="assign_by" className="block text-sm font-medium text-gray-700">
             Assigned By (ID)
@@ -165,7 +208,7 @@ const Page = () => {
           />
         </div>
 
-        {/* Handle By */}
+        {/* Handled By */}
         <div>
           <label htmlFor="handle_by" className="block text-sm font-medium text-gray-700">
             Handled By
@@ -177,9 +220,11 @@ const Page = () => {
             value={formData.handle_by.join(',')}
             onChange={handleChange}
             placeholder="e.g., 1,2,3"
-            className="mt-1 block lg:w-[272px] w-[329px]  p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
           />
         </div>
+
+        {/* Submit Button */}
         <div className="lg:col-span-3 flex justify-center items-center space-x-4">
           <Button className="lg:h-[40px] h-[40px] flex justify-center items-center px-6 py-2 bg-[#213458] text-white font-medium rounded hover:bg-blue-500">
             Submit

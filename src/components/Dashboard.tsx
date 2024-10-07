@@ -7,24 +7,21 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Menu, MenuButton } from "@headlessui/react";
+import { Bars3Icon, PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
 import {
-  Bars3Icon,
-  BellIcon,
   Cog6ToothIcon,
   HomeIcon,
-  PhoneArrowUpRightIcon,
-  PlusIcon,
-  MinusIcon,
+  LightBulbIcon,
   AcademicCapIcon,
   BookOpenIcon,
   ClipboardDocumentListIcon,
   BuildingLibraryIcon,
   CheckBadgeIcon,
-  LightBulbIcon,
 } from "@heroicons/react/24/outline";
-import Searchinput from "./Searchinput";
+import { useRouter } from "next/navigation"; // Add this import for routing
 import Image from "next/image";
+import Profile from "./profile";
+import Searchinput from "./Searchinput";
 
 type NavigationItem = {
   name: string;
@@ -55,8 +52,16 @@ const navigation: NavigationItem[] = [
     icon: AcademicCapIcon,
     subItems: [
       { name: "All Students", href: "/student/all-student", current: false },
-      { name: "Add New Students", href: "/student/new-student", current: false },
-      { name: "Trial Students", href: "/student/trial-student", current: false },
+      {
+        name: "Add New Students",
+        href: "/student/new-student",
+        current: false,
+      },
+      {
+        name: "Trial Students",
+        href: "/student/trial-student",
+        current: false,
+      },
     ],
   },
   {
@@ -95,18 +100,29 @@ const navigation: NavigationItem[] = [
     current: false,
     icon: CheckBadgeIcon,
     subItems: [
-      { name: "Student Attendance", href: "/attendance/student", current: false },
-      { name: "Teacher Attendance", href: "/attendance/teacher", current: false },
+      {
+        name: "Student Attendance",
+        href: "/attendance/student",
+        current: false,
+      },
+      {
+        name: "Teacher Attendance",
+        href: "/attendance/teacher",
+        current: false,
+      },
     ],
   },
-
   {
     name: "Setting",
     href: "#",
     current: false,
     icon: Cog6ToothIcon,
     subItems: [
-      { name: "Account Setting", href: "/setting/account-setting", current: false },
+      {
+        name: "Account Setting",
+        href: "/setting/account-setting",
+        current: false,
+      },
       { name: "Logout", href: "/login", current: false },
     ],
   },
@@ -124,6 +140,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [navigationData, setNavigationData] = useState(navigation);
+  const router = useRouter(); // useRouter hook for routing
   const userName = "John Doe";
   const userUrl = "/photo.jpg";
 
@@ -136,41 +153,44 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   };
 
   const handleClick = (name: string, subItemName?: string) => {
-    const updatedNavigation = navigationData.map((item) => {
-      const isCurrentParent = item.name === name;
-      const isCurrentSubItem = item.subItems?.some(
-        (subItem) => subItem.name === subItemName
-      );
+    if (name === "Setting" && subItemName === "Logout") {
+      // Clear localStorage on logout
+      console.log("Logging out...");
 
-      if (isCurrentParent || isCurrentSubItem) {
-        return {
-          ...item,
-          current: true,
-          subItems: item.subItems?.map((subItem) => ({
-            ...subItem,
-            current: subItem.name === subItemName,
-          })),
-        };
+      // Clear only the specific keys related to authentication
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userInfo");
+      localStorage.removeItem("userId");
+
+      // Clear everything as a failsafe
+      localStorage.clear();
+
+      // Double check if the storage was cleared
+      if (
+        !localStorage.getItem("authToken") &&
+        !localStorage.getItem("userInfo")
+      ) {
+        console.log("LocalStorage cleared successfully.");
+      } else {
+        console.log("Error: localStorage was not cleared properly.");
       }
-      return {
-        ...item,
-        current: false,
-        subItems: item.subItems?.map((subItem) => ({
-          ...subItem,
-          current: false,
-        })),
-      };
-    });
 
-    setNavigationData(updatedNavigation);
-    if (!subItemName) handleToggle(name);
+      // Redirect to login page after clearing data
+      router.push("/login");
+      return;
+    }
+
+    // Normal handling for other cases
+    handleToggle(name);
   };
 
   useEffect(() => {
     const currentPath = window.location.pathname;
 
     const updatedNavigation = navigation.map((item) => {
-      const isParentCurrent = !!(item.href && currentPath.startsWith(item.href));
+      const isParentCurrent = !!(
+        item.href && currentPath.startsWith(item.href)
+      );
       const subItemCurrent =
         item.subItems?.some((subItem) =>
           currentPath.startsWith(subItem.href)
@@ -195,7 +215,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex  overflow-hidden">
       {/* Sidebar */}
       <div
         className={`transition-transform transform duration-300 ease-in-out ${
@@ -297,27 +317,12 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                 <Bars3Icon aria-hidden="true" className="h-6 w-6" />
               </button>
             </div>
-            <div className="flex flex-1 justify-center items-center gap-x-4 mr-[30px]">
-              <div className="ml-[320px] flex-row flex lg:items-end gap-4">
-                <div aria-hidden="true" className="h-6 w-px ml-2 bg-gray-200" />
-                <Menu as="div" className="relative">
-                  <MenuButton className="flex items-center">
-                    <span className="sr-only">Open user menu</span>
-                    <h1 className="text-white mr-3">{userName}</h1>
-                    <Image
-                      alt={userName}
-                      src={userUrl}
-                      className="h-8 w-8 rounded-full bg-gray-800"
-                      width={20}
-                      height={20}
-                    />
-                  </MenuButton>
-                </Menu>
-              </div>
+            <div className="mr-3">
+              <Profile />
             </div>
           </div>
         </div>
-        <main className="flex lg:px-12 px-8 h-full overflow-auto bg-[#F0F4FA] flex-col flex-grow">
+        <main className="flex lg:px-12 px-8 overflow-auto bg-[#F0F4FA] flex-col flex-grow w-full min-h-screen">
           <div
             className={`transition-all duration-300 ease-in-out ${
               sidebarOpen

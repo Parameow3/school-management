@@ -10,8 +10,8 @@ interface School {
   address: string;
   email: string | null;
   established_date: string;
-  phoneNumber: string;
-  schoolweb: string;
+  phone_number: string; // Ensure this matches the backend field
+  schoolweb: string | null; // Ensure this matches the backend field and handles null
 }
 
 const Page: React.FC = () => {
@@ -28,19 +28,34 @@ const Page: React.FC = () => {
   const [schoolAddress, setSchoolAddress] = useState<string>("");
   const [schoolPhoneNumber, setSchoolPhoneNumber] = useState<string>("");
   const [schoolEmail, setSchoolEmail] = useState<string>("");
-  const [schoolEstablishedDate, setSchoolEstablishedDate] =
-    useState<string>("");
+  const [schoolEstablishedDate, setSchoolEstablishedDate] = useState<string>("");
   const [schoolWebsite, setSchoolWebsite] = useState<string>("");
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
 
-  // Fetch the schools on component mount
+  // Fetch the token on component mount
   useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
+
+  // Fetch the schools when the token is available
+  useEffect(() => {
+    if (!token) return;
     const fetchSchools = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/schools/");
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setSchools(response.data.results);
       } catch (err) {
         console.error("Error fetching schools:", err);
@@ -49,7 +64,7 @@ const Page: React.FC = () => {
     };
 
     fetchSchools();
-  }, []);
+  }, [token]);
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = Number(e.target.value);
@@ -60,8 +75,8 @@ const Page: React.FC = () => {
       setSchoolAddress(school.address);
       setSchoolEmail(school.email || "");
       setSchoolEstablishedDate(school.established_date);
-      setSchoolPhoneNumber(school.phoneNumber);
-      setSchoolWebsite(school.schoolweb);
+      setSchoolPhoneNumber(school.phone_number);
+      setSchoolWebsite(school.schoolweb || "Website not available"); // Fallback in case of null
     } else {
       // Clear if no school is selected
       setSchoolName("");
@@ -77,7 +92,7 @@ const Page: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-  
+
     try {
       // Prepare branch data to send
       const branchData = {
@@ -86,7 +101,7 @@ const Page: React.FC = () => {
         phone_number: branchPhoneNumber,
         email: branchEmail,
         location: branchLocation,
-        user_id: userId, // Pass the user ID
+        user_id: userId,
         school_id: selectedSchool || null, // Use school_id if selected
         // Always send school data, even if school is selected
         school: {
@@ -99,16 +114,20 @@ const Page: React.FC = () => {
         },
       };
       console.log("Submitting data:", branchData);
-      await axios.post("http://127.0.0.1:8000/api/branches/", branchData);
+      await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`, branchData, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Ensure the token is included in the request
+        },
+      });
       router.push("/branches");
     } catch (err) {
-      setError("Failed to add branch. Please try again.");
+      alert("Failed to add branch. Please check the form and try again."); // Show alert on failure
       setLoading(false);
     }
   };
-  
+
   return (
-    <div className="lg:ml-[18%] ml-[11%] mt-16 flex flex-col">
+    <div className="lg:ml-[18%] ml-[11%] mt-24 flex flex-col">
       <form
         onSubmit={handleSubmit}
         className="w-[540px] max-w-2xl mx-auto bg-white shadow-lg p-8 rounded-lg"
@@ -295,7 +314,7 @@ const Page: React.FC = () => {
               <input
                 className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
                 type="text"
-                value={schoolWebsite}
+                value={schoolWebsite || "Website not available"}
                 readOnly
               />
             </div>

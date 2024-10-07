@@ -7,8 +7,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProfileCard from "@/components/ProfileCard";
 import Modal from "@/components/Modal";
-
-// Define the structure of the teacher profile data
 interface TeacherProfile {
   branch: number;
   id: number;
@@ -22,30 +20,55 @@ interface TeacherProfile {
 
 const Page = () => {
   const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null); 
   const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
   const [profiles, setProfiles] = useState<TeacherProfile[]>([]);
+  const [error, setError] = useState<string | null>(null); // Track errors
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage); // Set token in state
+    } else {
+      // Redirect to login if no token found
+      router.push("/login");
+    }
+  }, [router]);
+
   useEffect(() => {
     const fetchProfiles = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher");
-        const fetchedProfiles = response.data.results.map((teacher: any) => ({
-          id: teacher.id,
-          pic: "/photo.jpg", 
-          user: {
-            username: teacher.user.username,
-            email: teacher.user.email,
-          },
-          job: "Teacher", 
-        }));
-        setProfiles(fetchedProfiles);
-      } catch (error) {
-        console.error("Error fetching profiles:", error);
+      if (token) {
+        try {
+          console.log("Token being used:", token); // Log the token for debugging
+          const response = await axios.get(  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`, {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`, // Add token to Authorization header
+            },
+          });
+          const fetchedProfiles = response.data.results.map((teacher: any) => ({
+            id: teacher.id,
+            // pic: teacher.image, 
+            user: {
+              username: teacher.user.username,
+              email: teacher.user.email,
+            },
+            job: "Teacher", // Default job as "Teacher"
+          }));
+          setProfiles(fetchedProfiles);
+        } catch (error: any) {
+          console.error("Error fetching profiles:", error);
+          if (error.response && error.response.status === 403) {
+            setError("Authorization failed. Please check your token.");
+          } else {
+            setError("An error occurred while fetching teacher profiles.");
+          }
+        }
       }
     };
     fetchProfiles();
-  }, []); 
+  }, [token]); // Fetch profiles when token is available
 
   const handleViewClick = (id: number) => {
     router.push(`/teacher/all-teacher/view/${id}`);
@@ -64,28 +87,31 @@ const Page = () => {
     setIsModalOpen(false);
     setProfileToDelete(null);
   };
+
   const handleBranchChange = (branchId: number) => {
-    setSelectedBranch(branchId);  
+    setSelectedBranch(branchId);
   };
-  
-  useEffect(() => {
-    console.log("branch", selectedBranch);
-  }, [selectedBranch]);
+
   const handleConfirmDelete = async () => {
     if (profileToDelete !== null) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/api/auth/teacher/${profileToDelete}/`);
-        setProfiles(profiles.filter(profile => profile.id !== profileToDelete));
+        await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/teacher/${profileToDelete}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add token to Authorization header
+          },
+        });
+        setProfiles(profiles.filter((profile) => profile.id !== profileToDelete));
         setIsModalOpen(false);
       } catch (error) {
         console.error("Error deleting profile:", error);
       }
     }
   };
+
   const filteredProfiles = selectedBranch
-  
-  ? profiles.filter((profile) => profile.branch === selectedBranch) // Filter profiles by branch_id
-  : profiles;
+    ? profiles.filter((profile) => profile.branch === selectedBranch)
+    : profiles;
+
   return (
     <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
       {/* Header section */}
@@ -97,20 +123,19 @@ const Page = () => {
         </span>
         <Link href={"/#"} passHref>
           <div className="h-[23px] w-[57px] bg-[#1c2b47] flex items-center justify-center rounded-md">
-            <Image
-              src={"/refresh.svg"}
-              width={16}
-              height={16}
-              alt="Refresh"
-            />
+            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
           </div>
         </Link>
       </div>
+      
+      {error && <div className="text-red-500">{error}</div>} {/* Display error */}
+
       <div className="relative mt-2">
         <Dropdown onChange={handleBranchChange} />
       </div>
+      
       <div className="mt-5 grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2">
-        {filteredProfiles.map(profile => (
+        {filteredProfiles.map((profile) => (
           <ProfileCard
             key={profile.id}
             pic={profile.pic}

@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import Button from '@/components/Button';
 
 // Define the structure of the data from the backend
 interface TeacherData {
@@ -17,24 +19,48 @@ interface TeacherData {
 }
 
 const Page = () => {
+  const router = useRouter();
   const { viewId } = useParams(); // Assuming viewId is passed in the URL
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const handleBack = () => {
+    router.push(`/teacher/all-teacher`);
+  };
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
   useEffect(() => {
     const fetchTeacherData = async () => {
+      if (!token || !viewId) return; // Ensure token and viewId are available before making the request
+
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/auth/teacher/${viewId}/`);
+        setLoading(true); // Set loading state to true when the request starts
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher/${viewId}/`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // Add token to Authorization header
+          },
+        });
         setTeacherData(response.data); // Populate state with API data
       } catch (error) {
+        console.error('Error fetching teacher data:', error);
         setError('Failed to load teacher data.');
       } finally {
-        setLoading(false);
+        setLoading(false); // Set loading state to false when the request finishes
       }
     };
 
-    fetchTeacherData();
-  }, [viewId]);
+    if (token && viewId) {
+      fetchTeacherData();
+    }
+  }, [token, viewId]); // Trigger the useEffect when token or viewId change
 
   if (loading) {
     return <div className="text-center mt-20">Loading...</div>;
@@ -50,6 +76,9 @@ const Page = () => {
 
   return (
     <div className="lg:ml-[219px] mt-20 ml-[25px] flex flex-col">
+            <div className='mt-4'>
+        <Button onClick={handleBack}>Back</Button>
+      </div>
       <div className="bg-white p-6 rounded-lg lg:gap-12 gap-4 h-[450px] flex lg:flex-row flex-col shadow-lg w-[345px] lg:w-[654px] max-w-2xl mx-auto">
         <div className="flex lg:items-start items-center lg:justify-start flex-col mb-4 ml-4">
           <Image

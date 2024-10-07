@@ -35,12 +35,26 @@ const Page = () => {
   const [loading, setLoading] = useState(true); 
   const [studentLoading, setStudentLoading] = useState(false); // Loading state for students
   const [error, setError] = useState<string | null>(null); 
+  const [token, setToken] = useState<string | null>(null); // Store token here
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
 
   useEffect(() => {
     setIsMounted(true);
     const fetchData = async () => {
+      if(!token) return;
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/academics/classroom/?page=1");
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`,{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setClassData(response.data.results); 
         setLoading(false); 
       } catch (err:any) {
@@ -50,14 +64,16 @@ const Page = () => {
     };
 
     fetchData();
-  }, []);
-
-  // Fetch students when a class is clicked
+  }, [token]);
   const fetchStudents = async (classId: number) => {
     setStudentLoading(true);
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/academics/classroom/${classId}/students`);
-      setStudentData(response.data.results); // Update student data based on response
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classId}/students`,{
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setStudentData(response.data.results); 
       setStudentLoading(false);
     } catch (err: any) {
       console.error("Error fetching students:", err);
@@ -67,7 +83,7 @@ const Page = () => {
 
   const handleCardClick = (classId: number) => {
     setSelectedClass(classId);
-    fetchStudents(classId); // Fetch students when a class is clicked
+    fetchStudents(classId);
   };
 
   const handleDeleteClick = (classInfo: Class) => {
@@ -97,11 +113,11 @@ const Page = () => {
   };
 
   if (loading) {
-    return <p>Loading...</p>; 
+    return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>; 
   }
 
   if (error) {
-    return <p>Error: {error}</p>;
+    return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Error: {error}</p>;
   }
 
   return (

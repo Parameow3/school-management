@@ -25,25 +25,42 @@ function Page() {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [token, setToken] = useState<string | null>(null);
 
-  // Fetch the students data
+  // Fetch the token from localStorage when the component mounts
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      // Redirect to login if no token
+      router.push("/login");
+    }
+  }, [router]);
+
+  // Fetch the students data when the token is available
   useEffect(() => {
     const fetchStudents = async () => {
-      try {
-        console.log("Fetching students...");
-        const response = await axios.get('http://127.0.0.1:8000/api/academics/student_trail/?page=1');
-        setStudents(response.data.results);
-        setLoading(false);
-        console.log("Students fetched successfully:", response.data.results);
-      } catch (error) {
-        console.error('Error fetching student data:', error);
-        setError('Failed to load student data.');
-        setLoading(false);
+      if (token) {  // Only fetch if the token is available
+        try {
+          setLoading(true);
+          const response = await axios.get('http://127.0.0.1:8000/api/academics/student_trail/', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setStudents(response.data.results);
+          setLoading(false);
+        } catch (error) {
+          console.error('Error fetching student data:', error);
+          setError('Failed to load student data.');
+          setLoading(false);
+        }
       }
     };
 
     fetchStudents();
-  }, []);
+  }, [token]); // Dependency on token
 
   const handleEdit = (id: number) => {
     router.push(`/student/trial-student/edit/${id}`);
@@ -54,7 +71,6 @@ function Page() {
   };
 
   const handleDeleteClick = (id: number) => {
-    console.log("Delete clicked for student with id:", id);
     setSelectedStudentId(id);
     setShowModal(true);  // Show the modal when delete is clicked
   };
@@ -62,13 +78,15 @@ function Page() {
   const handleDeleteConfirm = async () => {
     if (selectedStudentId) {
       try {
-        console.log(`Deleting student with id: ${selectedStudentId}`);
-        await axios.delete(`http://127.0.0.1:8000/api/academics/student_trail/${selectedStudentId}/`);
+        await axios.delete(`http://127.0.0.1:8000/api/academics/student_trail/${selectedStudentId}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         alert('Student deleted successfully!');
         // Remove the deleted student from the state without reloading
         setStudents((prev) => prev.filter((student) => student.id !== selectedStudentId));
         setShowModal(false);  // Close the modal
-        console.log("Student deleted successfully");
       } catch (error) {
         console.error('Error deleting student:', error);
         alert('Failed to delete student.');
@@ -77,16 +95,15 @@ function Page() {
   };
 
   const handleModalClose = () => {
-    console.log("Modal closed");
     setShowModal(false);  // Close the modal without deleting
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className='lg:ml-[18%] ml-[11%] mt-20 flex flex-col'>Loading...</div>;
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className='lg:ml-[18%] ml-[11%] mt-20 flex flex-col'>{error}</div>;
   }
 
   return (
@@ -133,8 +150,21 @@ function Page() {
               </td>
               <td className="border px-4 py-2">{student.assign_by}</td>
               <td className="border px-4 py-2 flex justify-center">
-                <Image src="/update.svg" width={20} height={20} alt='update' className="mr-2" onClick={() => handleEdit(student.id)} />
-                <Image src="/delete.svg" width={20} height={20} alt='delete' onClick={() => handleDeleteClick(student.id)} />
+                <Image
+                  src="/update.svg"
+                  width={20}
+                  height={20}
+                  alt='update'
+                  className="mr-2"
+                  onClick={() => handleEdit(student.id)}
+                />
+                <Image
+                  src="/delete.svg"
+                  width={20}
+                  height={20}
+                  alt='delete'
+                  onClick={() => handleDeleteClick(student.id)}
+                />
               </td>
             </tr>
           ))}
@@ -142,9 +172,7 @@ function Page() {
       </table>
 
       {showModal && (
-        <Modal
-          onClose={handleModalClose}
-        />
+        <Modal onClose={handleModalClose} onConfirm={handleDeleteConfirm} />
       )}
     </div>
   );

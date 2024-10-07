@@ -1,62 +1,73 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import Button from "@/components/Button";
-import axios from "axios"; // Import Axios for HTTP requests
+import axios from "axios";
 
-const ClassForm = () => {
+interface Program {
+  id: number;
+  name: string;
+}
+
+interface Teacher {
+  id: number;
+  name: string;
+}
+
+const Page = () => {
+  const [isMounted, setIsMounted] = useState(false); // Track whether the component is mounted
   const [formData, setFormData] = useState({
     className: "",
-    program: "", // Store the program ID here
-    teacher: "", // Store the teacher ID here
-    studentName: "",
+    program: "",
+    teacher: "",
     credit: "",
     start_date: "",
     end_date: "",
   });
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [loadingPrograms, setLoadingPrograms] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const [teachers, setTeachers] = useState([]); // Store teacher data here
-  const [programs, setPrograms] = useState([]); // Store program (course) data here
-  const [loadingTeachers, setLoadingTeachers] = useState(true); // For handling loading state for teachers
-  const [loadingPrograms, setLoadingPrograms] = useState(true); // For handling loading state for programs
-  const [error, setError] = useState(null); // For handling errors
-
-  // Fetch the list of teachers when the component mounts
+  // This ensures that the component only renders on the client-side after it's mounted
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher?page=1");
-        setTeachers(response.data.results); // Assuming the API returns a results array
-        setLoadingTeachers(false);
-      } catch (err:any) {
-        setError(err);
-        setLoadingTeachers(false);
-      }
-    };
-
-    fetchTeachers();
+    setIsMounted(true);
   }, []);
 
-  // Fetch the list of programs (courses) when the component mounts
+  // Fetch teachers and programs after component is mounted
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/api/academics/course/?page=1");
-        setPrograms(response.data.results); // Assuming the API returns a results array
-        setLoadingPrograms(false);
-      } catch (err:any) {
-        setError(err);
-        setLoadingPrograms(false);
-      }
-    };
+    if (isMounted) {
+      const fetchTeachers = async () => {
+        try {
+          const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher?page=1");
+          setTeachers(response.data.results);
+          setLoadingTeachers(false);
+        } catch (err: any) {
+          setError(err.message || "Error loading teachers");
+          setLoadingTeachers(false);
+        }
+      };
+      fetchTeachers();
+    }
+  }, [isMounted]);
 
-    fetchPrograms();
-  }, []);
+  useEffect(() => {
+    if (isMounted) {
+      const fetchPrograms = async () => {
+        try {
+          const response = await axios.get("http://127.0.0.1:8000/api/academics/course/?page=1");
+          setPrograms(response.data.results);
+          setLoadingPrograms(false);
+        } catch (err: any) {
+          setError(err.message || "Error loading programs");
+          setLoadingPrograms(false);
+        }
+      };
+      fetchPrograms();
+    }
+  }, [isMounted]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -64,20 +75,18 @@ const ClassForm = () => {
     });
   };
 
-  // Handle form submission and post the data to the backend
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const postData = {
-      name: formData.className, // Class name input
-      courses: [parseInt(formData.program)], // Assuming the program is mapped to a course ID, make sure it is an array
-      teacher: parseInt(formData.teacher), // The selected teacher ID
-      start_date: formData.start_date, // Should be in YYYY-MM-DD format
-      end_date: formData.end_date,     // Should be in YYYY-MM-DD format
+      name: formData.className,
+      courses: [parseInt(formData.program)],
+      teacher: parseInt(formData.teacher),
+      start_date: formData.start_date,
+      end_date: formData.end_date,
     };
 
     try {
-      // Post the data to the backend API
       const response = await axios.post("http://127.0.0.1:8000/api/academics/classroom/", postData, {
         headers: {
           "Content-Type": "application/json",
@@ -95,137 +104,126 @@ const ClassForm = () => {
     }
   };
 
+  // If the component is not yet mounted, show a loading state to prevent SSR mismatches
+  if (!isMounted) {
+    return <div>Loading...</div>; // Ensures consistent SSR and CSR
+  }
+
+  // Render the form after the component is mounted
   return (
-    <div className="lg:ml-[16%] mt-20 ml-[11%] flex flex-col">
-      <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-        <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
-          Class | <Image src={"/home.svg"} width={15} height={15} alt="public" /> New-class
-        </span>
+    <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
+      <div className="lg:w-[60%] w-[90%] mx-auto mt-10 p-6 bg-white rounded-lg shadow-md space-y-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">Class Form</h1>
+        </div>
 
-        <Link href={"/#"} passHref>
-          <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
-            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="flex flex-col">
+            <label htmlFor="className" className="text-sm font-medium text-gray-700">Class Name</label>
+            <input
+              id="className"
+              name="className"
+              type="text"
+              placeholder="Enter Class Name"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            />
           </div>
-        </Link>
-      </div>
 
-      <h1 className="text-center lg:text-2xl text-lg font-bold mb-8 mt-4 border-b-2">
-        Class Form
-      </h1>
-
-      <div className="">
-        <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-4">
-          {/* Responsive grid - 1 column on mobile and 3 columns on large screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
-
-            {/* Class Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Class Name</label>
-              <input
-                type="text"
-                name="className"
-                value={formData.className}
-                onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
-              />
-            </div>
-
-            {/* Program Dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Program</label>
-              {loadingPrograms ? (
-                <p>Loading programs...</p>
-              ) : error ? (
-                <p>Error loading programs</p>
-              ) : (
-                <select
-                  name="program"
-                  value={formData.program}
-                  onChange={handleChange}
-                  className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select a Program</option>
-                  {programs.map((program: any) => (
-                    <option key={program.id} value={program.id}>
-                      {program.name} {/* Adjusted to access program name */}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Teacher Dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Teacher</label>
-              {loadingTeachers ? (
-                <p>Loading teachers...</p>
-              ) : error ? (
-                <p>Error loading teachers</p>
-              ) : (
-                <select
-                  name="teacher"
-                  value={formData.teacher}
-                  onChange={handleChange}
-                  className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select a Teacher</option>
-                  {teachers.map((teacher: any) => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.user.username} {/* Adjusted to access username */}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Start Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Start Date</label>
-              <input
-                type="date"
-                name="start_date"
-                value={formData.start_date}
-                onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
-              />
-            </div>
-
-            {/* End Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">End Date</label>
-              <input
-                type="date"
-                name="end_date"
-                value={formData.end_date}
-                onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
-              />
-            </div>
-
-            {/* Credit */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Credit</label>
+          {/* Program Dropdown */}
+          <div className="flex flex-col">
+            <label htmlFor="program" className="text-sm font-medium text-gray-700">Program</label>
+            {loadingPrograms ? (
+              <span className="text-sm text-blue-500">Loading programs...</span>
+            ) : error ? (
+              <span className="text-sm text-red-500">Error loading programs</span>
+            ) : (
               <select
-                name="credit"
-                value={formData.credit}
+                id="program"
+                name="program"
+                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
               >
-                <option value="">Select a credit</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
+                <option value="">Select a program</option>
+                {programs.map((program) => (
+                  <option key={program.id} value={program.id}>
+                    {program.name}
+                  </option>
+                ))}
               </select>
-            </div>
+            )}
           </div>
 
-          {/* Submit Button */}
-          <Button bg="secondary">Create</Button>
-        </form>
+          {/* Teacher Dropdown */}
+          <div className="flex flex-col">
+            <label htmlFor="teacher" className="text-sm font-medium text-gray-700">Teacher</label>
+            {loadingTeachers ? (
+              <span className="text-sm text-blue-500">Loading teachers...</span>
+            ) : error ? (
+              <span className="text-sm text-red-500">Error loading teachers</span>
+            ) : (
+              <select
+                id="teacher"
+                name="teacher"
+                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={handleChange}
+              >
+                <option value="">Select a teacher</option>
+                {teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="credit" className="text-sm font-medium text-gray-700">Credit</label>
+            <select
+              id="credit"
+              name="credit"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            >
+              <option value="">Select a credit</option>
+            </select>
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="startDate" className="text-sm font-medium text-gray-700">Start Date</label>
+            <input
+              id="startDate"
+              name="start_date"
+              type="date"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="endDate" className="text-sm font-medium text-gray-700">End Date</label>
+            <input
+              id="endDate"
+              name="end_date"
+              type="date"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={handleSubmit}
+            className="px-8 py-3 bg-[#213458] text-white font-semibold rounded-md hover:bg-[#213498] transition duration-300"
+          >
+            Create
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ClassForm;
+export default Page;

@@ -9,35 +9,49 @@ import Button from '@/components/Button';
 const Page = () => {
   const params = useParams();
   const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
   const id = parseInt(params.editId as string, 10); // Extract dynamic id from URL
   const [formData, setFormData] = useState({
     user: {
       username: '',
       email: '',
-      password: '',
+      password: '', 
     },
-    school: 1, // Default value
+    school: 1, 
     specialization: '',
-    hire_date: '', // Empty by default
+    hire_date: '',
   });
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage); // Set token in state
+    } else {
+      router.push("/login");
+    }
+  }, [router]);
   useEffect(() => {
     const fetchTeacherData = async () => {
+      if (!token) return; 
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/auth/teacher/${id}/`);
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher/${id}/`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, 
+          },
+        });
         const teacherData = response.data;
         setFormData({
           user: {
             username: teacherData.user.username,
             email: teacherData.user.email,
-            password: teacherData.user.password, // Corrected syntax
+            password: '', // Empty password for security reasons
           },
           school: teacherData.school,
           specialization: teacherData.specialization,
-          hire_date: new Date(teacherData.hire_date).toISOString().split('T')[0], // Format the date
+          hire_date: new Date(teacherData.hire_date).toISOString().split('T')[0], // Format date to YYYY-MM-DD
         });
       } catch (error) {
         console.error('Error fetching teacher data:', error);
@@ -45,10 +59,10 @@ const Page = () => {
       }
     };
 
-    fetchTeacherData();
-  }, [id]);
-
-  // Handle form input changes
+    if (id && token) {
+      fetchTeacherData();
+    }
+  }, [id, token]); 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
@@ -57,32 +71,40 @@ const Page = () => {
         ...formData,
         user: { ...formData.user, [name]: value },
       });
+    } else if (name === 'school') {
+      setFormData({
+        ...formData,
+        school: parseInt(value, 10), // Convert string to number using parseInt
+      });
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
+
   const handleBack = () => {
     router.push(`/teacher/all-teacher`);
   };
-  // Handle form submission for PUT request
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      // Perform the PUT request to update teacher data
-      const response = await axios.put(`http://127.0.0.1:8000/api/auth/teacher/${id}/`, formData, {
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher/${id}/`, formData, {
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
       });
-
       console.log('Update response:', response.data);
       alert('Teacher information updated successfully!');
     } catch (error: any) {
       console.error('Error updating the teacher:', error);
-      setError('Failed to update the teacher information.');
+      if (error.response && error.response.data) {
+        setError(error.response.data.detail || 'Failed to update the teacher information.');
+      } else {
+        setError('Failed to update the teacher information.');
+      }
     } finally {
       setLoading(false);
     }
@@ -111,7 +133,6 @@ const Page = () => {
       <div className="">
         <form className="space-y-8" onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
-            {/* Username */}
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                 Username
@@ -126,8 +147,6 @@ const Page = () => {
                 required
               />
             </div>
-
-            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email
@@ -142,11 +161,9 @@ const Page = () => {
                 required
               />
             </div>
-
-            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password:
+                Password
               </label>
               <input
                 type="password"
@@ -155,12 +172,10 @@ const Page = () => {
                 value={formData.user.password}
                 onChange={handleChange}
                 minLength={6}
-                required
+                placeholder="Enter new password if changing"
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
-
-            {/* School */}
             <div>
               <label htmlFor="school" className="block text-sm font-medium text-gray-700">
                 School ID
@@ -175,8 +190,6 @@ const Page = () => {
                 required
               />
             </div>
-
-            {/* Specialization */}
             <div>
               <label htmlFor="specialization" className="block text-sm font-medium text-gray-700">
                 Specialization
@@ -191,8 +204,6 @@ const Page = () => {
                 required
               />
             </div>
-
-            {/* Hire Date */}
             <div>
               <label htmlFor="hire_date" className="block text-sm font-medium text-gray-700">
                 Hire Date

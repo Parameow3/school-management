@@ -1,20 +1,21 @@
-'use client';
+"use client";
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import axios from 'axios';
+import { useRouter } from "next/navigation";
 
 interface Student {
   id: number;
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   age: number;
   gender: string;
   admissionDate: string;
-  class?: string; 
+  belt_level: string; 
   dob: string;
   address: string;
-  placeOfBirth: string;
+  pob: string; // Place of birth
   nationality: string;
   studentPassport: string;
   fatherName: string;
@@ -28,28 +29,49 @@ interface Student {
 }
 
 const Page = () => {
+  const router = useRouter();
   const { viewId } = useParams(); // Get the student ID from the URL
   const [student, setStudent] = useState<Student | null>(null); // Initialize as null
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      // Redirect to login if no token
+      router.push("/login");
+    }
+  }, [router]);
 
   useEffect(() => {
     const fetchStudent = async () => {
+      if (!token) return; // Ensure token is available before making API request
+
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/academics/students/${viewId}`); // Fetch data using student ID
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${viewId}`, 
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ); // Fetch data using student ID
         const data = response.data;
 
         const mappedStudent: Student = {
           id: data.id,
-          firstName: data.first_name,
-          lastName: data.last_name,
+          first_name: data.first_name,
+          last_name: data.last_name,
           age: data.age,
           gender: data.gender,
           admissionDate: data.admission_date,
-          class: data.class || '', // Optional field
+          belt_level: data.belt_level || '', // Optional field
           dob: data.dob,
           address: data.address,
-          placeOfBirth: data.pob,
+          pob: data.pob, // Place of birth
           nationality: data.nationality,
           studentPassport: data.student_passport,
           fatherName: data.father_name,
@@ -59,7 +81,7 @@ const Page = () => {
           motherOccupation: data.mother_occupation,
           motherPhone: data.mother_phone || '', // Optional field
           parentContact: data.parent_contact,
-          profilePicture: data.profile_picture || '/default-photo.jpg', // Fallback if no profile picture
+          profilePicture: data.image || '/default-photo.jpg', // Fallback if no profile picture
         };
 
         setStudent(mappedStudent);
@@ -70,7 +92,7 @@ const Page = () => {
       }
     };
     fetchStudent();
-  }, [viewId]);
+  }, [viewId, token]);
 
   if (isLoading) {
     return <div className="text-center mt-20">Loading...</div>;
@@ -90,51 +112,50 @@ const Page = () => {
         <div className="flex lg:items-start items-center flex-col mb-4 ml-4">
           <Image
             src={student.profilePicture || '/default-photo.jpg'}
-            alt={`${student.firstName} ${student.lastName}`}
+            alt={`${student.first_name} ${student.last_name}`}
             width={192}
             height={192}
             className="lg:w-48 lg:h-48 w-16 h-16 mr-4 object-cover"
           />
           <h3 className="mt-1 lg:ml-11 lg:font-bold mr-4 text-[12px] lg:text-[16px]">
-          {student.lastName} {student.firstName} 
+            {student.last_name} {student.first_name}
           </h3>
         </div>
         <div className="text-left">
-  <h2 className="font-bold inline-block border-b-2 ml-28 lg:ml-0">About Me</h2>
-  
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>First Name:</strong> {student.firstName}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Last Name:</strong> {student.lastName}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Age:</strong> {student.age}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Gender:</strong> {student.gender}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Admission Date:</strong> {student.admissionDate}</p>
-  
-  {student.class && (
-    <p className="p-2 text-[12px] lg:text-[16px]"><strong>Class:</strong> {student.class}</p>
-  )}
-  
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Date of Birth:</strong> {student.dob}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Address:</strong> {student.address}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Place of Birth:</strong> {student.placeOfBirth}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Nationality:</strong> {student.nationality}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Student Passport:</strong> {student.studentPassport}</p>
-  
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Name:</strong> {student.fatherName}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Occupation:</strong> {student.fatherOccupation}</p>
-  
-  {student.fatherPhone && (
-    <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Phone:</strong> {student.fatherPhone}</p>
-  )}
-  
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Mother's Name:</strong> {student.motherName}</p>
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Mother's Occupation:</strong> {student.motherOccupation}</p>
-  
-  {student.motherPhone && (
-    <p className="p-2 text-[12px] lg:text-[16px]"><strong>Mother's Phone:</strong> {student.motherPhone}</p>
-  )}
-  
-  <p className="p-2 text-[12px] lg:text-[16px]"><strong>Parent Contact:</strong> {student.parentContact}</p>
-</div>
+          <h2 className="font-bold inline-block border-b-2 ml-28 lg:ml-0">About Me</h2>
 
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>First Name:</strong> {student.first_name}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Last Name:</strong> {student.last_name}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Age:</strong> {student.age}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Gender:</strong> {student.gender}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Admission Date:</strong> {student.admissionDate}</p>
+
+          {student.belt_level && (
+            <p className="p-2 text-[12px] lg:text-[16px]"><strong>Belt Level:</strong> {student.belt_level}</p>
+          )}
+
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Date of Birth:</strong> {student.dob}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Address:</strong> {student.address}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Place of Birth:</strong> {student.pob}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Nationality:</strong> {student.nationality}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Student Passport:</strong> {student.studentPassport}</p>
+
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Name:</strong> {student.fatherName}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Occupation:</strong> {student.fatherOccupation}</p>
+
+          {student.fatherPhone && (
+            <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Phone:</strong> {student.fatherPhone}</p>
+          )}
+
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Mother's Name:</strong> {student.motherName}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Mother's Occupation:</strong> {student.motherOccupation}</p>
+
+          {student.motherPhone && (
+            <p className="p-2 text-[12px] lg:text-[16px]"><strong>Mother's Phone:</strong> {student.motherPhone}</p>
+          )}
+
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Parent Contact:</strong> {student.parentContact}</p>
+        </div>
       </div>
     </div>
   );

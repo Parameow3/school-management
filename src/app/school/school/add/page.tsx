@@ -48,7 +48,7 @@ const Page: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/schools/', formData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, formData);
       router.push("/school/school");
       console.log(response.data);
       alert('School added successfully!');

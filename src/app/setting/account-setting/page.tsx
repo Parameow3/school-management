@@ -26,7 +26,7 @@ const Page = () => {
   useEffect(() => {
     const fetchTeacher = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher/3/");
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher/3/`);
         const teacherData = response.data;
 
         setTeacher({

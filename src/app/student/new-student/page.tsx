@@ -4,9 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Dropdown from '@/components/Dropdown';
 import Button from '@/components/Button';
-import axios from 'axios'; // Import axios to make HTTP requests
-
-// Define the Classroom interface to match the structure of the API response
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 interface Classroom {
   id: number;
   name: string;
@@ -33,19 +32,34 @@ const Page = () => {
     motherName: '',
     motherOccupation: '',
     parentContact: '',
+    image: '',
   });
-
-  // Correctly define classrooms with the Classroom type
+  const router= useRouter();
   const [classrooms, setClassrooms] = useState<Classroom[]>([]); 
   const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null); 
   const [loading, setLoading] = useState<boolean>(true); 
   const [error, setError] = useState<string | null>(null); 
+  const [imagePreview, setImagePreview] = useState<string | null>(null); 
+  const [token, setToken] = useState<string | null>(null); // Store token here
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      // Redirect to login if no token
+      router.push("/login");
+    }
+  }, [router]);
 
-  // Fetch classrooms from the API
   useEffect(() => {
     const fetchClassrooms = async () => {
+      if(!token) return;
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/academics/classroom/?page=1');
+        const response = await axios.get('http://127.0.0.1:8000/api/academics/classroom',{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setClassrooms(response.data.results || []); // Assuming the response is paginated
         setLoading(false);
       } catch (err) {
@@ -55,7 +69,7 @@ const Page = () => {
     };
 
     fetchClassrooms();
-  }, []);
+  }, [token]);
 
   const handleClassroomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedClassroom(parseInt(e.target.value, 10));
@@ -66,45 +80,67 @@ const Page = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file)); // Create a local URL to preview the selected image
+      setFormData((prevFormData) => ({ ...prevFormData!, profile_picture: file.name }));
+    }
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Submitted data:", formData);
+    if (!token) {
+      alert('No authentication token found. Please log in.');
+      router.push('/login');
+      return;
+    }
+  
+    const formDataToSubmit = new FormData();
+    formDataToSubmit.append('first_name', formData.firstName);
+    formDataToSubmit.append('last_name', formData.lastName);
+    formDataToSubmit.append('age', formData.age);
+    formDataToSubmit.append('gender', formData.gender);
+    formDataToSubmit.append('admission_date', formData.admissionDate);
+    formDataToSubmit.append('class', formData.class);
+    formDataToSubmit.append('branch', formData.branch);
+    formDataToSubmit.append('dob', formData.dob);
+    formDataToSubmit.append('nationality', formData.nationality);
+    formDataToSubmit.append('place_of_birth', formData.placeOfBirth);
+    formDataToSubmit.append('belt_level', formData.beltLevel);
+    formDataToSubmit.append('student_passport', formData.studentPassport);
+    formDataToSubmit.append('address', formData.address);
+    formDataToSubmit.append('father_name', formData.fatherName);
+    formDataToSubmit.append('father_occupation', formData.fatherOccupation);
+    formDataToSubmit.append('phone', formData.phone);
+    formDataToSubmit.append('mother_name', formData.motherName);
+    formDataToSubmit.append('mother_occupation', formData.motherOccupation);
+    formDataToSubmit.append('parent_contact', formData.parentContact);
+  
+    // Append the image file to the formData (if it's been selected)
+    if (formData.image) {
+      formDataToSubmit.append('profile_picture', formData.image); // The key must match the backend's expected name
+    }
+  
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/academics/students/', {
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        age: formData.age,
-        gender: formData.gender,
-        admission_date: formData.admissionDate,
-        class: formData.class,
-        branch: formData.branch,
-        dob: formData.dob,
-        nationality: formData.nationality,
-        place_of_birth: formData.placeOfBirth,
-        belt_level: formData.beltLevel,
-        student_passport: formData.studentPassport,
-        address: formData.address,
-        father_name: formData.fatherName,
-        father_occupation: formData.fatherOccupation,
-        phone: formData.phone,
-        mother_name: formData.motherName,
-        mother_occupation: formData.motherOccupation,
-        parent_contact: formData.parentContact,
-      }, {
-        headers: {
-          'Content-Type': 'application/json', // Sending JSON data
-        },
-      });
-
+      const response = await axios.post(
+        'http://127.0.0.1:8000/api/academics/students/',
+        formDataToSubmit,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data', // Use multipart for file uploads
+            Authorization: `Bearer ${token}`,  // Include the token
+          },
+        }
+      );
       console.log('Response:', response.data);
       alert('Form submitted successfully!');
+      router.push('/student/all-student');
     } catch (error) {
-      console.error('Error submitting the form:', error);
+      console.error('Error submitting the form:', error); // Log the error for debugging
       alert('Failed to submit the form.');
     }
   };
-
+  
   return (
     <div className="lg:ml-[18%] ml-[11%] mt-20 h-[1040px] flex flex-col">
       <div className="lg:w-[1040px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
@@ -198,7 +234,6 @@ const Page = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
-
             <div>
               <label htmlFor="classroom" className="block text-sm font-medium text-gray-700">
                 Classroom:
@@ -226,6 +261,28 @@ const Page = () => {
                 Branch:
               </label>
               <Dropdown onChange={(value: any) => setFormData({ ...formData, branch: value })} />
+            </div>
+            <div>
+              <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">Profile Picture:</label>
+              <input
+                type="file"
+                id="profile_picture"
+                name="profile_picture"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
+              />
+              {imagePreview && (
+                <div className="mt-4">
+                  <Image
+                    src={imagePreview}
+                    alt="Profile Preview"
+                    width={192}
+                    height={192}
+                    className="rounded-full"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </section>

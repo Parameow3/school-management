@@ -22,7 +22,7 @@ const Page = ( {params }: { params: { id: string } }) => {
   useEffect(() => {
     const fetchEnrollmentData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/academics/enrollment/${Id}");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${Id}`);
         const data = await response.json();
         setEnrollmentData(data.results); // Assuming "results" contains the array of enrollments
         setLoading(false);

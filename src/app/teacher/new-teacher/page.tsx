@@ -1,11 +1,20 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios"; // Import axios to make HTTP requests
 import Button from "@/components/Button";
-
-const TeacherPage = () => {
+import { useRouter } from "next/navigation";
+interface School {
+  id: number;
+  name: string;
+}
+const Page = () => {
+  const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
+  const [schools, setSchools] = useState<School[]>([]); 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);  // State for loading
   const [formData, setFormData] = useState({
     user: {
       username: "",
@@ -14,8 +23,42 @@ const TeacherPage = () => {
     },
     school: 1, // Assuming this is a valid school ID, adjust as needed
     specialization: "",
-    hire_date: new Date().toISOString(), // ISO string to include date-time
+    hire_date: new Date().toISOString().slice(0, 16), // Correct date format for datetime-local
   });
+
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      // Redirect to login if no token
+      router.push("/login");
+    }
+  }, [router]);
+
+  useEffect(() => {
+    const fetchSchools = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, // Pass token if available
+          },
+        });
+        console.log("Fetched Schools:", response.data.results); // Access 'results' from the response
+        setSchools(response.data.results || []); // Set schools to 'results' field
+        setLoading(false);
+      } catch (err:any) {
+        console.error("Error fetching schools:", err.response?.data || err.message);
+        setError("Failed to load schools");
+        setLoading(false);
+      }
+    };
+  
+    if (token) {
+      fetchSchools(); // Fetch schools if token is available
+    }
+  }, [token]);
 
   // Handle input change for both user and non-user fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -34,13 +77,26 @@ const TeacherPage = () => {
   // Submit form to backend
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!token) {
+      alert("Authorization token is missing. Please log in.");
+      router.push("/login");
+      return;
+    }
+
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/auth/teacher", formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add token in Authorization header
+          },
+        }
+      );
+
       console.log("Response:", response.data);
+      router.push('/teacher/all-teacher');
       alert("Teacher information submitted successfully!");
     } catch (error: any) {
       console.error("Error submitting the form:", error);
@@ -75,7 +131,7 @@ const TeacherPage = () => {
           <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                UserName:
+                Username:
               </label>
               <input
                 type="text"
@@ -145,38 +201,46 @@ const TeacherPage = () => {
                 type="datetime-local"
                 id="hire_date"
                 name="hire_date"
-                value={formData.hire_date.split(".")[0]} // Format for datetime-local input
+                value={formData.hire_date} // Correct date format
                 onChange={handleChange}
                 required
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
-
             <div>
-              <label htmlFor="school" className="block text-sm font-medium text-gray-700">
-                School:
-              </label>
-              <input
-                type="number"
-                id="school"
-                name="school"
-                value={formData.school}
-                onChange={handleChange}
-                required
-                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-              />
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              School
+            </label>
+            <select
+              name="school"
+              value={formData.school}
+              onChange={handleChange}
+              className="block w-[316px] h-[44px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#213458] focus:border-indigo-500"
+              required
+            >
+              <option value="" disabled selected>Select a school</option>
+              {Array.isArray(schools) && schools.length > 0 ? (
+                schools.map((school) => (
+                  <option key={school.id} value={school.id}>
+                    {school.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>No schools available</option>
+              )}
+            </select>
+          </div>
           </div>
         </section>
 
         {/* Form Actions */}
         <div className="flex justify-center items-center space-x-4">
           <Button bg="secondary">Cancel</Button>
-          <Button >Submit</Button>
+          <Button>Submit</Button>
         </div>
       </form>
     </div>
   );
 };
 
-export default TeacherPage;
+export default Page;

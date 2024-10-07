@@ -1,31 +1,63 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
-const ProgramDropdown = () => {
-  const [availablePrograms, setAvailablePrograms] = useState<any[]>([]); // Store the fetched programs
-  const [selectedProgram, setSelectedProgram] = useState<number | null>(null); // Store the selected program
+interface ProgramDropdownProps {
+  onSelect: (selectedPrograms: number[]) => void;
+}
 
-  // Fetch programs when the component is mounted
+const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect }) => {
+  const router = useRouter();
+  const [availablePrograms, setAvailablePrograms] = useState<any[]>([]);
+  const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch the token from localStorage when the component mounts
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      // Redirect to login if no token
+      router.push("/login");
+    }
+  }, [router]);
+
+  // Fetch programs once the token is available
   useEffect(() => {
     const fetchPrograms = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/api/academics/program/?page=1");
-        setAvailablePrograms(response.data.results); // Assuming programs are in the `results` array
-      } catch (error) {
-        console.error("Error fetching programs:", error);
+      if (token) {
+        try {
+          const response = await axios.get(
+            "http://127.0.0.1:8000/api/academics/program/",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`, // Add the token in headers
+              },
+            }
+          );
+          setAvailablePrograms(response.data.results); // Assuming programs are in the `results` array
+        } catch (error) {
+          console.error("Error fetching programs:", error);
+          setError("Failed to fetch programs.");
+        }
       }
     };
 
     fetchPrograms();
-  }, []);
+  }, [token]); // Trigger when the token is available
 
   const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedProgram(Number(e.target.value)); // Update the selected program
+    const selectedValue = Number(e.target.value);
+    setSelectedProgram(selectedValue); // Store the selected program as a number
+    onSelect([selectedValue]); // Send the selected program ID to the parent as an array
   };
 
   return (
     <div className="w-full lg:w-[300px]">
+      {error && <p className="text-red-500">{error}</p>}
       <select
         id="programs"
         name="programs"
@@ -36,11 +68,17 @@ const ProgramDropdown = () => {
         <option value="" disabled>
           Select a program
         </option>
-        {availablePrograms.map((program) => (
-          <option key={program.id} value={program.id}>
-            {program.name}
+        {availablePrograms.length > 0 ? (
+          availablePrograms.map((program) => (
+            <option key={program.id} value={program.id}>
+              {program.name}
+            </option>
+          ))
+        ) : (
+          <option value="" disabled>
+            No programs available
           </option>
-        ))}
+        )}
       </select>
     </div>
   );

@@ -16,18 +16,16 @@ const ClassForm = () => {
     end_date: "",
   });
 
-  const [teachers, setTeachers] = useState([]); // Store teacher data here
-  const [programs, setPrograms] = useState([]); // Store program (course) data here
-  const [loadingTeachers, setLoadingTeachers] = useState(true); // For handling loading state for teachers
-  const [loadingPrograms, setLoadingPrograms] = useState(true); // For handling loading state for programs
-  const [error, setError] = useState(null); // For handling errors
-
-  // Fetch the list of teachers when the component mounts
+  const [teachers, setTeachers] = useState([]); 
+  const [programs, setPrograms] = useState([]); 
+  const [loadingTeachers, setLoadingTeachers] = useState(true); 
+  const [loadingPrograms, setLoadingPrograms] = useState(true); 
+  const [error, setError] = useState(null); 
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher?page=1");
-        setTeachers(response.data.results); // Assuming the API returns a results array
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`);
+        setTeachers(response.data.results);
         setLoadingTeachers(false);
       } catch (err:any) {
         setError(err);
@@ -38,12 +36,11 @@ const ClassForm = () => {
     fetchTeachers();
   }, []);
 
-  // Fetch the list of programs (courses) when the component mounts
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/academics/course/?page=1");
-        setPrograms(response.data.results); // Assuming the API returns a results array
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course`);
+        setPrograms(response.data.results); 
         setLoadingPrograms(false);
       } catch (err:any) {
         setError(err);
@@ -69,16 +66,15 @@ const ClassForm = () => {
     e.preventDefault();
 
     const postData = {
-      name: formData.className, // Class name input
-      courses: [parseInt(formData.program)], // Assuming the program is mapped to a course ID, make sure it is an array
-      teacher: parseInt(formData.teacher), // The selected teacher ID
-      start_date: formData.start_date, // Should be in YYYY-MM-DD format
-      end_date: formData.end_date,     // Should be in YYYY-MM-DD format
+      name: formData.className, 
+      courses: [parseInt(formData.program)], 
+      teacher: parseInt(formData.teacher), 
+      start_date: formData.start_date, 
+      end_date: formData.end_date,    
     };
 
     try {
-      // Post the data to the backend API
-      const response = await axios.post("http://127.0.0.1:8000/api/academics/classroom/", postData, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`, postData, {
         headers: {
           "Content-Type": "application/json",
         },
