@@ -38,41 +38,40 @@ const Login = ({  }) => {
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userId");
   
+      console.log("form data" , formData)
       // Call the login API
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`, // Using NEXT_PUBLIC_BASE_URL
-        formData
+        formData,
       );
-  
+      
+
+
       const newToken = response.data.token;
       console.log("New Token Received:", newToken);
   
       // Store the new token in localStorage
       localStorage.setItem("authToken", newToken);
-  
+      console.log("what is this token" , newToken);
+
+      const userId = response.data.id;
+      console.log(userId)
       // Fetch user profile using the token
       const profileResponse = await axios.get(
-       `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
+       `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${newToken}`,
           },
         }
       );
-  
-      const newUser = profileResponse.data.results[0];
-      console.log("New User Info:", newUser);
+      console.log("after token" , newToken)
   
       // Store user information in localStorage
-      localStorage.setItem(
-        "userInfo",
-        JSON.stringify({
-          username: newUser.username,
-          email: newUser.email,
-          profile_image: newUser.profile_image || "/photo.jpg",
-        })
-      );
-      localStorage.setItem("userId", newUser.id);
+      const newUser = profileResponse.data; // Modify this based on your response structure
+      localStorage.setItem("userInfo", JSON.stringify(newUser)); // Store full user info
+      localStorage.setItem("userId", newUser.id); // Assuming you have the user ID
+  
       router.push("/");
     } catch (error) {
       console.error("Error during login:", error);

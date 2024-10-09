@@ -123,7 +123,7 @@ const navigation: NavigationItem[] = [
         href: "/setting/account-setting",
         current: false,
       },
-      { name: "Logout", href: "/login", current: false },
+      { name: "Logout", href: "#", current: false }
     ],
   },
 ];
@@ -156,15 +156,15 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     if (name === "Setting" && subItemName === "Logout") {
       // Clear localStorage on logout
       console.log("Logging out...");
-
+  
       // Clear only the specific keys related to authentication
       localStorage.removeItem("authToken");
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userId");
-
+  
       // Clear everything as a failsafe
       localStorage.clear();
-
+  
       // Double check if the storage was cleared
       if (
         !localStorage.getItem("authToken") &&
@@ -174,15 +174,16 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       } else {
         console.log("Error: localStorage was not cleared properly.");
       }
-
+  
       // Redirect to login page after clearing data
       router.push("/login");
       return;
     }
-
+  
     // Normal handling for other cases
     handleToggle(name);
   };
+  
 
   useEffect(() => {
     const currentPath = window.location.pathname;

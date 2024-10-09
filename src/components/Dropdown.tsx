@@ -23,7 +23,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
       try {
         const response = await fetch('http://127.0.0.1:8000/api/branches/');
         const data = await response.json();
-        setBranches(data.results); // Assuming the API returns a results array
+        setBranches(data.results || []); // Ensure branches is an array
         setIsLoading(false);
       } catch (error) {
         console.error('Error fetching branches:', error);
@@ -48,7 +48,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
         </MenuButton>
       </div>
 
-      {!isLoading && (
+      {!isLoading && branches.length > 0 && ( // Safely check if branches has data
         <MenuItems className="absolute z-50 lg:w-56 origin-top-right rounded-md mt-2 bg-[#FFFFFF] shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div className="py-1">
             {branches.map(branch => (

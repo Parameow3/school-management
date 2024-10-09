@@ -14,6 +14,10 @@ const Profile = () => {
   // Fetch token from localStorage when the component mounts
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken"); // Correct token key
+    const userInfo = localStorage.getItem("userInfo");
+    const userId = localStorage.getItem("userId");
+    console.log("user info" , userInfo)
+    console.log("user info" , userId)
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage); // Set token in state
     } else {
@@ -23,20 +27,21 @@ const Profile = () => {
   }, [router]);
 
   useEffect(() => {
+    const userInfo = localStorage.getItem("userInfo");
+    const userId = localStorage.getItem("userId");
     const fetchUserProfile = async () => {
       if (!token) return; // Ensure token is present before making the request
       try {
-        const response = await axios.get(  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
+        const response = await axios.get(  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`, {
           headers: {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Correct token usage
           },
         });
-
+        
         console.log('Fetched Profile Data:', response.data);
-        const user = response.data.results[0];
-        const { username } = user;
-        setUserName(username || 'User');
+        const currentUser = response.data.username
+        setUserName(currentUser || 'User');
       } catch (error:any) {
         console.error('Error fetching profile:', error);
         if (error.response && error.response.status === 403) {

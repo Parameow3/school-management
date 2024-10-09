@@ -59,14 +59,16 @@ const Page: React.FC = () => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
+
     } else {
       router.push("/login");
     }
   }, [router]);
 
   useEffect(() => {
-    if (!token) return;
+    console.log("token:" , token)
 
+    if (!token) return;
     const fetchSchools = async () => {
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, {
@@ -76,6 +78,7 @@ const Page: React.FC = () => {
         });
         setSchools(response.data.results);
         setLoading(false);
+        
       } catch (err) {
         setError("Failed to fetch schools data.");
         setLoading(false);
