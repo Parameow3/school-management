@@ -35,7 +35,7 @@ const Page = () => {
           password: teacherData.user.password,
           profilePicture: teacherData.profile_picture || "/photo.jpg",
         });
-        setPassword(teacherData.user.password); // Set the existing password
+        setPassword(teacherData.user.password);
       } catch (error) {
         console.error("Error fetching teacher data:", error);
       }

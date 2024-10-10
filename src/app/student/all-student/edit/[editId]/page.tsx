@@ -64,7 +64,7 @@ const Page = () => {
       if (!token) return;
       try {
         const response = await axios.get(
-          `http://127.0.0.1:8000/api/academics/students/${id}/`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${id}/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,

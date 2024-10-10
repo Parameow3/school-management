@@ -33,7 +33,6 @@ const Page = () => {
     }
   }, [router]);
 
-  // Fetch profiles data after token is available
   useEffect(() => {
     const fetchProfiles = async () => {
       if (!token) return; // Only fetch if token is available

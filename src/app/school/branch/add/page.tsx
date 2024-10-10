@@ -10,8 +10,8 @@ interface School {
   address: string;
   email: string | null;
   established_date: string;
-  phone_number: string; // Ensure this matches the backend field
-  schoolweb: string | null; // Ensure this matches the backend field and handles null
+  phone_number: string; 
+  schoolweb: string | null;
 }
 
 const Page: React.FC = () => {
@@ -30,13 +30,10 @@ const Page: React.FC = () => {
   const [schoolEmail, setSchoolEmail] = useState<string>("");
   const [schoolEstablishedDate, setSchoolEstablishedDate] = useState<string>("");
   const [schoolWebsite, setSchoolWebsite] = useState<string>("");
-
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
-
-  // Fetch the token on component mount
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -45,8 +42,6 @@ const Page: React.FC = () => {
       router.push("/login");
     }
   }, [router]);
-
-  // Fetch the schools when the token is available
   useEffect(() => {
     if (!token) return;
     const fetchSchools = async () => {
@@ -76,9 +71,8 @@ const Page: React.FC = () => {
       setSchoolEmail(school.email || "");
       setSchoolEstablishedDate(school.established_date);
       setSchoolPhoneNumber(school.phone_number);
-      setSchoolWebsite(school.schoolweb || "Website not available"); // Fallback in case of null
+      setSchoolWebsite(school.schoolweb || "Website not available");
     } else {
-      // Clear if no school is selected
       setSchoolName("");
       setSchoolAddress("");
       setSchoolEmail("");
@@ -102,8 +96,7 @@ const Page: React.FC = () => {
         email: branchEmail,
         location: branchLocation,
         user_id: userId,
-        school_id: selectedSchool || null, // Use school_id if selected
-        // Always send school data, even if school is selected
+        school_id: selectedSchool || null, 
         school: {
           name: schoolName,
           address: schoolAddress,

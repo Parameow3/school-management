@@ -35,7 +35,7 @@ const Page = () => {
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/schools', {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`, // Pass token if available
@@ -63,7 +63,7 @@ const Page = () => {
     const fetchProgram = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/academics/program/${editId}/`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${editId}/`, {
           headers: {
             Authorization: `Bearer ${token}`, // Include token in the request headers
           },
@@ -104,7 +104,7 @@ const Page = () => {
 
     try {
       const response = await axios.put(
-        `http://127.0.0.1:8000/api/academics/program/${editId}/`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${editId}/`,
         formData,
         {
           headers: {

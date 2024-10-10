@@ -87,7 +87,7 @@ const Page = () => {
     };
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/academics/classroom/", postData, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`, postData, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -103,13 +103,10 @@ const Page = () => {
       }
     }
   };
-
-  // If the component is not yet mounted, show a loading state to prevent SSR mismatches
   if (!isMounted) {
-    return <div>Loading...</div>; // Ensures consistent SSR and CSR
+    return <div>Loading...</div>; 
   }
 
-  // Render the form after the component is mounted
   return (
     <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
       <div className="lg:w-[60%] w-[90%] mx-auto mt-10 p-6 bg-white rounded-lg shadow-md space-y-6">

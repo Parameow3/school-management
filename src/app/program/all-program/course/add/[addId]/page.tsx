@@ -127,7 +127,6 @@ const Page = () => {
       <div className="w-[450px] h-auto bg-white p-6 rounded-md shadow-md">
         <h2 className="text-xl font-bold mb-6">Create Course</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Course Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Course Name

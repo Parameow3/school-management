@@ -24,7 +24,7 @@ const Page = ( {params }: { params: { id: string } }) => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${Id}`);
         const data = await response.json();
-        setEnrollmentData(data.results); // Assuming "results" contains the array of enrollments
+        setEnrollmentData(data.results); 
         setLoading(false);
       } catch (err) {
         setError("Failed to fetch data");

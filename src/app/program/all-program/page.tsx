@@ -139,8 +139,6 @@ const Page = () => {
           </div>
         </Link>
       </div>
-
-      {/* Dropdown and Add Button */}
       <div className="relative mt-4 flex justify-between">
         <Dropdown />
         <div className="w-[40px] h-[40px] p-2 bg-[#213458] flex justify-center items-center cursor-pointer" onClick={handleAddClick}>
@@ -152,12 +150,8 @@ const Page = () => {
           />
         </div>
       </div>
-
-      {/* Loading or Error Message */}
       {loading && <p>Loading programs...</p>}
       {error && <p className="text-red-500">{error}</p>}
-
-      {/* Program Cards */}
       <div className="mt-4 grid grid-cols-1 lg:w-[1070px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {programs.map((program) => (
           <div
@@ -223,8 +217,7 @@ const Page = () => {
                     Program: {selectedProgram.name}
                   </h3>
                   <div className="flex flex-row gap-6">
-                    <div className="flex flex-row w-[80px] h-[40px] bg-[#213458] p-2 cursor-pointer">
-                      <label className="text-white mr-2">New</label>
+                    <div className="flex flex-row w-[40px] h-[40px] bg-[#213458] p-2 cursor-pointer">
                       <Image
                         src={"/add.svg"}
                         width={20}

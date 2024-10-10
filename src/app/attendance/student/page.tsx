@@ -1,69 +1,151 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Button from "@/components/Button";
 
 const Page = () => {
-  const [attendanceData, setAttendanceData] = useState<any[]>([]); 
+  const [students, setStudents] = useState<any[]>([]); // To store the list of students
+  const [selectedStudent, setSelectedStudent] = useState<string>(""); // To store the selected student ID
+  const [classInstance, setClassInstance] = useState<string>("");
+  const [date, setDate] = useState<string>("");
+  const [status, setStatus] = useState<string>("present");
+  const [notes, setNotes] = useState<string>("");
+  const [token, setToken] = useState<string | null>(null);
+  const [attendanceData, setAttendanceData] = useState<any[]>([]); // To store attendance history
+
+  // Retrieve token from localStorage on mount
   useEffect(() => {
-    const fetchAttendanceData = async () => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    }
+  }, []);
+
+  // Fetch students data from the API
+  useEffect(() => {
+    const fetchStudents = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances`
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        setAttendanceData(response.data.results); 
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch students. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+
+        // Check the response structure and log it
+        console.log("Fetched students data:", data);
+
+        // Assuming students are in the `results` field
+        if (data.results && data.results.length > 0) {
+          setStudents(data.results);
+        } else {
+          console.error("No students found");
+        }
       } catch (error) {
-        console.error("Error fetching attendance data:", error);
-        alert("Error fetching attendance data. Please try again.");
+        console.error("Error fetching students:", error);
       }
     };
 
-    // Fetch the attendance data when the component loads
-    fetchAttendanceData();
-  }, []); // Empty dependency array means this runs once when the component mounts
+    if (token) {
+      fetchStudents(); // Fetch students only when token is available
+    }
+  }, [token]); // Dependency on token
 
-  // Function to handle submission
+  // Fetch attendance data (history) from the API
+  useEffect(() => {
+    const fetchAttendanceHistory = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch attendance history. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log("Fetched attendance history:", data);
+
+        // Assuming attendance records are in the `results` field
+        if (data.results && data.results.length > 0) {
+          setAttendanceData(data.results);
+        } else {
+          console.error("No attendance history found");
+        }
+      } catch (error) {
+        console.error("Error fetching attendance history:", error);
+      }
+    };
+
+    if (token) {
+      fetchAttendanceHistory();
+    }
+  }, [token]); // Dependency on token
+  const getStudentNameById = (studentId: number) => {
+    const student = students.find((student) => student.id === studentId);
+    return student
+      ? `${student.first_name} ${student.last_name}`
+      : "Unknown Student";
+  };
+  // Form submission logic
   const handleSubmitClick = async () => {
-    // Get data from input fields by ID
-    const studentId: string | null = (
-      document.getElementById("studentId") as HTMLInputElement
-    )?.value;
-    const classInstance: string | null = (
-      document.getElementById("classInstance") as HTMLInputElement
-    )?.value;
-    const date: string | null = (
-      document.getElementById("date") as HTMLInputElement
-    )?.value;
-    const status: string | null = (
-      document.getElementById("status") as HTMLSelectElement
-    )?.value;
-    const notes: string | null = (
-      document.getElementById("notes") as HTMLInputElement
-    )?.value;
-
-    if (!studentId || !classInstance || !date || !status) {
+    if (!selectedStudent || !classInstance || !date || !status) {
       alert("Please fill all required fields.");
       return;
     }
 
     const data = {
-      student: parseInt(studentId), 
-      class_instance: parseInt(classInstance), 
-      date: date, 
+      student: parseInt(selectedStudent), 
+      class_instance: parseInt(classInstance),
+      date: date,
       status: status,
-      notes: notes || "", 
+      notes: notes || "",
     };
+
     try {
-      await axios.post(
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances/`,
-        data,
         {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify(data),
         }
       );
-      setAttendanceData((prevData) => [...prevData, data]);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log("Error data:", errorData);
+        throw new Error(
+          `Failed to submit attendance. Server responded with: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("Success:", result);
+      setAttendanceData((prevData) => [...prevData, result]);
 
       alert("Attendance submitted successfully!");
     } catch (error) {
@@ -79,28 +161,34 @@ const Page = () => {
           Attendance | Submit Attendance
         </span>
       </div>
-
-      {/* Form for input data */}
       <div className="flex flex-col lg:w-[1068px] w-full p-6 bg-white rounded-lg shadow-md mb-10 space-y-4">
-        {/* First Row */}
         <div className="flex flex-col lg:flex-row lg:space-x-4">
-          {/* Student ID */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="studentId"
               className="text-sm font-medium text-gray-700"
             >
-              Student ID (required)
+              Student (required)
             </label>
-            <input
+            <select
               id="studentId"
-              type="number"
-              placeholder="Enter Student ID"
+              value={selectedStudent}
+              onChange={(e) => setSelectedStudent(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+              <option value="">Select Student</option>
+              {students.length > 0 ? (
+                students.map((student) => (
+                  <option key={student.id} value={student.id}>
+                    {`${student.first_name} ${student.last_name}`}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No students available</option>
+              )}
+            </select>
           </div>
 
-          {/* Class Instance */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="classInstance"
@@ -111,12 +199,13 @@ const Page = () => {
             <input
               id="classInstance"
               type="number"
+              value={classInstance}
+              onChange={(e) => setClassInstance(e.target.value)}
               placeholder="Enter Class Instance"
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Date */}
           <div className="flex flex-col lg:w-1/3">
             <label htmlFor="date" className="text-sm font-medium text-gray-700">
               Date (required)
@@ -124,14 +213,14 @@ const Page = () => {
             <input
               id="date"
               type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Second Row (Status and Notes) */}
         <div className="flex flex-col lg:flex-row lg:space-x-4">
-          {/* Status */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="status"
@@ -141,6 +230,8 @@ const Page = () => {
             </label>
             <select
               id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="present">Present</option>
@@ -149,7 +240,6 @@ const Page = () => {
             </select>
           </div>
 
-          {/* Notes */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="notes"
@@ -160,14 +250,14 @@ const Page = () => {
             <input
               id="notes"
               type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Enter any notes"
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Submit Button */}
-        {/* Submit Button */}
         <div className="flex justify-center">
           <Button
             onClick={handleSubmitClick}
@@ -177,8 +267,6 @@ const Page = () => {
           </Button>
         </div>
       </div>
-
-      {/* Display the new attendance and history */}
       {attendanceData.length > 0 && (
         <div className="lg:w-[1068px] w-full mt-8 bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">
@@ -188,7 +276,7 @@ const Page = () => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
-                  Student ID
+                  stduent-Name
                 </th>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
                   Class Instance
@@ -207,7 +295,10 @@ const Page = () => {
             <tbody>
               {attendanceData.map((record, index) => (
                 <tr key={index} className="hover:bg-gray-100 transition-colors">
-                  <td className="border px-4 py-2">{record.student}</td>
+                  <td className="border px-4 py-2">
+                    {getStudentNameById(record.student)}{" "}
+                    {/* Display student name */}
+                  </td>
                   <td className="border px-4 py-2">{record.class_instance}</td>
                   <td className="border px-4 py-2">{record.date}</td>
                   <td className="border px-4 py-2">{record.status}</td>

@@ -11,7 +11,6 @@ const page = () => {
       <div className="flex justify-center lg:ml-[16%] ml-[11%] mt-16">
         <div className="w-[1070px] lg:m-2 flex lg:flex-row flex-col">
           <div className="lg:w-[800px] flex flex-col p-2 ">
-            {/* <--welcome--> */}
             <div className="lg:w-[618px] w-[300px] bg-[#FF6F61] mr-4 backdrop-opacity-75 lg:h-[112px] h-[94px] rounded-[8px] flex flex-row justify-between">
               <div className="flex flex-col justify-center ml-4">
                 <Typography className="text-[15px] lg:text-[24px]">

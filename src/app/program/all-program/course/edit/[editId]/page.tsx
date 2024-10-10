@@ -38,8 +38,8 @@ const Page = () => {
           code: courseData.code,
           description: courseData.description,
           credits: courseData.credits,
-          program: courseData.program, // Assuming the course data has a program id
-          school: courseData.school || 1  // Set school or default to 1
+          program: courseData.program, 
+          school: courseData.school || 1  
         });
       } catch (error) {
         console.error("Error fetching course", error);
@@ -61,7 +61,6 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // Send a PUT request to update the course
       const response = await axios.put(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${editId}/`, formData);
       console.log("Course Updated:", response.data);
       alert("Course Updated Successfully");

@@ -1,74 +1,141 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Button from "@/components/Button";
 
 const Page = () => {
-  const [attendanceData, setAttendanceData] = useState<any[]>([]); // Holds new attendance and history
+  const [teachers, setTeachers] = useState<any[]>([]); // To store the list of teachers
+  const [selectedTeacher, setSelectedTeacher] = useState<string>(""); // To store the selected teacher ID
+  const [classInstance, setClassInstance] = useState<string>("");
+  const [date, setDate] = useState<string>("");
+  const [status, setStatus] = useState<string>("present");
+  const [notes, setNotes] = useState<string>("");
+  const [token, setToken] = useState<string | null>(null);
+  const [attendanceData, setAttendanceData] = useState<any[]>([]); // To store attendance history
 
-  // useEffect to fetch attendance data from the backend when the component is loaded
+  // Retrieve token from localStorage on mount
   useEffect(() => {
-    const fetchAttendanceData = async () => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchTeachers = async () => {
       try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/api/academics/attendances/?page=1"
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        setAttendanceData(response.data.results); // Assuming the API returns a `results` array
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch teachers. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log("Fetched teachers data:", data); // Log the API response to inspect the structure
+        if (data.results && data.results.length > 0) {
+          setTeachers(data.results);
+        } else {
+          console.error("No teachers found");
+        }
       } catch (error) {
-        console.error("Error fetching attendance data:", error);
-        alert("Error fetching attendance data. Please try again.");
+        console.error("Error fetching teachers:", error);
       }
     };
 
-    // Fetch the attendance data when the component loads
-    fetchAttendanceData();
-  }, []); // Empty dependency array means this runs once when the component mounts
+    if (token) {
+      fetchTeachers(); // Fetch teachers only when token is available
+    }
+  }, [token]);
 
-  // Function to handle submission
+  useEffect(() => {
+    const fetchAttendanceHistory = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch attendance history. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log("Fetched attendance history:", data);
+        if (data.results && data.results.length > 0) {
+          setAttendanceData(data.results);
+        } else {
+          console.error("No attendance history found");
+        }
+      } catch (error) {
+        console.error("Error fetching attendance history:", error);
+      }
+    };
+
+    if (token) {
+      fetchAttendanceHistory();
+    }
+  }, [token]); 
+  const getTeacherById = (teacherId: number) => {
+    const teacher = teachers.find((teacher) => teacher.id === teacherId);
+    return teacher
+      ? `${teacher.first_name} ${teacher.last_name}`
+      : "Unknown teacher";
+  };
   const handleSubmitClick = async () => {
-    // Get data from input fields by ID
-    const studentId: string | null = (
-      document.getElementById("studentId") as HTMLInputElement
-    )?.value;
-    const classInstance: string | null = (
-      document.getElementById("classInstance") as HTMLInputElement
-    )?.value;
-    const date: string | null = (
-      document.getElementById("date") as HTMLInputElement
-    )?.value;
-    const status: string | null = (
-      document.getElementById("status") as HTMLSelectElement
-    )?.value;
-    const notes: string | null = (
-      document.getElementById("notes") as HTMLInputElement
-    )?.value;
-
-    if (!studentId || !classInstance || !date || !status) {
+    if (!selectedTeacher || !classInstance || !date || !status) {
       alert("Please fill all required fields.");
       return;
     }
 
     const data = {
-      student: parseInt(studentId), // Student ID as integer
-      class_instance: parseInt(classInstance), // Class instance as integer
+      teacher: parseInt(selectedTeacher),
+      class_instance: parseInt(classInstance),
       date: date,
       status: status,
       notes: notes || "",
     };
 
     try {
-      await axios.post(
-        "http://127.0.0.1:8000/api/academics/attendances/",
-        data,
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances/`,
         {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify(data),
         }
       );
 
-      // Add new attendance record to the current state
-      setAttendanceData((prevData) => [...prevData, data]);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log("Error data:", errorData);
+        throw new Error(
+          `Failed to submit attendance. Server responded with: ${response.status}`
+        );
+      }
+      const result = await response.json();
+      console.log("Success:", result);
+      setAttendanceData((prevData) => [...prevData, result]);
 
       alert("Attendance submitted successfully!");
     } catch (error) {
@@ -76,37 +143,41 @@ const Page = () => {
       alert("Error submitting attendance data. Please try again.");
     }
   };
-
   return (
     <div className="lg:ml-[16%] ml-[8%] mt-20 flex flex-col py-8">
-      {/* Header */}
       <div className="w-full lg:w-[1068px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between shadow-md mb-8">
         <span className="flex flex-row gap-2 text-[14px] lg:text-[18px] font-semibold text-gray-700">
           Attendance | Submit Attendance
         </span>
       </div>
-
-      {/* Form for input data */}
       <div className="flex flex-col lg:w-[1068px] w-full p-6 bg-white rounded-lg shadow-md mb-10 space-y-4">
-        {/* First Row */}
         <div className="flex flex-col lg:flex-row lg:space-x-4">
-          {/* Student ID */}
           <div className="flex flex-col lg:w-1/3">
             <label
-              htmlFor="studentId"
+              htmlFor="teacherId"
               className="text-sm font-medium text-gray-700"
             >
-              Teacher ID (required)
+              Teacher (required)
             </label>
-            <input
+            <select
               id="teacherId"
-              type="number"
-              placeholder="Enter Student ID"
+              value={selectedTeacher}
+              onChange={(e) => setSelectedTeacher(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+              <option value="">Select teacher</option>
+              {teachers.length > 0 ? (
+                teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {`${teacher.username} `} {/* Correct fields */}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No teachers available</option>
+              )}
+            </select>
           </div>
 
-          {/* Class Instance */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="classInstance"
@@ -117,12 +188,13 @@ const Page = () => {
             <input
               id="classInstance"
               type="number"
+              value={classInstance}
+              onChange={(e) => setClassInstance(e.target.value)}
               placeholder="Enter Class Instance"
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
-          {/* Date */}
           <div className="flex flex-col lg:w-1/3">
             <label htmlFor="date" className="text-sm font-medium text-gray-700">
               Date (required)
@@ -130,14 +202,14 @@ const Page = () => {
             <input
               id="date"
               type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Second Row (Status and Notes) */}
         <div className="flex flex-col lg:flex-row lg:space-x-4">
-          {/* Status */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="status"
@@ -147,6 +219,8 @@ const Page = () => {
             </label>
             <select
               id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="present">Present</option>
@@ -155,7 +229,6 @@ const Page = () => {
             </select>
           </div>
 
-          {/* Notes */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="notes"
@@ -166,14 +239,14 @@ const Page = () => {
             <input
               id="notes"
               type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Enter any notes"
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Submit Button */}
-        {/* Submit Button */}
         <div className="flex justify-center">
           <Button
             onClick={handleSubmitClick}
@@ -183,8 +256,6 @@ const Page = () => {
           </Button>
         </div>
       </div>
-
-      {/* Display the new attendance and history */}
       {attendanceData.length > 0 && (
         <div className="lg:w-[1068px] w-full mt-8 bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">
@@ -194,7 +265,7 @@ const Page = () => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
-                  Student ID
+                  Teacher Name
                 </th>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
                   Class Instance
@@ -213,7 +284,9 @@ const Page = () => {
             <tbody>
               {attendanceData.map((record, index) => (
                 <tr key={index} className="hover:bg-gray-100 transition-colors">
-                  <td className="border px-4 py-2">{record.student}</td>
+                  <td className="border px-4 py-2">
+                    {getTeacherById(record.teacher)} {/* Display teacher name */}
+                  </td>
                   <td className="border px-4 py-2">{record.class_instance}</td>
                   <td className="border px-4 py-2">{record.date}</td>
                   <td className="border px-4 py-2">{record.status}</td>

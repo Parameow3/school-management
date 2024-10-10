@@ -1,10 +1,10 @@
-"use client";
+'use client';
 import { useState } from "react";
 import Image from "next/image";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-const Login = ({  }) => {
+const Login = () => {
   const [formData, setFormData] = useState({
     userName: "",
     email: "",
@@ -13,8 +13,9 @@ const Login = ({  }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const router = useRouter(); 
+  const router = useRouter();
 
+  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -23,68 +24,57 @@ const Login = ({  }) => {
     }));
   };
 
+  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true); // Disable form while submitting
-  
+    setIsSubmitting(true); 
+
     try {
-      // Remove old token and user data from localStorage
-      console.log("Removing old user data...");
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("userInfo");
-      localStorage.removeItem("userId");
-  
-      // Call the login API
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`, // Using NEXT_PUBLIC_BASE_URL
-        formData
-      );
-  
-      const newToken = response.data.token;
-      console.log("New Token Received:", newToken);
-  
-      // Store the new token in localStorage
-      localStorage.setItem("authToken", newToken);
-  
-      // Fetch user profile using the token
-      const profileResponse = await axios.get(
-       `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
-        {
-          headers: {
-            Authorization: `Bearer ${newToken}`,
-          },
+        console.log("Removing old user data...");
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("userInfo");
+        localStorage.removeItem("userId");
+        const response = await axios.post(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`,
+            formData
+        );
+        console.log("Login API Response:", response.data);
+        const { token, id, username, email } = response.data; 
+        console.log("New id:", id);
+
+        if (id) {
+            console.log("New Token Received:", token);
+            console.log("User ID Received:", id);
+
+            // Store the new token and user ID in localStorage
+            localStorage.setItem("authToken", token);
+            localStorage.setItem("userId", id);
+
+            // Store additional user information in localStorage
+            localStorage.setItem(
+                "userInfo",
+                JSON.stringify({
+                    username, // Store username
+                    email
+                })
+            );
+            router.push("/"); // Redirect to home or dashboard after login
+        } else {
+            // If userId is missing, log the issue and set an error message
+            console.error("Login failed: User ID is missing in response.");
+            setErrorMessage("Login failed. User ID missing in response.");
         }
-      );
-  
-      const newUser = profileResponse.data.results[0];
-      console.log("New User Info:", newUser);
-  
-      // Store user information in localStorage
-      localStorage.setItem(
-        "userInfo",
-        JSON.stringify({
-          username: newUser.username,
-          email: newUser.email,
-          profile_image: newUser.profile_image || "/photo.jpg",
-        })
-      );
-      localStorage.setItem("userId", newUser.id);
-      router.push("/");
     } catch (error) {
-      console.error("Error during login:", error);
-  
-      // If the API fails, set an error message
-      setErrorMessage("Login failed. Please check your credentials and try again.");
+        // Log the error and set an error message
+        console.error("Error during login:", error);
+        setErrorMessage("Login failed. Please check your credentials and try again.");
     } finally {
-      // Re-enable the form after submission
-      setIsSubmitting(false);
+        setIsSubmitting(false); // Re-enable form submission
     }
-  };
-  
+};
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -139,6 +129,8 @@ const Login = ({  }) => {
               required
             />
           </div>
+
+          {/* Password Input */}
           <div className="relative">
             <label htmlFor="password" className="sr-only">
               Password
@@ -166,6 +158,7 @@ const Login = ({  }) => {
               />
             </button>
           </div>
+
           <div className="flex space-x-4 mt-4">
             <button
               type="submit"
