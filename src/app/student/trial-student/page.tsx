@@ -5,25 +5,96 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Button from '@/components/Button';
 import ProgramDropdown from '@/components/programDropdown';
-import { useRouter } from "next/navigation";
-import axios from 'axios'; // Import Axios
+import { useRouter } from 'next/navigation';
 
 const Page = () => {
   const router = useRouter();
-  
-  // State to store the token
   const [token, setToken] = useState<string | null>(null);
+  const [users, setUsers] = useState<{ id: number; username: string }[]>([]); // Initialize users as an empty array
+  const [teachers, setTeachers] = useState<{ id: number; username: string }[]>([]); // Initialize as empty array
+  const [selectedTeacher, setSelectedTeacher] = useState('');
 
-  // Fetch token from localStorage when the component mounts
+  // Fetch token from localStorage
   useEffect(() => {
-    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    const tokenFromLocalStorage = localStorage.getItem('authToken');
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage); // Set token in state
     } else {
       // Redirect to login if no token found
-      router.push("/login");
+      router.push('/login');
     }
   }, [router]);
+
+  // Fetch users (Assigned By) using the token
+  useEffect(() => {
+    if (token) {
+      const fetchUsers = async () => {
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const adminUsers = data.results.filter((user: any) => user.roles === 1);
+          setUsers(adminUsers);
+        } catch (error) {
+          console.error('Error fetching users:', error);
+        }
+      };
+
+      fetchUsers();
+    }
+  }, [token]);
+
+  // Fetch teachers using the token
+  useEffect(() => {
+    if (token) {
+      fetch('http://127.0.0.1:8000/api/auth/teacher', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,  // Token is used here
+        },
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch teachers');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          if (data.results && Array.isArray(data.results)) {
+            const formattedTeachers = data.results.map((teacher: any) => ({
+              id: teacher.id,  // Use the teacher's id
+              username: teacher.user.username,  // Extract the username from the nested user object
+            }));
+            setTeachers(formattedTeachers);  // Set teachers array
+          } else {
+            console.error('Unexpected response format:', data);
+            setTeachers([]); // Set an empty array in case of unexpected format
+          }
+        })
+        .catch((error) => {
+          console.error('Error fetching teachers:', error);
+          setTeachers([]); // Ensure it's an empty array on error
+        });
+    }
+  }, [token]);  // This ensures that the effect runs after the token is set
+
+  const handleTeacherChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedTeacher(event.target.value);
+    setFormData(prev => ({
+      ...prev,
+      handle_by: [parseInt(event.target.value)]  // Set handle_by as an array containing the selected teacher's ID
+    }));
+  };
 
   const [formData, setFormData] = useState({
     client: '',
@@ -32,10 +103,9 @@ const Page = () => {
     programs: [] as number[], 
     status: 'Pending',  // Default to "Pending" as per your backend structure
     assign_by: 1, 
-    handle_by: [] as number[],
+    handle_by: [] as number[],  // Handle as array
   });
 
-  // Function to update formData when programs are selected
   const handleProgramSelect = (selectedPrograms: number[]) => {
     setFormData((prevData) => ({ ...prevData, programs: selectedPrograms }));
   };
@@ -44,7 +114,6 @@ const Page = () => {
     const { name, value } = e.target;
 
     if (name === 'handle_by') {
-      // Convert comma-separated values to an array of numbers
       const values = value.split(',').map(Number); 
       setFormData({ ...formData, [name]: values });
     } else {
@@ -56,7 +125,6 @@ const Page = () => {
     router.push(`/student/trial-student/view`);
   };
 
-  // Handle form submission using Axios
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -64,32 +132,42 @@ const Page = () => {
       alert('Authorization token is missing. Please log in.');
       return;
     }
-    console.log("Posting data:", formData);
+
+    // Prepare payload
+    const dataToSubmit = {
+      client: formData.client,
+      phone: formData.phone,
+      number_student: formData.number_student,
+      programs: formData.programs,  // Should be an array of program IDs
+      status: formData.status.toUpperCase(),  // Ensure status matches backend (Pending -> PENDING)
+      assign_by: formData.assign_by,  // ID of the user
+      handle_by: formData.handle_by  // Array of teacher IDs
+    };
+
+    console.log('Posting data:', dataToSubmit);
 
     try {
-      // Submit data using Axios, including token in the header
-      const response = await axios.post('http://127.0.0.1:8000/api/academics/student_trail/', formData, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`, // Add token to Authorization header
         },
+        body: JSON.stringify(dataToSubmit),  // Ensure correct payload is sent
       });
 
-      // Log the response after successful posting
-      console.log("API Response:", response.data);
-
-      if (response.status === 201) { // HTTP 201 Created
+      if (response.ok) {
+        const responseData = await response.json();
+        console.log('API Response:', responseData);
         alert('Trial information submitted successfully!');
       } else {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
         alert('Failed to submit trial information.');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting the form:', error);
-      if (error.response && error.response.status === 403) {
-        alert('Authorization error: 403 Forbidden. Please check your token.');
-      } else {
-        alert('Error submitting the form.');
-      }
+      alert('Error submitting the form.');
     }
   };
 
@@ -108,9 +186,9 @@ const Page = () => {
         </Link>
       </div>
       
-      <div className='flex flex-row justify-between p-3'>
+      <div className="flex flex-row justify-between p-3">
         <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">Trial Form</h1>
-        <Button className='w-[180px] p-2' onClick={handleViewClick}>
+        <Button className="w-[180px] p-2" onClick={handleViewClick}>
           View 
         </Button>
       </div>
@@ -195,33 +273,47 @@ const Page = () => {
         {/* Assigned By */}
         <div>
           <label htmlFor="assign_by" className="block text-sm font-medium text-gray-700">
-            Assigned By (ID)
+            Assigned By
           </label>
-          <input
-            type="number"
+          <select
             id="assign_by"
             name="assign_by"
             value={formData.assign_by}
             onChange={handleChange}
             className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
             required
-          />
+          >
+            <option value="">Select User</option>
+            {Array.isArray(users) && users.length > 0 ? (
+              users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {user.username}
+                </option>
+              ))
+            ) : (
+              <option value="">No users available</option>
+            )}
+          </select>
         </div>
 
         {/* Handled By */}
         <div>
-          <label htmlFor="handle_by" className="block text-sm font-medium text-gray-700">
-            Handled By
+          <label htmlFor="teacher" className="block text-sm font-medium text-gray-700">
+            Select a Teacher:
           </label>
-          <input
-            type="text"
-            id="handle_by"
-            name="handle_by"
-            value={formData.handle_by.join(',')}
-            onChange={handleChange}
-            placeholder="e.g., 1,2,3"
+          <select
+            id="teacher"
+            value={selectedTeacher}
+            onChange={handleTeacherChange}
             className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-          />
+          >
+            <option value="">Select a Teacher</option>
+            {teachers.map((teacher) => (
+              <option key={teacher.id} value={teacher.id}>
+                {teacher.username}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Submit Button */}

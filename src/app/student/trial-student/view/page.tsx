@@ -12,20 +12,34 @@ interface Student {
   client: string;
   phone: string;
   number_student: number;
-  programs: number[];
+  programs: number[]; // Programs are stored as IDs
   status_display: string;
-  assign_by: number;
+  assign_by: number; // Assign by is stored as an ID
   handle_by: number[];
+}
+
+interface User {
+  id: number;
+  username: string;
+}
+
+interface Program {
+  id: number;
+  name: string;
 }
 
 function Page() {
   const router = useRouter();
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]); // New state for filtered students
+  const [users, setUsers] = useState<User[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>(''); // State for search query
 
   // Fetch the token from localStorage when the component mounts
   useEffect(() => {
@@ -38,28 +52,47 @@ function Page() {
     }
   }, [router]);
 
-  // Fetch the students data when the token is available
+  // Fetch the students, users, and programs data when the token is available
   useEffect(() => {
-    const fetchStudents = async () => {
+    const fetchStudentsAndRelatedData = async () => {
       if (token) {  // Only fetch if the token is available
         try {
           setLoading(true);
-          const response = await axios.get('http://127.0.0.1:8000/api/academics/student_trail/', {
+          
+          // Fetch students
+          const studentResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
-          setStudents(response.data.results);
+
+          // Fetch users (for assign_by field)
+          const userResponse = await axios.get(`http://127.0.0.1:8000/api/auth/user`, {  // Corrected API endpoint
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const programResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          setStudents(studentResponse.data.results);
+          setFilteredStudents(studentResponse.data.results); // Initialize filtered students
+          setUsers(userResponse.data.results);
+          setPrograms(programResponse.data.results);
+          
           setLoading(false);
         } catch (error) {
-          console.error('Error fetching student data:', error);
-          setError('Failed to load student data.');
+          console.error('Error fetching student or related data:', error);
+          setError('Failed to load data.');
           setLoading(false);
         }
       }
     };
 
-    fetchStudents();
+    fetchStudentsAndRelatedData();
   }, [token]); // Dependency on token
 
   const handleEdit = (id: number) => {
@@ -78,7 +111,7 @@ function Page() {
   const handleDeleteConfirm = async () => {
     if (selectedStudentId) {
       try {
-        await axios.delete(`http://127.0.0.1:8000/api/academics/student_trail/${selectedStudentId}/`, {
+        await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/${selectedStudentId}/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -86,6 +119,7 @@ function Page() {
         alert('Student deleted successfully!');
         // Remove the deleted student from the state without reloading
         setStudents((prev) => prev.filter((student) => student.id !== selectedStudentId));
+        setFilteredStudents((prev) => prev.filter((student) => student.id !== selectedStudentId)); // Update filtered students as well
         setShowModal(false);  // Close the modal
       } catch (error) {
         console.error('Error deleting student:', error);
@@ -98,6 +132,18 @@ function Page() {
     setShowModal(false);  // Close the modal without deleting
   };
 
+  // Filter students based on search query
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = students.filter((student) =>
+        student.client.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredStudents(filtered);
+    } else {
+      setFilteredStudents(students); // Reset to all students if search is cleared
+    }
+  }, [searchQuery, students]);
+
   if (loading) {
     return <div className='lg:ml-[18%] ml-[11%] mt-20 flex flex-col'>Loading...</div>;
   }
@@ -105,6 +151,19 @@ function Page() {
   if (error) {
     return <div className='lg:ml-[18%] ml-[11%] mt-20 flex flex-col'>{error}</div>;
   }
+
+  const getUserById = (id: number) => {
+    const user = users.find(user => user.id === id);
+    return user ? user.username : 'Unknown'; // Return 'Unknown' if user not found
+  };
+
+  const getProgramNames = (programIds: number[]) => {
+    const programNames = programIds.map(id => {
+      const program = programs.find(program => program.id === id);
+      return program ? program.name : 'Unknown'; // Return 'Unknown' if program not found
+    });
+    return programNames.join(', ');
+  };
 
   return (
     <div className='lg:ml-[18%] ml-[11%] mt-20 flex flex-col'>
@@ -119,6 +178,33 @@ function Page() {
           </div>
         </Link>
       </div>
+
+      {/* Search Input */}
+      <div className="mb-4 relative">
+  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5 text-gray-400"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M8 4a6 6 0 100 12 6 6 0 000-12zm8 8l4 4"
+      />
+    </svg>
+  </span>
+  <input
+    type="text"
+    className="border border-gray-300 rounded-full pl-10 pr-4 py-2 w-full lg:w-[240px] focus:outline-none focus:ring-2 focus:ring-[#213458] shadow-sm placeholder-gray-400 text-sm"
+    placeholder="Search..."
+    value={searchQuery}
+    onChange={(e) => setSearchQuery(e.target.value)} // Update search query
+  />
+</div>
 
       <div>
         <Button className='mb-4' onClick={handleBack}>Back</Button>
@@ -137,18 +223,18 @@ function Page() {
           </tr>
         </thead>
         <tbody>
-          {students.map((student) => (
+          {filteredStudents.map((student) => (
             <tr key={student.id}>
               <td className="border px-4 py-2">{student.client}</td>
               <td className="border px-4 py-2">{student.phone}</td>
               <td className="border px-4 py-2">{student.number_student}</td>
               <td className="border px-4 py-2">{student.status_display}</td>
               <td className="border px-4 py-2">
-                {student.programs.map((program) => (
-                  <span key={program}>{program}</span>
-                ))}
+                {getProgramNames(student.programs)} {/* Get program names */}
               </td>
-              <td className="border px-4 py-2">{student.assign_by}</td>
+              <td className="border px-4 py-2">
+                {getUserById(student.assign_by)} {/* Get username */}
+              </td>
               <td className="border px-4 py-2 flex justify-center">
                 <Image
                   src="/update.svg"

@@ -55,7 +55,7 @@ const Page = () => {
     const fetchClassrooms = async () => {
       if(!token) return;
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/academics/classroom',{
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`,{
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -123,7 +123,7 @@ const Page = () => {
   
     try {
       const response = await axios.post(
-        'http://127.0.0.1:8000/api/academics/students/',
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
         formDataToSubmit,
         {
           headers: {

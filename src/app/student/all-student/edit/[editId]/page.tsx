@@ -40,28 +40,31 @@ const Page = () => {
   const params = useParams();
   const router = useRouter();
   const id = parseInt(params.editId as string, 10);
+
+  // States
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [selectedClassroom, setSelectedClassroom] = useState<number | null>(
-    null
-  );
+  const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null);
   const [formData, setFormData] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null); // To preview selected image
+  const [imagePreview, setImagePreview] = useState<string | null>(null); // Image preview
 
+  // Fetch token once
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
     } else {
-      router.push("/login");
+      router.push("/login"); // Always navigate to login if no token
     }
   }, [router]);
 
+  // Fetch student data when token and id are available
   useEffect(() => {
     const fetchStudent = async () => {
-      if (!token) return;
+      if (!token) return; // If no token, skip fetching
+
       try {
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${id}/`,
@@ -79,49 +82,57 @@ const Page = () => {
       }
     };
 
-    fetchStudent();
-  }, [id, token]);
+    fetchStudent(); // Always call the fetch function unconditionally
+  }, [id, token]); // Hook runs whenever id or token changes
+
+  // Fetch classrooms when token is available
+  useEffect(() => {
+    const fetchClassrooms = async () => {
+      if (!token) return; // Early exit if no token
+
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setClassrooms(response.data.results || []); // Assuming paginated data
+      } catch (err) {
+        setError("Failed to fetch classrooms");
+      } finally {
+        setIsLoading(false); // Ensure loading state is updated
+      }
+    };
+
+    fetchClassrooms(); // Always call the fetch function unconditionally
+  }, [token]);
 
   if (!formData) {
     return <div className="text-center mt-20">Student not found</div>;
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({ ...prevFormData!, [name]: value }));
   };
-  useEffect(() => {
-    const fetchClassrooms = async () => {
-      if (!token) return; // Only fetch if token is available
-
-      try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/api/academics/classroom",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setClassrooms(response.data.results || []); // Assuming the response is paginated
-        setIsLoading(false);
-      } catch (err) {
-        setError("Failed to fetch classrooms");
-        setIsLoading(false);
-      }
-    };
-
-    fetchClassrooms();
-  }, [token]); // Fetch classrooms whenever the token changes
 
   const handleClassroomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedClassroom(parseInt(e.target.value, 10));
-    setFormData((prevData) => ({ ...prevData, class: e.target.value }));
+    const selectedClassroomId = parseInt(e.target.value, 10);
+    setSelectedClassroom(selectedClassroomId);
+
+    setFormData((prevData) => {
+      if (prevData) {
+        return { ...prevData, class: e.target.value };
+      }
+      return prevData;
+    });
   };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImagePreview(URL.createObjectURL(file)); // Create a local URL to preview the selected image
+      setImagePreview(URL.createObjectURL(file)); // Preview image
       setFormData((prevFormData) => ({
         ...prevFormData!,
         profile_picture: file.name,
@@ -136,18 +147,16 @@ const Page = () => {
 
       // Append all form data
       Object.keys(formData!).forEach((key) => {
-        // Skip appending empty values
         if (formData![key as keyof Student]) {
           formDataToSend.append(key, (formData as any)[key]);
         }
       });
 
       // Append the file (profile picture) if present
-      const fileInput =
-        document.querySelector<HTMLInputElement>("#profile_picture");
+      const fileInput = document.querySelector<HTMLInputElement>("#profile_picture");
       const file = fileInput?.files?.[0];
       if (file) {
-        formDataToSend.append("profile_picture", file); // Send the file
+        formDataToSend.append("profile_picture", file);
       }
 
       await axios.put(
@@ -156,7 +165,7 @@ const Page = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data", // This is important for file uploads
+            "Content-Type": "multipart/form-data", // Important for file uploads
           },
         }
       );
@@ -167,6 +176,7 @@ const Page = () => {
       alert("Failed to update student");
     }
   };
+
 
   return (
     <div className="lg:ml-[219px] mt-20 flex flex-col">

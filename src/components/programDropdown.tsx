@@ -4,10 +4,11 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 interface ProgramDropdownProps {
-  onSelect: (selectedPrograms: number[]) => void;
+  onSelect: (selectedPrograms: number[]) => void; // This is already defined
+  selectedPrograms?: number[]; // You need to add this property
 }
 
-const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect }) => {
+const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect ,selectedPrograms}) => {
   const router = useRouter();
   const [availablePrograms, setAvailablePrograms] = useState<any[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
@@ -31,7 +32,7 @@ const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect }) => {
       if (token) {
         try {
           const response = await axios.get(
-            "http://127.0.0.1:8000/api/academics/program/",
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
             {
               headers: {
                 Authorization: `Bearer ${token}`, // Add the token in headers

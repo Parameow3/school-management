@@ -21,8 +21,6 @@ import {
 import { useRouter } from "next/navigation"; // Add this import for routing
 import Image from "next/image";
 import Profile from "./profile";
-import Searchinput from "./Searchinput";
-
 type NavigationItem = {
   name: string;
   href?: string;
@@ -43,7 +41,9 @@ const navigation: NavigationItem[] = [
     subItems: [
       { name: "School", href: "/school/school", current: false },
       { name: "Branch", href: "/school/branch", current: false },
+      { name: "Exam", href: "/exam", current: false },
     ],
+
   },
   {
     name: "Student",
@@ -123,7 +123,7 @@ const navigation: NavigationItem[] = [
         href: "/setting/account-setting",
         current: false,
       },
-      { name: "Logout", href: "/login", current: false },
+      { name: "Logout", href: "#", current: false }
     ],
   },
 ];
@@ -141,8 +141,6 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [navigationData, setNavigationData] = useState(navigation);
   const router = useRouter(); // useRouter hook for routing
-  const userName = "John Doe";
-  const userUrl = "/photo.jpg";
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -156,15 +154,15 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     if (name === "Setting" && subItemName === "Logout") {
       // Clear localStorage on logout
       console.log("Logging out...");
-
+  
       // Clear only the specific keys related to authentication
       localStorage.removeItem("authToken");
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userId");
-
+  
       // Clear everything as a failsafe
       localStorage.clear();
-
+  
       // Double check if the storage was cleared
       if (
         !localStorage.getItem("authToken") &&
@@ -174,15 +172,16 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       } else {
         console.log("Error: localStorage was not cleared properly.");
       }
-
+  
       // Redirect to login page after clearing data
       router.push("/login");
       return;
     }
-
+  
     // Normal handling for other cases
     handleToggle(name);
   };
+  
 
   useEffect(() => {
     const currentPath = window.location.pathname;
@@ -307,7 +306,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                 height={80}
                 className="w-[61px] h-[54px lg:w-[80px] lg:h-[80px]]"
               />
-              <Searchinput />
+              {/* <Searchinput /> */}
               {/* Hamburger button to open sidebar */}
               <button
                 type="button"

@@ -28,12 +28,12 @@ interface Program {
 const Page = () => {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null); 
+  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [programToDelete, setProgramToDelete] = useState<Program | null>(null);
 
-  const [loading, setLoading] = useState<boolean>(true); 
-  const [error, setError] = useState<string | null>(null); 
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -44,17 +44,20 @@ const Page = () => {
     }
   }, [router]);
   useEffect(() => {
-    if (!token) return; 
+    if (!token) return;
 
     const fetchPrograms = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setPrograms(response.data.results || []); 
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPrograms(response.data.results || []);
       } catch (err) {
         setError("Failed to fetch programs");
       } finally {
@@ -82,12 +85,17 @@ const Page = () => {
   const handleDeleteProgram = async () => {
     if (programToDelete && token) {
       try {
-        await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${programToDelete.id}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setPrograms(programs.filter((program) => program.id !== programToDelete.id));
+        await axios.delete(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${programToDelete.id}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPrograms(
+          programs.filter((program) => program.id !== programToDelete.id)
+        );
         closeModal(); // Close the modal after deletion
       } catch (err) {
         console.error("Failed to delete program", err);
@@ -141,13 +149,11 @@ const Page = () => {
       </div>
       <div className="relative mt-4 flex justify-between">
         <Dropdown />
-        <div className="w-[40px] h-[40px] p-2 bg-[#213458] flex justify-center items-center cursor-pointer" onClick={handleAddClick}>
-          <Image
-            src={"/add.svg"}
-            width={20}
-            height={20}
-            alt="add"
-          />
+        <div
+          className="w-[40px] h-[40px] p-2 bg-[#213458] flex justify-center items-center cursor-pointer"
+          onClick={handleAddClick}
+        >
+          <Image src={"/add.svg"} width={20} height={20} alt="add" />
         </div>
       </div>
       {loading && <p>Loading programs...</p>}
@@ -193,7 +199,9 @@ const Page = () => {
             </p>
             <div className="flex justify-between items-center mt-auto">
               <p className="text-[16px] font-medium">
-                {program.courses.length} courses
+                {program.courses
+                  ? `${program.courses.length} courses`
+                  : "No courses available"}
               </p>
               <Image
                 src={"/program.svg"}
@@ -248,54 +256,62 @@ const Page = () => {
                   </tr>
                 </thead>
                 <tbody className="justify-center items-center text-center">
-                  {selectedProgram.courses.map((course) => (
-                    <tr key={course.id} className="border text-center">
-                      <td className="border border-black px-2 py-2">
-                        {course.name}
-                      </td>
-                      <td className="border border-black px-2 py-2">
-                        {course.code}
-                      </td>
-                      <td className="border border-black px-2 py-2">
-                        {course.credits}
-                      </td>
-                      <td className="border border-black px-2 py-2">
-                        {course.description}
-                      </td>
-                      <td className="flex flex-row gap-5 items-center justify-center border border-black px-2 py-2">
-                        <Image
-                          src={"/view.svg"}
-                          width={15}
-                          height={15}
-                          alt="view"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewCourse(course.id); // Pass course.id for viewing
-                          }}
-                        />
-                        <Image
-                          src={"/update.svg"}
-                          width={15}
-                          height={15}
-                          alt="edit"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEditCourse(course.id); // Pass course.id for editing
-                          }}
-                        />
-                        <Image
-                          src={"/delete.svg"}
-                          width={20}
-                          height={20}
-                          alt="delete"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCourse(course.id); // Pass course.id for deletion
-                          }}
-                        />
+                  {selectedProgram?.courses?.length > 0 ? (
+                    selectedProgram.courses.map((course) => (
+                      <tr key={course.id} className="border text-center">
+                        <td className="border border-black px-2 py-2">
+                          {course.name}
+                        </td>
+                        <td className="border border-black px-2 py-2">
+                          {course.code}
+                        </td>
+                        <td className="border border-black px-2 py-2">
+                          {course.credits}
+                        </td>
+                        <td className="border border-black px-2 py-2">
+                          {course.description}
+                        </td>
+                        <td className="flex flex-row gap-5 items-center justify-center border border-black px-2 py-2">
+                          <Image
+                            src={"/view.svg"}
+                            width={15}
+                            height={15}
+                            alt="view"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewCourse(course.id); // Pass course.id for viewing
+                            }}
+                          />
+                          <Image
+                            src={"/update.svg"}
+                            width={15}
+                            height={15}
+                            alt="edit"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditCourse(course.id); // Pass course.id for editing
+                            }}
+                          />
+                          <Image
+                            src={"/delete.svg"}
+                            width={20}
+                            height={20}
+                            alt="delete"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCourse(course.id); // Pass course.id for deletion
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={5} className="text-center p-4">
+                        No courses available
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
               <button
@@ -313,7 +329,7 @@ const Page = () => {
       {isModalOpen && (
         <Modal
           onClose={closeModal}
-          onConfirm={handleDeleteProgram} 
+          onConfirm={handleDeleteProgram}
           message={`Are you sure you want to delete the program "${programToDelete?.name}"?`}
         />
       )}

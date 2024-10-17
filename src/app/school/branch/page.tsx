@@ -30,7 +30,8 @@ const Page: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null); // Store token here
+  const [token, setToken] = useState<string | null>(null);
+
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -38,20 +39,25 @@ const Page: React.FC = () => {
     } else {
       // Redirect to login if no token
       router.push("/login");
+      return; // Prevent further execution if no token
     }
   }, [router]);
+
   const handleAdd = () => {
     router.push(`/school/branch/add/`);
   };
 
   useEffect(() => {
+    if (!token) return;
+
     const fetchBranches = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`,{
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log("Token branch:", token);
         setBranches(response.data.results);
         setLoading(false);
       } catch (err) {
@@ -60,7 +66,7 @@ const Page: React.FC = () => {
       }
     };
     fetchBranches();
-  }, []);
+  }, [token]); // Added `token` to dependency array
 
   if (loading) {
     return <div className="text-center text-lg mt-8">Loading...</div>;

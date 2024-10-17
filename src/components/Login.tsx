@@ -28,53 +28,58 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true); 
+    setIsSubmitting(true);
 
     try {
-        console.log("Removing old user data...");
+        // Clear old token and user data
         localStorage.removeItem("authToken");
         localStorage.removeItem("userInfo");
         localStorage.removeItem("userId");
+
+        // Call the login API
         const response = await axios.post(
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`,
-            formData
+            formData,
         );
-        console.log("Login API Response:", response.data);
-        const { token, id, username, email } = response.data; 
-        console.log("New id:", id);
 
-        if (id) {
-            console.log("New Token Received:", token);
-            console.log("User ID Received:", id);
+        const newToken = response.data.token;
 
-            // Store the new token and user ID in localStorage
-            localStorage.setItem("authToken", token);
-            localStorage.setItem("userId", id);
+        // Store the new token
+        localStorage.setItem("authToken", newToken);
 
-            // Store additional user information in localStorage
-            localStorage.setItem(
-                "userInfo",
-                JSON.stringify({
-                    username, // Store username
-                    email
-                })
-            );
-            router.push("/"); // Redirect to home or dashboard after login
+        const userId = response.data.id;
+
+        // Fetch user profile with the new token
+        const profileResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${newToken}`,
+                },
+            }
+        );
+
+        const newUser = profileResponse.data;
+
+        // Store user info and ID
+        localStorage.setItem("userInfo", JSON.stringify(newUser));
+        localStorage.setItem("userId", newUser.id);
+
+        router.push("/");
+    } catch (error:any) {
+        // Check for specific error response from the backend
+        if (error.response && error.response.status === 400) {
+            setErrorMessage("Invalid email or password.");
         } else {
-            // If userId is missing, log the issue and set an error message
-            console.error("Login failed: User ID is missing in response.");
-            setErrorMessage("Login failed. User ID missing in response.");
+            setErrorMessage("Login failed. Please try again.");
         }
-    } catch (error) {
-        // Log the error and set an error message
-        console.error("Error during login:", error);
-        setErrorMessage("Login failed. Please check your credentials and try again.");
     } finally {
-        setIsSubmitting(false); // Re-enable form submission
+        setIsSubmitting(false);
     }
 };
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">

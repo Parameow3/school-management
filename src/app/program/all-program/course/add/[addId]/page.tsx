@@ -115,7 +115,7 @@ const Page = () => {
       );
       console.log('Course Created:', response.data);
       alert('Course Created Successfully');
-      router.push('/courses');
+      router.push('/program/all-program');
     } catch (err) {
       console.error('Error creating the course:', err);
       alert('Failed to create the course');
