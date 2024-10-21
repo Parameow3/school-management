@@ -47,7 +47,7 @@ const CreateExamPage = () => {
   };
 
   return (
-    <div className="lg:ml-[16%] ml-[11%] mt-20 p-8 bg-gray-50 rounded-lg shadow-lg max-w-lg mx-auto">
+    <div className="lg:ml-[36%] ml-[11%] mt-20 p-8 bg-gray-50 rounded-lg shadow-lg max-w-lg mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-gray-800 text-center">Create New Exam</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -105,7 +105,7 @@ const CreateExamPage = () => {
         <div className="text-center">
           <button
             type="submit"
-            className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-transform duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transform hover:scale-105"
+            className="bg-[#213458] text-white px-6 py-2 rounded-md hover:bg-[#213498] transition-transform duration-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 transform hover:scale-105"
           >
             Create Exam
           </button>

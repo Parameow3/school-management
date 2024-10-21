@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import Dropdown from "@/components/Dropdown";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
@@ -18,10 +18,7 @@ const Page = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>(""); // Track search term
-  const [availablePrograms, setAvailablePrograms] = useState<any[]>([]); // Available programs
-  const [formData, setFormData] = useState({
-    programs: [] as number[], // Stores selected program IDs
-  });
+  const [nextPage, setNextPage] = useState<string | null>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?page=1`); // Store next page URL
   const [token, setToken] = useState<string | null>(null); // Store token here
 
   // Fetch token from localStorage
@@ -35,63 +32,32 @@ const Page = () => {
     }
   }, [router]);
 
-  // Fetch profiles
+  // Fetch profiles (with pagination)
+  const fetchProfiles = async () => {
+    if (!token || !nextPage) return;
+
+    setLoading(true);
+    try {
+      const response = await axios.get(nextPage, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setProfiles((prevProfiles) => [...prevProfiles, ...response.data.results]);
+      setNextPage(response.data.next); // Set the next page URL or null if there are no more pages
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProfiles = async () => {
-      if (!token) return;
-
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setProfiles(response.data.results);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfiles();
-  }, [token]);
-
-  // Fetch programs
-  useEffect(() => {
-    const fetchPrograms = async () => {
-      if (!token) return;
-
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setAvailablePrograms(response.data.results);
-      } catch (err: any) {
-        setError(err.message);
-      }
-    };
-
-    fetchPrograms();
+    fetchProfiles(); // Initial fetch when component loads
   }, [token]);
 
   const handleBranchChange = (branchId: number) => {
     setSelectedBranch(branchId);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedOptions = Array.from(e.target.selectedOptions).map((option) =>
-      Number(option.value)
-    );
-    setFormData({ ...formData, programs: selectedOptions });
   };
 
   const handleViewClick = (id: number) => {
@@ -105,14 +71,6 @@ const Page = () => {
   const handleDeleteClick = (id: number) => {
     setIsModalOpen(true);
     setProfileToDelete(id);
-  };
-
-  const handleClickNew = () => {
-    router.push(`/student/new-student`);
-  };
-
-  const handleClickTrial = () => {
-    router.push(`/student/trial-student`);
   };
 
   const handleCloseModal = () => {
@@ -132,7 +90,9 @@ const Page = () => {
           }
         );
         // After deleting, update the profiles list
-        setProfiles(profiles.filter((profile) => profile.id !== profileToDelete));
+        setProfiles(
+          profiles.filter((profile) => profile.id !== profileToDelete)
+        );
       } catch (err: any) {
         setError("Failed to delete the profile.");
       } finally {
@@ -141,8 +101,11 @@ const Page = () => {
     }
   };
 
-  const filteredProfiles = profiles.filter((profile) => {
-    const matchesBranch = selectedBranch ? profile.branch === selectedBranch : true;
+  // Filter profiles based on search and branch selection
+  const filteredProfiles = (profiles || []).filter((profile) => {
+    const matchesBranch = selectedBranch
+      ? profile.branch === selectedBranch
+      : true;
     const matchesSearch =
       profile.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       profile.last_name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -177,72 +140,90 @@ const Page = () => {
           </Link>
         </div>
 
+        {/* Search Input */}
+        <div className="mb-4 relative ml-4 mt-4">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M8 4a6 6 0 100 12 6 6 0 000-12zm8 8l4 4"
+              />
+            </svg>
+          </span>
+          <input
+            type="text"
+            className="border border-gray-300 rounded-full pl-10 py-2 pr-5 lg:py-3 w-[280px] lg:w-[440px] focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm placeholder-gray-400 text-sm"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)} // Update search query
+          />
+        </div>
+
         <div className="relative mt-4 ml-4 flex flex-row space-x-2 justify-between items-center gap-[24px]">
           {/* Branch Dropdown */}
           <div className="w-full lg:w-[300px]">
             <Dropdown onChange={handleBranchChange} />
           </div>
           {/* Buttons */}
-          <div className="flex  flex-row gap-2">
+          <div className="flex flex-row gap-2">
             <Button
               className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#213458] transition-all duration-300 mr-4"
-              onClick={handleClickNew}
+              onClick={() => router.push(`/student/new-student`)}
             >
               New Student
             </Button>
 
             <Button
               className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#213458] transition-all duration-300"
-              onClick={handleClickTrial}
+              onClick={() => router.push(`/student/trial-student`)}
             >
               New Trial
             </Button>
           </div>
         </div>
-      
-          {/* Search Input */}
-          <div className="mb-4 relative ml-4 mt-4">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 4a6 6 0 100 12 6 6 0 000-12zm8 8l4 4"
-                />
-              </svg>
-            </span>
-            <input
-              type="text"
-              className="border border-gray-300 rounded-full pl-10 py-2 pr-5 lg:py-3 w-[280px] lg:w-[440px] focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm placeholder-gray-400 text-sm"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} // Update search query
-            />
-          </div>
 
         {/* Profiles List */}
         <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
-          {filteredProfiles.map((profile) => (
-            <ProfileCard
-              key={profile.id}
-              pic={profile.image || "/photo.jpg"} // Pass only the image URL string
-              first_name={`${profile.first_name} ${profile.last_name}`} // Combine first and last name
-              job={profile.job || "Student"} // Assuming 'belt_level' is like a rank or title
-              onViewClick={() => handleViewClick(profile.id)}
-              onEditClick={() => handleEditClick(profile.id)}
-              onDeleteClick={() => handleDeleteClick(profile.id)}
-              editPath={`/student/edit/${profile.id}`} // Provide edit path
-              viewPath={`/student/view/${profile.id}`} // Provide view path
-            />
-          ))}
+          {loading ? (
+            <p>Loading </p>
+          ) : Array.isArray(profiles) && profiles.length === 0 ? (
+            <p>No student found.</p>
+          ) : (
+            filteredProfiles.map((profile) => (
+              <ProfileCard
+                key={profile.id}
+                pic={profile.image || "/photo.jpg"} // Pass only the image URL string
+                first_name={`${profile.first_name} ${profile.last_name}`} // Combine first and last name
+                job={profile.job || "Student"} // Assuming 'belt_level' is like a rank or title
+                onViewClick={() => handleViewClick(profile.id)}
+                onEditClick={() => handleEditClick(profile.id)}
+                onDeleteClick={() => handleDeleteClick(profile.id)}
+                editPath={`/student/edit/${profile.id}`} // Provide edit path
+                viewPath={`/student/view/${profile.id}`} // Provide view path
+              />
+            ))
+          )}
         </div>
+
+        {/* "Show More" Button */}
+        {nextPage && (
+          <div className="flex justify-center mt-5">
+            <Button
+              className="bg-[#213458] text-white py-2 px-6 rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105"
+              onClick={fetchProfiles}
+            >
+              Show More
+            </Button>
+          </div>
+        )}
 
         {/* Modal for Deleting */}
         {isModalOpen && (

@@ -279,7 +279,7 @@ const Page = () => {
                     alt="Profile Preview"
                     width={192}
                     height={192}
-                    className="rounded-full"
+                    // className="rounded-full"
                   />
                 </div>
               )}

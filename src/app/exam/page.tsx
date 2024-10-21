@@ -51,7 +51,7 @@ const Page = () => {
       <div className="mb-4">
         <button
           onClick={handleButtonClick} // Add your button action here
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors duration-300"
+          className="bg-[#213458] text-white px-4 py-2 rounded-md hover:bg-[#213498] transition-colors duration-300"
         >
           Add New Exam
         </button>
@@ -62,7 +62,7 @@ const Page = () => {
           exams.map((exam) => (
             <div
               key={exam.id}
-              className="bg-white border border-gray-200 rounded-lg mt-12 shadow-md p-6 w-[320px] transform transition-transform hover:scale-105 duration-300"
+              className="bg-white border border-gray-200 rounded-lg mt-4 shadow-md p-6 w-[320px] transform transition-transform hover:scale-105 duration-300"
             >
               <div className="flex justify-between items-center mb-4 gap-4">
                 <h2 className="text-xl font-semibold text-gray-800">{exam.title}</h2>

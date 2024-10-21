@@ -13,21 +13,29 @@ interface TeacherData {
     username: string;
     email: string;
   };
-  school: number;
+  school: number; // This will store the school ID
   specialization: string;
   hire_date: string;
+}
+
+interface SchoolData {
+  id: number;
+  name: string;
 }
 
 const Page = () => {
   const router = useRouter();
   const { viewId } = useParams(); // Assuming viewId is passed in the URL
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
+  const [schoolName, setSchoolName] = useState<string | null>(null); // Store the school name here
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
   const handleBack = () => {
     router.push(`/teacher/all-teacher`);
   };
+
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -36,6 +44,7 @@ const Page = () => {
       router.push("/login");
     }
   }, [router]);
+
   useEffect(() => {
     const fetchTeacherData = async () => {
       if (!token || !viewId) return; // Ensure token and viewId are available before making the request
@@ -49,6 +58,7 @@ const Page = () => {
           },
         });
         setTeacherData(response.data); // Populate state with API data
+        return response.data.school; // Return the school ID for the next call
       } catch (error) {
         console.error('Error fetching teacher data:', error);
         setError('Failed to load teacher data.');
@@ -57,8 +67,27 @@ const Page = () => {
       }
     };
 
+    const fetchSchoolData = async (schoolId: number) => {
+      try {
+        const schoolResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/${schoolId}/`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setSchoolName(schoolResponse.data.name); // Populate state with school name
+      } catch (error) {
+        console.error('Error fetching school data:', error);
+        setError('Failed to load school data.');
+      }
+    };
+
     if (token && viewId) {
-      fetchTeacherData();
+      fetchTeacherData().then((schoolId) => {
+        if (schoolId) {
+          fetchSchoolData(schoolId); // Fetch school data using the school ID
+        }
+      });
     }
   }, [token, viewId]); // Trigger the useEffect when token or viewId change
 
@@ -76,7 +105,7 @@ const Page = () => {
 
   return (
     <div className="lg:ml-[219px] mt-20 ml-[25px] flex flex-col">
-            <div className='mt-4'>
+      <div className='mt-4'>
         <Button onClick={handleBack}>Back</Button>
       </div>
       <div className="bg-white p-6 rounded-lg lg:gap-12 gap-4 h-[450px] flex lg:flex-row flex-col shadow-lg w-[345px] lg:w-[654px] max-w-2xl mx-auto">
@@ -106,7 +135,7 @@ const Page = () => {
             <strong>Hire Date:</strong> {new Date(teacherData.hire_date).toLocaleDateString()}
           </p>
           <p className="p-2 text-[12px] lg:text-[16px]">
-            <strong>School ID:</strong> {teacherData.school}
+            <strong>School Name:</strong> {schoolName || 'Loading...'}
           </p>
         </div>
       </div>

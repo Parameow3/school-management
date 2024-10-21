@@ -21,6 +21,8 @@ import {
 import { useRouter } from "next/navigation"; // Add this import for routing
 import Image from "next/image";
 import Profile from "./profile";
+import Searchinput from "./Searchinput";
+
 type NavigationItem = {
   name: string;
   href?: string;
