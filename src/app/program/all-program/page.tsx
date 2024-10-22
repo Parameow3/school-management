@@ -7,22 +7,12 @@ import { useRouter } from "next/navigation";
 import Dropdown from "@/components/Dropdown";
 import axios from "axios"; // Import Axios for API calls
 
-interface Course {
-  id: number;
-  name: string;
-  code: string;
-  description: string;
-  credits: number;
-  program: number;
-  school: number;
-}
-
 interface Program {
   id: number;
   name: string;
   description: string;
-  school: number;
-  courses: Course[];
+  branch: number;
+  course_list?: string[]; // course_list is an array of course names (strings)
 }
 
 const Page = () => {
@@ -35,6 +25,8 @@ const Page = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+
+  // Fetch token from localStorage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -43,6 +35,8 @@ const Page = () => {
       router.push("/login");
     }
   }, [router]);
+
+  // Fetch programs on component mount
   useEffect(() => {
     if (!token) return;
 
@@ -57,7 +51,7 @@ const Page = () => {
             },
           }
         );
-        setPrograms(response.data.results || []);
+        setPrograms(response.data.results || []); // Set programs with course_list
       } catch (err) {
         setError("Failed to fetch programs");
       } finally {
@@ -68,8 +62,9 @@ const Page = () => {
     fetchPrograms();
   }, [token]);
 
+  // When a program is clicked, show its details including course_list
   const handleCardClick = (program: Program) => {
-    setSelectedProgram(program);
+    setSelectedProgram(program); // Set the selected program, including its course_list
   };
 
   const handleDeleteClick = (program: Program) => {
@@ -108,12 +103,8 @@ const Page = () => {
     router.push(`/program/all-program/edit/${id}`);
   };
 
-  const handleViewCourse = (courseId: number) => {
-    router.push(`/program/all-program/course/view/${courseId}`);
-  };
-
   const handleShowAllPrograms = () => {
-    setSelectedProgram(null);
+    setSelectedProgram(null); // Reset selected program
   };
 
   const handleAddClick = () => {
@@ -199,8 +190,8 @@ const Page = () => {
             </p>
             <div className="flex justify-between items-center mt-auto">
               <p className="text-[16px] font-medium">
-                {program.courses
-                  ? `${program.courses.length} courses`
+                {program.course_list
+                  ? `${program.course_list.length} courses`
                   : "No courses available"}
               </p>
               <Image
@@ -218,96 +209,42 @@ const Page = () => {
       <div className="flex flex-col">
         <div>
           {selectedProgram && (
-            <div className="mt-8 lg:w-[1070px]">
+            <div className="mt-8 lg:w-[440px]">
               <div>
                 <div className="flex flex-row justify-between">
                   <h3 className="text-xl font-bold text-[#213458]">
                     Program: {selectedProgram.name}
                   </h3>
                   <div className="flex flex-row gap-6">
-                    <div className="flex flex-row w-[40px] h-[40px] bg-[#213458] p-2 cursor-pointer">
-                      <Image
-                        src={"/add.svg"}
-                        width={20}
-                        height={20}
-                        alt="add"
-                        onClick={(e) => {
+                     <button onClick={(e) => {
                           e.stopPropagation();
                           handleAddCourse(selectedProgram.id);
-                        }}
-                      />
-                    </div>
+                        }} className="bg-[#213458] text-white py-2 px-4 rounded-md shadow-md hover:bg-[#1c2b47] transition-all"> New course</button>
+                        
                   </div>
                 </div>
               </div>
 
-              <table className="table-auto w-full mt-4 border-b-black">
+              <table className="table-auto w-[440px] mt-4 border-b-black">
                 <thead>
                   <tr className="border text-center">
                     <th className="border border-black px-2 py-2">
                       Course Name
                     </th>
-                    <th className="border border-black px-2 py-2">Code</th>
-                    <th className="border border-black px-2 py-2">Credits</th>
-                    <th className="border border-black px-2 py-2">
-                      Description
-                    </th>
-                    <th className="border border-black px-2 py-2">Action</th>
                   </tr>
                 </thead>
                 <tbody className="justify-center items-center text-center">
-                  {selectedProgram?.courses?.length > 0 ? (
-                    selectedProgram.courses.map((course) => (
-                      <tr key={course.id} className="border text-center">
+                  {selectedProgram?.course_list?.length ? (
+                    selectedProgram.course_list.map((course, index) => (
+                      <tr key={index} className="border text-center">
                         <td className="border border-black px-2 py-2">
-                          {course.name}
-                        </td>
-                        <td className="border border-black px-2 py-2">
-                          {course.code}
-                        </td>
-                        <td className="border border-black px-2 py-2">
-                          {course.credits}
-                        </td>
-                        <td className="border border-black px-2 py-2">
-                          {course.description}
-                        </td>
-                        <td className="flex flex-row gap-5 items-center justify-center border border-black px-2 py-2">
-                          <Image
-                            src={"/view.svg"}
-                            width={15}
-                            height={15}
-                            alt="view"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewCourse(course.id); // Pass course.id for viewing
-                            }}
-                          />
-                          <Image
-                            src={"/update.svg"}
-                            width={15}
-                            height={15}
-                            alt="edit"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditCourse(course.id); // Pass course.id for editing
-                            }}
-                          />
-                          <Image
-                            src={"/delete.svg"}
-                            width={20}
-                            height={20}
-                            alt="delete"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteCourse(course.id); // Pass course.id for deletion
-                            }}
-                          />
+                          {course}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="text-center p-4">
+                      <td colSpan={1} className="text-center p-4">
                         No courses available
                       </td>
                     </tr>

@@ -5,16 +5,25 @@ import Image from "next/image";
 import axios from "axios"; // Import axios to make HTTP requests
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
+
 interface School {
   id: number;
   name: string;
 }
+
+interface Specialization {
+  id: number;
+  name: string;
+}
+
 const Page = () => {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
-  const [schools, setSchools] = useState<School[]>([]); 
+  const [schools, setSchools] = useState<School[]>([]);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]); // State for specializations
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);  // State for loading
+  const [error, setError] = useState<string | null>(null);
+  
   const [formData, setFormData] = useState({
     user: {
       username: "",
@@ -22,7 +31,7 @@ const Page = () => {
       password: "",
     },
     school: 1, // Assuming this is a valid school ID, adjust as needed
-    specialization: "",
+    specialization: "", // Specialization will now be selected from dropdown
     hire_date: new Date().toISOString().slice(0, 16), // Correct date format for datetime-local
   });
 
@@ -45,18 +54,37 @@ const Page = () => {
             'Authorization': `Bearer ${token}`, // Pass token if available
           },
         });
-        console.log("Fetched Schools:", response.data.results); // Access 'results' from the response
-        setSchools(response.data.results || []); // Set schools to 'results' field
+        console.log("Fetched Schools:", response.data.results);
+        setSchools(response.data.results || []);
         setLoading(false);
-      } catch (err:any) {
+      } catch (err: any) {
         console.error("Error fetching schools:", err.response?.data || err.message);
         setError("Failed to load schools");
         setLoading(false);
       }
     };
-  
+
+    const fetchSpecializations = async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`, // Pass token if available
+          },
+        });
+        console.log("Fetched Specializations:", response.data.results);
+        setSpecializations(response.data.results || []);
+        setLoading(false);
+      } catch (err: any) {
+        console.error("Error fetching specializations:", err.response?.data || err.message);
+        setError("Failed to load specializations");
+        setLoading(false);
+      }
+    };
+
     if (token) {
       fetchSchools(); // Fetch schools if token is available
+      fetchSpecializations(); // Fetch specializations if token is available
     }
   }, [token]);
 
@@ -85,7 +113,7 @@ const Page = () => {
 
     try {
       const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`,
         formData,
         {
           headers: {
@@ -181,16 +209,25 @@ const Page = () => {
               <label htmlFor="specialization" className="block text-sm font-medium text-gray-700">
                 Specialization:
               </label>
-              <input
-                type="text"
+              <select
                 id="specialization"
                 name="specialization"
                 value={formData.specialization}
                 onChange={handleChange}
-                maxLength={255}
                 required
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-              />
+              >
+                <option value="" disabled selected>Select a specialization</option>
+                {Array.isArray(specializations) && specializations.length > 0 ? (
+                  specializations.map((spec) => (
+                    <option key={spec.id} value={spec.id}>
+                      {spec.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>No specializations available</option>
+                )}
+              </select>
             </div>
 
             <div>
@@ -201,35 +238,34 @@ const Page = () => {
                 type="datetime-local"
                 id="hire_date"
                 name="hire_date"
-                value={formData.hire_date} // Correct date format
+                value={formData.hire_date}
                 onChange={handleChange}
                 required
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
               />
             </div>
+
             <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              School
-            </label>
-            <select
-              name="school"
-              value={formData.school}
-              onChange={handleChange}
-              className="block w-[316px] h-[44px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#213458] focus:border-indigo-500"
-              required
-            >
-              <option value="" disabled selected>Select a school</option>
-              {Array.isArray(schools) && schools.length > 0 ? (
-                schools.map((school) => (
-                  <option key={school.id} value={school.id}>
-                    {school.name}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>No schools available</option>
-              )}
-            </select>
-          </div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">School</label>
+              <select
+                name="school"
+                value={formData.school}
+                onChange={handleChange}
+                className="block w-[316px] h-[44px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#213458] focus:border-indigo-500"
+                required
+              >
+                <option value="" disabled selected>Select a school</option>
+                {Array.isArray(schools) && schools.length > 0 ? (
+                  schools.map((school) => (
+                    <option key={school.id} value={school.id}>
+                      {school.name}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>No schools available</option>
+                )}
+              </select>
+            </div>
           </div>
         </section>
 

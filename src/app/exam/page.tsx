@@ -45,7 +45,7 @@ const Page = () => {
 
   return (
     <div className="lg:ml-[16%] ml-[11%] mt-20">
-      <h1 className="text-2xl font-bold mb-6 col-span-full">Exam Details</h1>
+      <h1 className="text-2xl font-bold mb-6 col-span-full items-center justify-center flex">Exam Details</h1>
       
       {/* Button added here */}
       <div className="mb-4">

@@ -26,6 +26,7 @@ interface Student {
   motherPhone?: string; 
   parentContact: string;
   profilePicture?: string;
+  classroom?: string; // Add classroom field
 }
 
 const Page = () => {
@@ -47,51 +48,73 @@ const Page = () => {
   }, [router]);
 
   useEffect(() => {
-    const fetchStudent = async () => {
+    const fetchStudentAndClassroom = async () => {
       if (!token) return; // Ensure token is available before making API request
 
       try {
-        const response = await axios.get(
+        // Fetch student data
+        const studentResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${viewId}`, 
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
-        ); // Fetch data using student ID
-        const data = response.data;
+        );
+        
+        const studentData = studentResponse.data;
+
+        // Assuming the student data has a classroom ID, fetch classroom data
+        const classroomId = studentData.classroom_id; // Make sure this field exists in the student data
+
+        let classroomName = '';
+
+        if (classroomId) {
+          // Fetch classroom data using classroom ID
+          const classroomResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classroomId}`, 
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          classroomName = classroomResponse.data.name; // Assuming the classroom has a 'name' field
+        }
 
         const mappedStudent: Student = {
-          id: data.id,
-          first_name: data.first_name,
-          last_name: data.last_name,
-          age: data.age,
-          gender: data.gender,
-          admissionDate: data.admission_date,
-          belt_level: data.belt_level || '', // Optional field
-          dob: data.dob,
-          address: data.address,
-          pob: data.pob, // Place of birth
-          nationality: data.nationality,
-          studentPassport: data.student_passport,
-          fatherName: data.father_name,
-          fatherOccupation: data.father_occupation,
-          fatherPhone: data.father_phone || '', // Optional field
-          motherName: data.mother_name,
-          motherOccupation: data.mother_occupation,
-          motherPhone: data.mother_phone || '', // Optional field
-          parentContact: data.parent_contact,
-          profilePicture: data.image || '/default-photo.jpg', // Fallback if no profile picture
+          id: studentData.id,
+          first_name: studentData.first_name,
+          last_name: studentData.last_name,
+          age: studentData.age,
+          gender: studentData.gender,
+          admissionDate: studentData.admission_date,
+          belt_level: studentData.belt_level || '', // Optional field
+          dob: studentData.dob,
+          address: studentData.address,
+          pob: studentData.pob, // Place of birth
+          nationality: studentData.nationality,
+          studentPassport: studentData.student_passport,
+          fatherName: studentData.father_name,
+          fatherOccupation: studentData.father_occupation,
+          fatherPhone: studentData.father_phone || '', // Optional field
+          motherName: studentData.mother_name,
+          motherOccupation: studentData.mother_occupation,
+          motherPhone: studentData.mother_phone || '', // Optional field
+          parentContact: studentData.parent_contact,
+          profilePicture: studentData.image || '/default-photo.jpg', // Fallback if no profile picture
+          classroom: classroomName, // Assign the classroom name if available
         };
 
         setStudent(mappedStudent);
         setIsLoading(false);
       } catch (error: any) {
-        setError("Failed to load student");
+        setError("Failed to load student or classroom data");
         setIsLoading(false);
       }
     };
-    fetchStudent();
+
+    fetchStudentAndClassroom();
   }, [viewId, token]);
 
   if (isLoading) {
@@ -139,6 +162,11 @@ const Page = () => {
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Place of Birth:</strong> {student.pob}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Nationality:</strong> {student.nationality}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Student Passport:</strong> {student.studentPassport}</p>
+
+          {/* Classroom information */}
+          {student.classroom && (
+            <p className="p-2 text-[12px] lg:text-[16px]"><strong>Classroom:</strong> {student.classroom}</p>
+          )}
 
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Name:</strong> {student.fatherName}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Father's Occupation:</strong> {student.fatherOccupation}</p>

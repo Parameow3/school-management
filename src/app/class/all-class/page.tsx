@@ -6,8 +6,6 @@ import Link from "next/link";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/navigation";
 import Dropdown from "@/components/Dropdown";
-
-// Define interfaces based on backend data
 interface Class {
   id: number;
   name: string;

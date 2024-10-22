@@ -44,9 +44,15 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {}, value }) => {
               },
             }
           );
-          // Directly use response.data since it's an array of branches
-          if (response.data) {
-            setAvailableBranches(response.data); // Set the branches array directly
+
+          // Assuming the API response contains the branch name directly in `branch.name`
+          const branchesData = response.data.results.map((item: any) => ({
+            id: item.id, // Assuming `id` is the branch ID
+            name: item.name, // Assuming `name` is the branch name
+          }));
+
+          if (branchesData.length > 0) {
+            setAvailableBranches(branchesData); // Set the branches array
             setError(null); // Reset any previous errors
           } else {
             setAvailableBranches([]); // Set an empty array if no results
@@ -85,7 +91,7 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {}, value }) => {
         {availableBranches.length > 0 ? (
           availableBranches.map((branch) => (
             <option key={branch.id} value={branch.id}>
-              {branch.name}
+              {branch.name} {/* Show branch name here */}
             </option>
           ))
         ) : (
