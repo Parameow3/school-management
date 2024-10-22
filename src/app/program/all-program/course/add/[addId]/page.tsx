@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios"; // Import Axios for API calls
 import { useRouter } from "next/navigation";
-import ProgramDropdown from "@/components/programDropdown";
+
 interface Program {
   id: number;
   name: string;
@@ -13,12 +13,16 @@ interface School {
   name: string;
 }
 
-const Page = () => {
+const AddCoursePage = () => {
   const router = useRouter();
   const [programs, setPrograms] = useState<Program[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState<string | null>(null);
-  const [selectedSchool, setSelectedSchool] = useState<string | null>(null);
+  const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
+  const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
+  const [courseName, setCourseName] = useState<string>("");
+  const [courseCode, setCourseCode] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -40,8 +44,21 @@ const Page = () => {
 
       try {
         setLoading(true);
+
+        // Fetch programs
+        const programsResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPrograms(programsResponse.data.results || []);
+
+        // Fetch schools
         const schoolsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/schools`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -49,7 +66,6 @@ const Page = () => {
           }
         );
         setSchools(schoolsResponse.data.results || []);
-
       } catch (err) {
         setError("Failed to fetch programs or schools.");
       } finally {
@@ -59,19 +75,40 @@ const Page = () => {
 
     fetchData();
   }, [token]);
-
-  const handleProgramChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedProgram(event.target.value);
-  };
-
-  const handleSchoolChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSchool(event.target.value);
-  };
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Add your course creation logic here
+    if (!selectedProgram || !selectedSchool || !courseName || !courseCode || !credits) {
+      setError("All fields are required.");
+      return;
+    }
+
+    try {
+      setError(null);
+
+      // Create course API call
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+        {
+          name: courseName,
+          code: courseCode,
+          description,
+          credits,
+          program: selectedProgram,
+          school: selectedSchool,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Redirect after successful course creation
+      router.push("/program/all-program");
+    } catch (err) {
+      setError("Failed to create course.");
+    }
   };
 
   return (
@@ -89,6 +126,8 @@ const Page = () => {
           name="courseName"
           className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
           placeholder="Enter course name"
+          value={courseName}
+          onChange={(e) => setCourseName(e.target.value)}
         />
 
         {/* Course code input */}
@@ -101,6 +140,8 @@ const Page = () => {
           name="courseCode"
           className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
           placeholder="Enter course code"
+          value={courseCode}
+          onChange={(e) => setCourseCode(e.target.value)}
         />
 
         {/* Course description */}
@@ -112,6 +153,8 @@ const Page = () => {
           name="description"
           className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
           placeholder="Enter course description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
 
         {/* Course credits */}
@@ -124,6 +167,8 @@ const Page = () => {
           name="credits"
           className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
           placeholder="Enter number of credits"
+          value={credits || ""}
+          onChange={(e) => setCredits(Number(e.target.value))}
         />
 
         {/* Program selection */}
@@ -131,9 +176,28 @@ const Page = () => {
         <label htmlFor="program" className="block mb-2 font-medium">
           Select Program
         </label>
-        <ProgramDropdown onSelect={function (selectedPrograms: number[]): void {
-          throw new Error("Function not implemented.");
-        } }></ProgramDropdown>
+        <select
+          id="program"
+          name="program"
+          value={selectedProgram || ""}
+          onChange={(e) => setSelectedProgram(Number(e.target.value))}
+          className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
+        >
+          <option value="" disabled>
+            {loading ? "Loading programs..." : "Select a program"}
+          </option>
+          {programs.length > 0 ? (
+            programs.map((program) => (
+              <option key={program.id} value={program.id}>
+                {program.name}
+              </option>
+            ))
+          ) : (
+            <option value="" disabled>
+              No programs available
+            </option>
+          )}
+        </select>
 
         {/* School selection */}
         <label htmlFor="school" className="block mb-2 font-medium">
@@ -143,7 +207,7 @@ const Page = () => {
           id="school"
           name="school"
           value={selectedSchool || ""}
-          onChange={handleSchoolChange}
+          onChange={(e) => setSelectedSchool(Number(e.target.value))}
           className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
         >
           <option value="" disabled>
@@ -173,4 +237,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default AddCoursePage;

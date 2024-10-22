@@ -30,10 +30,14 @@ const Page: React.FC = () => {
   const [schoolEmail, setSchoolEmail] = useState<string>("");
   const [schoolEstablishedDate, setSchoolEstablishedDate] = useState<string>("");
   const [schoolWebsite, setSchoolWebsite] = useState<string>("");
+
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+
+  // Fetch the token from localStorage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -42,8 +46,11 @@ const Page: React.FC = () => {
       router.push("/login");
     }
   }, [router]);
+
+  // Fetch schools when token is available
   useEffect(() => {
     if (!token) return;
+    
     const fetchSchools = async () => {
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, {
@@ -61,9 +68,12 @@ const Page: React.FC = () => {
     fetchSchools();
   }, [token]);
 
+  // Handle school change
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = Number(e.target.value);
     setSelectedSchool(selectedId);
+
+    // Find and set the details of the selected school
     const school = schools.find((school) => school.id === selectedId);
     if (school) {
       setSchoolName(school.name);
@@ -73,6 +83,7 @@ const Page: React.FC = () => {
       setSchoolPhoneNumber(school.phone_number);
       setSchoolWebsite(school.schoolweb || "Website not available");
     } else {
+      // Clear school fields if no school is selected
       setSchoolName("");
       setSchoolAddress("");
       setSchoolEmail("");
@@ -82,6 +93,7 @@ const Page: React.FC = () => {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -96,17 +108,12 @@ const Page: React.FC = () => {
         email: branchEmail,
         location: branchLocation,
         user_id: userId,
-        school_id: selectedSchool || null, 
-        school: {
-          name: schoolName,
-          address: schoolAddress,
-          phone_number: schoolPhoneNumber,
-          email: schoolEmail,
-          established_date: schoolEstablishedDate,
-          website: schoolWebsite,
-        },
+        school_id: selectedSchool || null,
       };
+
       console.log("Submitting data:", branchData);
+
+      // Submit branch data
       await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`, branchData, {
         headers: {
           Authorization: `Bearer ${token}`, // Ensure the token is included in the request
@@ -114,8 +121,10 @@ const Page: React.FC = () => {
       });
       router.push("/branches");
     } catch (err) {
-      alert("Failed to add branch. Please check the form and try again."); // Show alert on failure
-      setLoading(false);
+      setError("Failed to add branch. Please check the form and try again."); 
+      console.error("Submission error:", err);
+    } finally {
+      setLoading(false); // Reset loading state after submission
     }
   };
 
@@ -128,6 +137,7 @@ const Page: React.FC = () => {
         <h1 className="text-xl font-bold text-gray-800 mb-8 text-center">
           Add New Branch
         </h1>
+
         {/* Branch Information */}
         <div className="mb-6">
           <label className="block text-gray-600 text-sm font-semibold mb-2">
@@ -237,86 +247,9 @@ const Page: React.FC = () => {
           </select>
         </div>
 
-        {/* Display school details if selected */}
-        {selectedSchool && (
-          <>
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Name
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolName}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Address
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolAddress}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Phone Number
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolPhoneNumber}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Email
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="email"
-                value={schoolEmail}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                Established Date
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="date"
-                value={schoolEstablishedDate}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Website
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolWebsite || "Website not available"}
-                readOnly
-              />
-            </div>
-          </>
-        )}
-
         {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
-        <Button className=" bg-[#213458] flex items-center justify-center hover:bg[#213498] text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <Button className="bg-[#213458] flex items-center justify-center hover:bg[#213498] text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
           {loading ? "Submitting..." : "Submit"}
         </Button>
       </form>
