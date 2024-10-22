@@ -34,7 +34,16 @@ const Page: React.FC = () => {
     if (schoolId) {
       const fetchSchool = async () => {
         try {
-          const response = await axios.get(`http://127.0.0.1:8000/api/schools/${schoolId}/`);
+          const token = localStorage.getItem('authToken'); // Ensure the token is stored under 'token'
+
+          const response = await axios.get(`http://127.0.0.1:8000/api/schools/${schoolId}/`,
+            {
+            
+              headers: {
+                Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+              },
+            
+          });
           setFormData(response.data);
           setLoading(false); // Stop loading once data is fetched
         } catch (err) {
@@ -70,7 +79,15 @@ const Page: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      await axios.put(`http://127.0.0.1:8000/api/schools/${schoolId}/`, formData);
+      const token = localStorage.getItem('authToken'); // Ensure the token is stored under 'token'
+
+      await axios.put(`http://127.0.0.1:8000/api/schools/${schoolId}/`, formData,
+        {
+          headers: {
+          Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+        },
+      }
+      );
       router.push("/school/school");
       alert('School updated successfully!');
       setError('');

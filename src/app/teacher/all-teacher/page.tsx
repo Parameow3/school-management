@@ -8,14 +8,12 @@ import Image from "next/image";
 import ProfileCard from "@/components/ProfileCard";
 import Modal from "@/components/Modal";
 interface TeacherProfile {
-  branch: number;
-  id: number;
+  username: string;
+  email: string;
   pic: string;
-  user: {
-    username: string;
-    email: string;
-  };
-  job: string;
+  roles: string;
+  specialization: string;
+  image: string;
 }
 
 const Page = () => {
@@ -41,7 +39,7 @@ const Page = () => {
       if (token) {
         try {
           console.log("Token being used:", token); // Log the token for debugging
-          const response = await axios.get(  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`, {
+          const response = await axios.get(  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`, // Add token to Authorization header
@@ -95,7 +93,7 @@ const Page = () => {
   const handleConfirmDelete = async () => {
     if (profileToDelete !== null) {
       try {
-        await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/teacher/${profileToDelete}/`, {
+        await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/user/${profileToDelete}/`, {
           headers: {
             Authorization: `Bearer ${token}`, // Add token to Authorization header
           },
@@ -109,8 +107,8 @@ const Page = () => {
   };
 
   const filteredProfiles = selectedBranch
-    ? profiles.filter((profile) => profile.branch === selectedBranch)
-    : profiles;
+    // ? profiles.filter((profile) => profile.branch === selectedBranch)
+    // : profiles;
 
   return (
     <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">

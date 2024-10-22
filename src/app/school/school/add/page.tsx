@@ -48,15 +48,28 @@ const Page: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, formData);
+      // Get the token from local storage (or another source)
+      const token = localStorage.getItem('authToken'); // Ensure the token is stored under 'token'
+      console.log("token" , token)
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+          },
+        }
+      );
+      
       router.push("/school/school");
       console.log(response.data);
       alert('School added successfully!');
       setError('');
-    } catch (err:any) {
+    } catch (err: any) {
       setError('Failed to post data. Please check the server and data.');
       console.error(err.response ? err.response.data : err.message);  // Log the actual error from server
     }
+    
   };
 
   return (

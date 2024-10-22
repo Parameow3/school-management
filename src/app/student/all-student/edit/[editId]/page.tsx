@@ -7,7 +7,14 @@ import Button from "@/components/Button";
 import axios from "axios";
 import Dropdown from "@/components/Dropdown";
 import { useRouter } from "next/navigation";
+
 interface Classroom {
+  id: number;
+  name: string;
+}
+
+
+interface Branch {
   id: number;
   name: string;
 }
@@ -34,8 +41,9 @@ interface Student {
   parent_contact: string;
   profile_picture: string;
   belt_level: string;
+  image: string;
 }
-interface Classroom {}
+
 const Page = () => {
   const params = useParams();
   const router = useRouter();
@@ -44,6 +52,8 @@ const Page = () => {
   const [selectedClassroom, setSelectedClassroom] = useState<number | null>(
     null
   );
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [formData, setFormData] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,8 +70,43 @@ const Page = () => {
   }, [router]);
 
   useEffect(() => {
-    const fetchStudent = async () => {
+    const fetchBranches = async () => {
+      console.log("branch " )
+
       if (!token) return;
+
+      try {
+
+        const res = await axios.get('http://127.0.0.1:8000/api/academics/classroom',{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/branches`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("branch " , response)
+        setClassrooms(response.data.results || []); // Assuming the response is paginated
+
+        setBranches(res.data.results || []);
+      } catch (error) {
+        console.error("Error fetching branches:", error);
+      }
+    };
+
+    fetchBranches();
+  }, [token]);
+
+
+
+  useEffect(() => {
+    const fetchStudent = async () => {
       try {
         const response = await axios.get(
           `http://127.0.0.1:8000/api/academics/students/${id}/`,
@@ -86,48 +131,15 @@ const Page = () => {
     return <div className="text-center mt-20">Student not found</div>;
   }
 
+  
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({ ...prevFormData!, [name]: value }));
   };
-  useEffect(() => {
-    const fetchClassrooms = async () => {
-      if (!token) return; // Only fetch if token is available
-
-      try {
-        const response = await axios.get(
-          "http://127.0.0.1:8000/api/academics/classroom",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setClassrooms(response.data.results || []); // Assuming the response is paginated
-        setIsLoading(false);
-      } catch (err) {
-        setError("Failed to fetch classrooms");
-        setIsLoading(false);
-      }
-    };
-
-    fetchClassrooms();
-  }, [token]); // Fetch classrooms whenever the token changes
-
-  const handleClassroomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedClassroom(parseInt(e.target.value, 10));
-    setFormData((prevData) => ({ ...prevData, class: e.target.value }));
-  };
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImagePreview(URL.createObjectURL(file)); // Create a local URL to preview the selected image
-      setFormData((prevFormData) => ({
-        ...prevFormData!,
-        profile_picture: file.name,
-      }));
-    }
-  };
+  
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -162,9 +174,26 @@ const Page = () => {
       );
 
       alert("Student updated successfully");
+      router.push(`/student/all-student`); // Example: Redirect to the student's detail page after update
+
     } catch (error) {
       console.error("Failed to update student", error);
       alert("Failed to update student");
+    }
+  };
+
+
+  const handleClassroomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedClassroom(parseInt(e.target.value, 10));
+    setFormData((prevData) => ({ ...prevData, class: e.target.value }));
+  };
+
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file)); // Preview the selected image
+      setFormData((prevFormData) => ({ ...prevFormData, image: file })); // Save the file object to formData
     }
   };
 
@@ -324,15 +353,15 @@ const Page = () => {
             {/* Profile Picture Upload */}
             <div>
               <label
-                htmlFor="profile_picture"
+                htmlFor="image"
                 className="block text-sm font-medium text-gray-700"
               >
                 Profile Picture:
               </label>
               <input
                 type="file"
-                id="profile_picture"
-                name="profile_picture"
+                id="image"
+                name="image"
                 accept="image/*"
                 onChange={handleFileChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"

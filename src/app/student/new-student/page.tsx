@@ -10,6 +10,10 @@ interface Classroom {
   id: number;
   name: string;
 }
+interface Branch{
+  id :number;
+  name:string;
+}
 
 const Page = () => {
   const [formData, setFormData] = useState({
@@ -36,7 +40,9 @@ const Page = () => {
   });
   const router= useRouter();
   const [classrooms, setClassrooms] = useState<Classroom[]>([]); 
+  const [branch, setBranch] = useState<Branch[]>([]); 
   const [selectedClassroom, setSelectedClassroom] = useState<number | null>(null); 
+  const [selectedBranch, setSelectedBranch] = useState<number | null>(null); 
   const [loading, setLoading] = useState<boolean>(true); 
   const [error, setError] = useState<string | null>(null); 
   const [imagePreview, setImagePreview] = useState<string | null>(null); 
@@ -60,7 +66,15 @@ const Page = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+        const res = await axios.get('http://127.0.0.1:8000/api/branches',{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
         setClassrooms(response.data.results || []); // Assuming the response is paginated
+        setBranch(res.data.results || []); // Assuming the response is paginated
+
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch classrooms');
@@ -70,23 +84,37 @@ const Page = () => {
 
     fetchClassrooms();
   }, [token]);
-
+  
+  
   const handleClassroomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedClassroom(parseInt(e.target.value, 10));
     setFormData((prevData) => ({ ...prevData, class: e.target.value }));
   };
 
+ const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  setSelectedBranch(parseInt(e.target.value, 10));
+  setFormData((prevData) => ({ ...prevData, branch: e.target.value }));
+};
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+ 
+
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImagePreview(URL.createObjectURL(file)); // Create a local URL to preview the selected image
-      setFormData((prevFormData) => ({ ...prevFormData!, profile_picture: file.name }));
+      setImagePreview(URL.createObjectURL(file)); // Preview the selected image
+      setFormData((prevFormData) => {
+        return ({ ...prevFormData, image: file });
+      }); // Save the file object to formData
     }
   };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!token) {
@@ -94,7 +122,7 @@ const Page = () => {
       router.push('/login');
       return;
     }
-  
+
     const formDataToSubmit = new FormData();
     formDataToSubmit.append('first_name', formData.firstName);
     formDataToSubmit.append('last_name', formData.lastName);
@@ -107,20 +135,26 @@ const Page = () => {
     formDataToSubmit.append('nationality', formData.nationality);
     formDataToSubmit.append('place_of_birth', formData.placeOfBirth);
     formDataToSubmit.append('belt_level', formData.beltLevel);
+    formDataToSubmit.append('parent_contact', formData.parentContact);
     formDataToSubmit.append('student_passport', formData.studentPassport);
+    formDataToSubmit.append('phone', formData.phone);
     formDataToSubmit.append('address', formData.address);
     formDataToSubmit.append('father_name', formData.fatherName);
     formDataToSubmit.append('father_occupation', formData.fatherOccupation);
-    formDataToSubmit.append('phone', formData.phone);
     formDataToSubmit.append('mother_name', formData.motherName);
     formDataToSubmit.append('mother_occupation', formData.motherOccupation);
-    formDataToSubmit.append('parent_contact', formData.parentContact);
+    formDataToSubmit.append('image', formData.image);
   
+
+
     // Append the image file to the formData (if it's been selected)
     if (formData.image) {
+      console.log("what is form data" , formData.image)
       formDataToSubmit.append('profile_picture', formData.image); // The key must match the backend's expected name
     }
   
+    console.log("formdata" , formData)
+
     try {
       const response = await axios.post(
         'http://127.0.0.1:8000/api/academics/students/',
@@ -133,13 +167,14 @@ const Page = () => {
         }
       );
       console.log('Response:', response.data);
+      // router.push('/student/all-student');
       alert('Form submitted successfully!');
-      router.push('/student/all-student');
     } catch (error) {
       console.error('Error submitting the form:', error); // Log the error for debugging
       alert('Failed to submit the form.');
     }
   };
+
   
   return (
     <div className="lg:ml-[18%] ml-[11%] mt-20 h-[1040px] flex flex-col">
@@ -257,17 +292,33 @@ const Page = () => {
             </div>
 
             <div>
-              <label htmlFor="branch" className="block text-sm font-medium text-gray-700">
-                Branch:
+              <label htmlFor="classroom" className="block text-sm font-medium text-gray-700">
+                Branchs:
               </label>
-              <Dropdown onChange={(value: any) => setFormData({ ...formData, branch: value })} />
+              <select
+                id="branch"
+                name="branch"
+                value={selectedBranch || ''}
+                onChange={handleBranchChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md border-gray-300 shadow-sm"
+              >
+                <option value="" disabled>
+                  Select a branch
+                </option>
+                {branch.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
             </div>
+
             <div>
-              <label htmlFor="profile_picture" className="block text-sm font-medium text-gray-700">Profile Picture:</label>
+              <label htmlFor="image" className="block text-sm font-medium text-gray-700">Profile Picture:</label>
               <input
                 type="file"
-                id="profile_picture"
-                name="profile_picture"
+                id="image"
+                name="image"
                 accept="image/*"
                 onChange={handleFileChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"

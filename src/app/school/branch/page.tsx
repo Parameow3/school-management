@@ -57,6 +57,7 @@ const Page: React.FC = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+
         console.log("Token branch:", token);
         setBranches(response.data.results);
         setLoading(false);

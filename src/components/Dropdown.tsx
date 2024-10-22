@@ -17,11 +17,23 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {} }) => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+
+  
   useEffect(() => {
     // Fetch branches from the API
     const fetchBranches = async () => {
+      const token = localStorage.getItem('authToken'); // Get token from localStorage
+      if (!token) {
+        console.error('Token is missing');
+        return;
+      }
+
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/branches/');
+        const response = await fetch('http://127.0.0.1:8000/api/branches/', {
+          headers: {
+            Authorization: `Bearer ${token}`, // Set the token in the Authorization header
+          },
+        });
         const data = await response.json();
         setBranches(data.results || []); // Ensure branches is an array
         setIsLoading(false);
