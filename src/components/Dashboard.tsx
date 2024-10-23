@@ -94,6 +94,7 @@ const navigation: NavigationItem[] = [
     subItems: [
       { name: "All Classes", href: "/class/all-class", current: false },
       { name: "New Class", href: "/class/new-class", current: false },
+      { name: "Enrollment", href: "/class/enrollment", current: false },
     ],
   },
   {
