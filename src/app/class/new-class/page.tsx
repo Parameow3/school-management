@@ -2,68 +2,82 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-interface Program {
+interface Course {
   id: number;
   name: string;
 }
 
 interface Teacher {
+  username: string;
   id: number;
-  name: string;
 }
 
 const Page = () => {
-  const [isMounted, setIsMounted] = useState(false); // Track whether the component is mounted
+  const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState({
     className: "",
-    program: "",
+    course: "", // Updated to course
     teacher: "",
     credit: "",
     start_date: "",
     end_date: "",
   });
-  const [programs, setPrograms] = useState<Program[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-  
-  const [loadingTeachers, setLoadingTeachers] = useState(true);
-  const [loadingPrograms, setLoadingPrograms] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // This ensures that the component only renders on the client-side after it's mounted
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [errorCourses, setErrorCourses] = useState<string | null>(null);
+  const [errorTeachers, setErrorTeachers] = useState<string | null>(null);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Fetch teachers and programs after component is mounted
+  // Fetch courses and teachers
   useEffect(() => {
     if (isMounted) {
       const fetchTeachers = async () => {
         try {
-          const response = await axios.get("http://127.0.0.1:8000/api/auth/teacher?page=1");
-          setTeachers(response.data.results);
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
+          const teacherUsers = response.data.results.filter((user: any) => user.roles_name === "teacher");
+          setTeachers(teacherUsers);
           setLoadingTeachers(false);
         } catch (err: any) {
-          setError(err.message || "Error loading teachers");
+          setErrorTeachers("Error loading teachers: " + err.message);
           setLoadingTeachers(false);
         }
       };
-      fetchTeachers();
-    }
-  }, [isMounted]);
 
-  useEffect(() => {
-    if (isMounted) {
-      const fetchPrograms = async () => {
+      const fetchCourses = async () => {
         try {
-          const response = await axios.get("http://127.0.0.1:8000/api/academics/course/?page=1");
-          setPrograms(response.data.results);
-          setLoadingPrograms(false);
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            },
+          });
+
+          console.log("Courses API response:", response.data);
+
+          if (response.data && Array.isArray(response.data)) {
+            setCourses(response.data); // Set the courses to the state
+          } else {
+            console.error("Invalid courses data format:", response.data);
+          }
+
+          setLoadingCourses(false);
         } catch (err: any) {
-          setError(err.message || "Error loading programs");
-          setLoadingPrograms(false);
+          setErrorCourses("Error loading courses: " + err.message);
+          setLoadingCourses(false);
         }
       };
-      fetchPrograms();
+
+      fetchTeachers();
+      fetchCourses();
     }
   }, [isMounted]);
 
@@ -80,16 +94,20 @@ const Page = () => {
 
     const postData = {
       name: formData.className,
-      courses: [parseInt(formData.program)],
+      courses: [parseInt(formData.course)], // Use course instead of program
       teacher: parseInt(formData.teacher),
       start_date: formData.start_date,
       end_date: formData.end_date,
     };
 
+    // Console log the data
+    console.log("Form Data Submitted:", postData);
+
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`, postData, {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
         },
       });
       console.log("Response:", response.data);
@@ -103,8 +121,9 @@ const Page = () => {
       }
     }
   };
+
   if (!isMounted) {
-    return <div>Loading...</div>; 
+    return <div>Loading...</div>;
   }
 
   return (
@@ -127,28 +146,28 @@ const Page = () => {
             />
           </div>
 
-          {/* Program Dropdown */}
+          {/* Course Dropdown */}
           <div className="flex flex-col">
-            <label htmlFor="program" className="text-sm font-medium text-gray-700">Program</label>
-            {loadingPrograms ? (
-              <span className="text-sm text-blue-500">Loading programs...</span>
-            ) : error ? (
-              <span className="text-sm text-red-500">Error loading programs</span>
-            ) : (
-              <select
-                id="program"
-                name="program"
-                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onChange={handleChange}
-              >
-                <option value="">Select a program</option>
-                {programs.map((program) => (
-                  <option key={program.id} value={program.id}>
-                    {program.name}
+            <label htmlFor="course" className="text-sm font-medium text-gray-700">Course</label>
+            <select
+              id="course"
+              name="course"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            >
+              <option value="">Select a course</option>
+              {loadingCourses ? (
+                <option>Loading courses...</option>
+              ) : errorCourses ? (
+                <option>{errorCourses}</option>
+              ) : (
+                courses.map((course) => (
+                  <option key={course.id} value={course.id}>
+                    {course.name}
                   </option>
-                ))}
-              </select>
-            )}
+                ))
+              )}
+            </select>
           </div>
 
           {/* Teacher Dropdown */}
@@ -156,8 +175,8 @@ const Page = () => {
             <label htmlFor="teacher" className="text-sm font-medium text-gray-700">Teacher</label>
             {loadingTeachers ? (
               <span className="text-sm text-blue-500">Loading teachers...</span>
-            ) : error ? (
-              <span className="text-sm text-red-500">Error loading teachers</span>
+            ) : errorTeachers ? (
+              <span className="text-sm text-red-500">{errorTeachers}</span>
             ) : (
               <select
                 id="teacher"
@@ -168,7 +187,7 @@ const Page = () => {
                 <option value="">Select a teacher</option>
                 {teachers.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>
-                    {teacher.name}
+                    {teacher.username}
                   </option>
                 ))}
               </select>
@@ -177,14 +196,7 @@ const Page = () => {
 
           <div className="flex flex-col">
             <label htmlFor="credit" className="text-sm font-medium text-gray-700">Credit</label>
-            <select
-              id="credit"
-              name="credit"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={handleChange}
-            >
-              <option value="">Select a credit</option>
-            </select>
+            <input type="text" name="credit" id="credit" onChange={handleChange} className="w-full h-[40px] border p-2" />
           </div>
 
           <div className="flex flex-col">

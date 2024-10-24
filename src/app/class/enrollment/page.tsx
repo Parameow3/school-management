@@ -3,12 +3,24 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
+// Define the types
+interface Course {
+  id: number;
+  name: string;
+}
+
+interface Student {
+  first_name: string;
+  id: number;
+}
+
 const Page = () => {
-  const [students, setStudents] = useState([]); // List of students
-  const [courses, setCourses] = useState([]); // List of courses
+  const [students, setStudents] = useState<Student[]>([]); // List of students
+  const [courses, setCourses] = useState<Course[]>([]); // List of courses
   const [selectedStudent, setSelectedStudent] = useState<number | null>(null); // Selected student
   const [selectedCourses, setSelectedCourses] = useState<number[]>([]); // Selected courses
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // For form submission
+  const [dataLoading, setDataLoading] = useState(true); // For initial data loading
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -30,27 +42,38 @@ const Page = () => {
     if (!token) return;
 
     const fetchStudentsAndCourses = async () => {
+      setError(null); // Reset error on fetch start
+      setDataLoading(true); // Start loading data
+
       try {
         const config = {
           headers: { Authorization: `Bearer ${token}` },
         };
+
         const studentResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`, config);
         console.log("Student API Response:", studentResponse.data);
-        const courseResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/courses/`, config);
-        console.log("Course API Response:", courseResponse.data); 
+
+        const courseResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`, config);
+        console.log("Course API Response:", courseResponse.data);
+
         if (studentResponse.data && studentResponse.data.results) {
           setStudents(studentResponse.data.results); 
-          console.log("Students set in state:", studentResponse.data.results); // Debugging log to check students state
         } else {
           console.error("Unexpected student API response format", studentResponse.data);
         }
-        setCourses(courseResponse.data.results);
+
+        if (Array.isArray(courseResponse.data)) {
+          setCourses(courseResponse.data); // Assuming courseResponse.data is an array
+        } else {
+          console.error("Unexpected course API response format", courseResponse.data);
+        }
       } catch (err) {
         setError("Failed to load students or courses.");
-        console.error("Error fetching data:", err);
+      } finally {
+        setDataLoading(false); // Stop loading data
       }
     };
-    
+
     fetchStudentsAndCourses();
   }, [token]);
 
@@ -83,8 +106,10 @@ const Page = () => {
       };
       await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/`, enrollmentData, config);
       setSuccess("Enrollment successful!");
+      window.alert("Enrollment successful!"); // Alert on success
     } catch (err) {
       setError("Failed to enroll student.");
+      window.alert("Failed to enroll student."); // Alert on error
       console.error(err);
     } finally {
       setLoading(false);
@@ -105,7 +130,7 @@ const Page = () => {
             Select Student
           </label>
           <select
-            value={selectedStudent || ""}
+            value={selectedStudent !== null ? selectedStudent : ""} // Ensure proper handling of null
             onChange={(e) => setSelectedStudent(Number(e.target.value))}
             className="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
@@ -113,7 +138,7 @@ const Page = () => {
             <option value="">Select a student</option>
             {students.length > 0 ? students.map((student) => (
               <option key={student.id} value={student.id}>
-                {student.name}
+                {student.first_name}
               </option>
             )) : <option disabled>Loading students...</option>}
           </select>
@@ -124,18 +149,25 @@ const Page = () => {
           <label className="block text-gray-700 text-sm font-semibold mb-2">
             Select Courses
           </label>
-          {courses.map((course) => (
-            <div key={course.id} className="flex items-center mb-2">
-              <input
-                type="checkbox"
-                value={course.id}
-                checked={selectedCourses.includes(course.id)}
-                onChange={() => handleCourseChange(course.id)}
-                className="form-checkbox h-4 w-4 text-blue-600"
-              />
-              <label className="ml-2 text-gray-700">{course.name}</label>
-            </div>
-          ))}
+
+          {dataLoading ? (
+            <div className="text-gray-500">Loading courses...</div>
+          ) : courses && courses.length > 0 ? (  // Ensure courses is an array
+            courses.map((course) => (
+              <div key={course.id} className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  value={course.id}
+                  checked={selectedCourses.includes(course.id)}
+                  onChange={() => handleCourseChange(course.id)}
+                  className="form-checkbox h-4 w-4 text-blue-600"
+                />
+                <label className="ml-2 text-gray-700">{course.name}</label>
+              </div>
+            ))
+          ) : (
+            <div className="text-gray-500">No courses available</div>
+          )}
         </div>
 
         {/* Submit Button */}

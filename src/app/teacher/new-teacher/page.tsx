@@ -25,14 +25,13 @@ const Page = () => {
   const [error, setError] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
-    user: {
-      username: "",
-      email: "",
-      password: "",
-    },
+    username: "",
+    email: "",
+    password: "",
     school: 1, // Assuming this is a valid school ID, adjust as needed
     specialization: "", // Specialization will now be selected from dropdown
     hire_date: new Date().toISOString().slice(0, 16), // Correct date format for datetime-local
+    roles: 2, // Role ID for teacher (adjust this if necessary)
   });
 
   useEffect(() => {
@@ -91,15 +90,7 @@ const Page = () => {
   // Handle input change for both user and non-user fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
-    if (name === "username" || name === "email" || name === "password") {
-      setFormData({
-        ...formData,
-        user: { ...formData.user, [name]: value },
-      });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [name]: value });
   };
 
   // Submit form to backend
@@ -113,7 +104,7 @@ const Page = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/register`,
         formData,
         {
           headers: {
@@ -165,7 +156,7 @@ const Page = () => {
                 type="text"
                 id="username"
                 name="username"
-                value={formData.user.username}
+                value={formData.username}
                 onChange={handleChange}
                 maxLength={150}
                 required
@@ -181,7 +172,7 @@ const Page = () => {
                 type="email"
                 id="email"
                 name="email"
-                value={formData.user.email}
+                value={formData.email}
                 onChange={handleChange}
                 maxLength={254}
                 required
@@ -197,7 +188,7 @@ const Page = () => {
                 type="password"
                 id="password"
                 name="password"
-                value={formData.user.password}
+                value={formData.password}
                 onChange={handleChange}
                 minLength={6}
                 required

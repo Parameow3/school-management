@@ -5,14 +5,17 @@ import Button from "@/components/Button";
 const Page = () => {
   const [students, setStudents] = useState<any[]>([]); // To store the list of students
   const [selectedStudent, setSelectedStudent] = useState<string>(""); // To store the selected student ID
-  const [classInstance, setClassInstance] = useState<string>("");
-  const [date, setDate] = useState<string>("");
-  const [status, setStatus] = useState<string>("present");
-  const [notes, setNotes] = useState<string>("");
-  const [token, setToken] = useState<string | null>(null);
+  const [classInstance, setClassInstance] = useState<string>(""); // Store the selected classroom
+  const [classrooms, setClassrooms] = useState<any[]>([]); // Store the list of classrooms
+  const [date, setDate] = useState<string>(""); // Store the selected date
+  const [status, setStatus] = useState<string>("present"); // Store the selected status
+  const [notes, setNotes] = useState<string>(""); // Store notes
+  const [token, setToken] = useState<string | null>(null); // Store auth token
   const [attendanceData, setAttendanceData] = useState<any[]>([]); // To store attendance history
-
-  // Retrieve token from localStorage on mount
+  const getClassroomNameById = (classroomId: number) => {
+    const classroom = classrooms.find((classroom) => classroom.id === classroomId);
+    return classroom ? classroom.name : "Unknown Class";
+  };
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -42,11 +45,8 @@ const Page = () => {
         }
 
         const data = await response.json();
-
-        // Check the response structure and log it
         console.log("Fetched students data:", data);
 
-        // Assuming students are in the `results` field
         if (data.results && data.results.length > 0) {
           setStudents(data.results);
         } else {
@@ -58,9 +58,49 @@ const Page = () => {
     };
 
     if (token) {
-      fetchStudents(); // Fetch students only when token is available
+      fetchStudents();
     }
-  }, [token]); // Dependency on token
+  }, [token]);
+
+  // Fetch classrooms data from the API (http://127.0.0.1:8000/api/academics/classroom)
+  useEffect(() => {
+    const fetchClassrooms = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch classrooms. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log("Fetched classrooms data:", data);
+
+        // Access the results field in the response
+        if (data.results && data.results.length > 0) {
+          setClassrooms(data.results); // Set classrooms from the `results` field
+        } else {
+          console.error("No classrooms found");
+        }
+      } catch (error) {
+        console.error("Error fetching classrooms:", error);
+      }
+    };
+
+    if (token) {
+      fetchClassrooms(); // Fetch classrooms only when the token is available
+    }
+  }, [token]);
 
   // Fetch attendance data (history) from the API
   useEffect(() => {
@@ -86,7 +126,6 @@ const Page = () => {
         const data = await response.json();
         console.log("Fetched attendance history:", data);
 
-        // Assuming attendance records are in the `results` field
         if (data.results && data.results.length > 0) {
           setAttendanceData(data.results);
         } else {
@@ -100,13 +139,15 @@ const Page = () => {
     if (token) {
       fetchAttendanceHistory();
     }
-  }, [token]); // Dependency on token
+  }, [token]);
+
   const getStudentNameById = (studentId: number) => {
     const student = students.find((student) => student.id === studentId);
     return student
       ? `${student.first_name} ${student.last_name}`
       : "Unknown Student";
   };
+
   // Form submission logic
   const handleSubmitClick = async () => {
     if (!selectedStudent || !classInstance || !date || !status) {
@@ -115,7 +156,7 @@ const Page = () => {
     }
 
     const data = {
-      student: parseInt(selectedStudent), 
+      student: parseInt(selectedStudent),
       class_instance: parseInt(classInstance),
       date: date,
       status: status,
@@ -189,6 +230,7 @@ const Page = () => {
             </select>
           </div>
 
+          {/* Replace Class Instance Input with Dropdown */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="classInstance"
@@ -196,14 +238,23 @@ const Page = () => {
             >
               Class Instance (required)
             </label>
-            <input
+            <select
               id="classInstance"
-              type="number"
               value={classInstance}
               onChange={(e) => setClassInstance(e.target.value)}
-              placeholder="Enter Class Instance"
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+              <option value="">Select Class</option>
+              {classrooms.length > 0 ? (
+                classrooms.map((classroom) => (
+                  <option key={classroom.id} value={classroom.id}>
+                    {classroom.name} {/* Assuming classrooms have 'name' field */}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No classes available</option>
+              )}
+            </select>
           </div>
 
           <div className="flex flex-col lg:w-1/3">
@@ -276,7 +327,7 @@ const Page = () => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
-                  stduent-Name
+                  Student Name
                 </th>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
                   Class Instance
@@ -296,10 +347,9 @@ const Page = () => {
               {attendanceData.map((record, index) => (
                 <tr key={index} className="hover:bg-gray-100 transition-colors">
                   <td className="border px-4 py-2">
-                    {getStudentNameById(record.student)}{" "}
-                    {/* Display student name */}
+                    {getStudentNameById(record.student)}
                   </td>
-                  <td className="border px-4 py-2">{record.class_instance}</td>
+                  <td className="border px-4 py-2">{getClassroomNameById(record.class_instance)}</td>
                   <td className="border px-4 py-2">{record.date}</td>
                   <td className="border px-4 py-2">{record.status}</td>
                   <td className="border px-4 py-2">{record.notes}</td>

@@ -53,11 +53,11 @@ const Page = () => {
     const fetchData = async () => {
       if (token) {
         try {
-          setLoading(true); // Start loading
-
-          // Fetch teacher profiles (initial page)
+          setLoading(true); 
+          
+          // Fetch all users and filter by teacher role on the frontend
           const profilesResponse = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher?page=1`,
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, // Fetch all users
             {
               headers: {
                 "Content-Type": "application/json",
@@ -66,29 +66,38 @@ const Page = () => {
             }
           );
 
-          const fetchedProfiles = profilesResponse.data.results.map((teacher: any) => ({
-            id: teacher.id,
-            pic: teacher.image || "/default-pic.jpg",
-            user: {
-              username: teacher.user.username,
-              email: teacher.user.email,
-            },
-            job: "Teacher",
-            specialization: teacher.specialization,
-          }));
-
+          // Filter users by 'teacher' role (roles_name === 'teacher')
+          const fetchedProfiles = profilesResponse.data.results
+            .filter((user: any) => user.roles_name === "teacher") // Only keep users with role 'teacher'
+            .map((teacher: any) => ({
+              id: teacher.id,
+              pic: teacher.image || "/default-pic.jpg", // Use default image if not available
+              user: {
+                username: teacher.username,
+                email: teacher.email,
+              },
+              job: "Teacher",
+              specialization: teacher.specialization || "General", // Fallback to "General" if not specified
+            }));
+  
+          // Console log the teacher profiles for debugging
+          console.log("Teacher profiles:", fetchedProfiles);
+  
+          // Set profiles in the state
           setProfiles(fetchedProfiles);
-          setTotalItems(profilesResponse.data.count);
-
+          setTotalItems(fetchedProfiles.length);
+  
           // Fetch specializations
-          const specializationsResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`, {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          const specializationsResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
           
-          console.log("Fetched Specializations:", specializationsResponse.data.results);
           setSpecializations(specializationsResponse.data.results || []);
         } catch (error: any) {
           console.error("Error fetching data:", error);
@@ -98,7 +107,7 @@ const Page = () => {
         }
       }
     };
-
+  
     fetchData();
   }, [token]);
 
@@ -106,9 +115,9 @@ const Page = () => {
     if (token && !loadingMore) {
       setLoadingMore(true);
       try {
-        // Fetch all remaining teacher profiles instead of just the next page
+        // Fetch all remaining teacher profiles
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher?all=true`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, // Fetch all users
           {
             headers: {
               "Content-Type": "application/json",
@@ -117,16 +126,19 @@ const Page = () => {
           }
         );
 
-        const allProfiles = response.data.results.map((teacher: any) => ({
-          id: teacher.id,
-          pic: teacher.image || "/default-pic.jpg",
-          user: {
-            username: teacher.user.username,
-            email: teacher.user.email,
-          },
-          job: "Teacher",
-          specialization: teacher.specialization,
-        }));
+        // Filter by role 'teacher' on the frontend
+        const allProfiles = response.data.results
+          .filter((user: any) => user.roles_name === "teacher") // Only keep users with role 'teacher'
+          .map((teacher: any) => ({
+            id: teacher.id,
+            pic: teacher.image || "/default-pic.jpg",
+            user: {
+              username: teacher.username,
+              email: teacher.email,
+            },
+            job: "Teacher",
+            specialization: teacher.specialization || "General",
+          }));
 
         // Set all profiles to the state (replace the old profiles with new ones)
         setProfiles(allProfiles);
@@ -165,7 +177,7 @@ const Page = () => {
     if (profileToDelete !== null) {
       try {
         await axios.delete(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/teacher/${profileToDelete}/`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${profileToDelete}/`, // Updated route for deletion
           {
             headers: {
               Authorization: `Bearer ${token}`,
