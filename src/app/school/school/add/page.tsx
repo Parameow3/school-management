@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 
@@ -23,6 +23,23 @@ const Page: React.FC = () => {
     website: ''
   });
   const [error, setError] = useState<string>('');
+  const [token, setToken] = useState<string | null>(null);
+
+  // Check for token in localStorage
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      router.push("/login"); // Redirect to login if no token
+    }
+  }, [router]);
+
+  useEffect(() => {
+    if (token) {
+      console.log("Token:", token);
+    }
+  }, [token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -47,15 +64,27 @@ const Page: React.FC = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, formData);
-      router.push("/school/school");
-      console.log(response.data);
-      alert('School added successfully!');
-      setError('');
-    } catch (err:any) {
-      setError('Failed to post data. Please check the server and data.');
-      console.error(err.response ? err.response.data : err.message);  // Log the actual error from server
+    if (token) {
+      try {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // Attach token in the Authorization header
+            },
+          }
+        );
+        router.push("/school/school");
+        console.log(response.data);
+        alert('School added successfully!');
+        setError('');
+      } catch (err: any) {
+        setError('Failed to post data. Please check the server and data.');
+        console.error(err.response ? err.response.data : err.message);  // Log the actual error from server
+      }
+    } else {
+      setError('No token found, please log in.');
     }
   };
 

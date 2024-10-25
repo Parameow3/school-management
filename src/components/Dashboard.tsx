@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import {
   ForwardRefExoticComponent,
   ReactNode,
@@ -7,7 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Bars3Icon, PlusIcon, MinusIcon } from "@heroicons/react/24/outline";
+import { Bars3Icon, PlusIcon, MinusIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import {
   Cog6ToothIcon,
   HomeIcon,
@@ -21,7 +21,6 @@ import {
 import { useRouter } from "next/navigation"; // Add this import for routing
 import Image from "next/image";
 import Profile from "./profile";
-import Searchinput from "./Searchinput";
 
 type NavigationItem = {
   name: string;
@@ -43,9 +42,15 @@ const navigation: NavigationItem[] = [
     subItems: [
       { name: "School", href: "/school/school", current: false },
       { name: "Branch", href: "/school/branch", current: false },
-      { name: "Exam", href: "/exam", current: false },
-    ],
 
+    ],
+  },
+  {
+    name:"Exam",href:"#", icon :DocumentTextIcon, current:false,
+    subItems:[
+      { name: "Exam List", href: "/exam/exam", current: false },
+      { name: "Exam Result", href: "/exam/result", current: false },
+    ]
   },
   {
     name: "Student",
@@ -54,16 +59,8 @@ const navigation: NavigationItem[] = [
     icon: AcademicCapIcon,
     subItems: [
       { name: "All Students", href: "/student/all-student", current: false },
-      {
-        name: "Add New Students",
-        href: "/student/new-student",
-        current: false,
-      },
-      {
-        name: "Trial Students",
-        href: "/student/trial-student",
-        current: false,
-      },
+      { name: "Add New Students", href: "/student/new-student", current: false },
+      { name: "Trial Students", href: "/student/trial-student", current: false },
     ],
   },
   {
@@ -126,7 +123,7 @@ const navigation: NavigationItem[] = [
         href: "/setting/account-setting",
         current: false,
       },
-      { name: "Logout", href: "#", current: false }
+      { name: "Logout", href: "#", current: false },
     ],
   },
 ];
@@ -145,47 +142,53 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const [navigationData, setNavigationData] = useState(navigation);
   const router = useRouter(); // useRouter hook for routing
 
+  // Fetch role and filter navigation items
+  const filterNavigationByRole = (role: string) => {
+    const filteredNavigation = navigation.filter((item) => {
+      if (role === "admin") {
+        return true; // Admin can see all items
+      } else if (role === "teacher") {
+        return item.name !== "School" && item.name !== "Program"; // Example: teacher can't see School and Program
+      } else if (role === "student") {
+        return item.name === "Dashboard"; // Example: students can only see Dashboard
+      }
+      return false;
+    });
+    setNavigationData(filteredNavigation);
+  };
+
+  // Handle sidebar toggle
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
 
+  // Handle menu item toggle for submenus
   const handleToggle = (name: string) => {
     setOpenMenu(openMenu === name ? null : name);
   };
 
+  // Handle click event for menu and logout functionality
   const handleClick = (name: string, subItemName?: string) => {
     if (name === "Setting" && subItemName === "Logout") {
-      // Clear localStorage on logout
       console.log("Logging out...");
-  
+
       // Clear only the specific keys related to authentication
       localStorage.removeItem("authToken");
       localStorage.removeItem("userInfo");
       localStorage.removeItem("userId");
-  
+
       // Clear everything as a failsafe
       localStorage.clear();
-  
-      // Double check if the storage was cleared
-      if (
-        !localStorage.getItem("authToken") &&
-        !localStorage.getItem("userInfo")
-      ) {
-        console.log("LocalStorage cleared successfully.");
-      } else {
-        console.log("Error: localStorage was not cleared properly.");
-      }
-  
+
       // Redirect to login page after clearing data
       router.push("/login");
       return;
     }
-  
-    // Normal handling for other cases
+
     handleToggle(name);
   };
-  
 
+  // Track the current path and update navigation items based on it
   useEffect(() => {
     const currentPath = window.location.pathname;
 
@@ -194,9 +197,8 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
         item.href && currentPath.startsWith(item.href)
       );
       const subItemCurrent =
-        item.subItems?.some((subItem) =>
-          currentPath.startsWith(subItem.href)
-        ) || false;
+        item.subItems?.some((subItem) => currentPath.startsWith(subItem.href)) ||
+        false;
 
       if (subItemCurrent) {
         setOpenMenu(item.name);
@@ -217,7 +219,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   }, []);
 
   return (
-    <div className="flex  overflow-hidden">
+    <div className="flex overflow-hidden">
       {/* Sidebar */}
       <div
         className={`transition-transform transform duration-300 ease-in-out ${
@@ -307,10 +309,8 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                 src="/AAA logo.png"
                 width={80}
                 height={80}
-                className="w-[61px] h-[54px lg:w-[80px] lg:h-[80px]]"
+                className="w-[61px] h-[54px] lg:w-[80px] lg:h-[80px]"
               />
-              {/* <Searchinput /> */}
-              {/* Hamburger button to open sidebar */}
               <button
                 type="button"
                 onClick={toggleSidebar}

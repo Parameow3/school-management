@@ -145,7 +145,7 @@ const Page: React.FC = () => {
                     "N/A"
                   )}
                 </td>
-                <td className="px-6 py-4 text-center flex justify-center space-x-4">
+                <td className="px-6 py-4 mt-4 text-center flex justify-center space-x-4">
                   <button onClick={() => handleEdit(school.id)} className="text-blue-600 hover:underline">
                     Edit
                   </button>
