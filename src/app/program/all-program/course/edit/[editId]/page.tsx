@@ -1,54 +1,93 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams } from 'next/navigation';
+"use client";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams, useRouter } from "next/navigation";
 
 const Page = () => {
-  const { editId } = useParams();  // Get the dynamic edit ID
-  const [formData, setFormData] = useState({
-    name: '',
-    code: '',
-    description: '',
-    credits: '',
-    program: '', 
-    school: 1  
-  });
+  const { editId } = useParams(); // Get the dynamic edit ID
+  const router = useRouter(); // For navigation
 
-  const [programs, setPrograms] = useState([]);   // To store available programs
-  const [loadingPrograms, setLoadingPrograms] = useState(true); // For handling loading state for programs
-  const [error, setError] = useState(null);  // For handling errors
+  const [formData, setFormData] = useState({
+    name: "",
+    code: "",
+    description: "",
+    credits: "",
+    program: "",
+    school: 1,
+  });
+  
+  const [programs, setPrograms] = useState([]); // To store available programs
+  const [loadingPrograms, setLoadingPrograms] = useState(true); // Loading state for programs
+  const [loadingCourse, setLoadingCourse] = useState(true); // Loading state for course data
+  const [error, setError] = useState(null); // For handling errors
+  const [isSubmitting, setIsSubmitting] = useState(false); // Submission state
+  const [token, setToken] = useState<string | null>(null);
+
+  // Fetch token from localStorage
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    } else {
+      router.push("/login"); // Redirect to login if no token
+    }
+  }, [router]);
+
+  // Fetch programs and course data on component mount
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        const programResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program`);
-        setPrograms(programResponse.data.results);
-        setLoadingPrograms(false);  
+        if (!token) return;
+        const programResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setPrograms(programResponse.data.results || []);
       } catch (error) {
         console.error("Error fetching programs:", error);
-        setLoadingPrograms(false);  
+        // setError("Failed to load programs");
+      } finally {
+        setLoadingPrograms(false);
       }
     };
 
     const fetchCourse = async () => {
       try {
-        const courseResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${editId}/`);
+        if (!token) return;
+        const courseResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${editId}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const courseData = courseResponse.data;
         setFormData({
           name: courseData.name,
           code: courseData.code,
           description: courseData.description,
           credits: courseData.credits,
-          program: courseData.program, 
-          school: courseData.school || 1  
+          program: courseData.program || "", // Pre-select program
+          school: courseData.school || 1,
         });
       } catch (error) {
         console.error("Error fetching course", error);
+        // setError("Failed to load course data");
+      } finally {
+        setLoadingCourse(false);
       }
     };
 
-    fetchPrograms();
-    fetchCourse();
-  }, [editId]);
+    if (token) {
+      fetchPrograms();
+      fetchCourse();
+    }
+  }, [editId, token]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -60,19 +99,32 @@ const Page = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     try {
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${editId}/`, formData);
-      console.log("Course Updated:", response.data);
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${editId}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       alert("Course Updated Successfully");
+      router.push("/program/all-program"); // Redirect after update
     } catch (error) {
       console.error("Error updating the course:", error);
       alert("Failed to update the course");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  if (loadingCourse) return <p>Loading course data...</p>;
+
   return (
-    <div className='lg:ml-[16%] ml-[11%] mt-28 flex flex-col items-center justify-center'>
-      <div className='w-[450px] h-auto bg-white p-6 rounded-md shadow-md'>
+    <div className="lg:ml-[16%] ml-[11%] mt-28 flex flex-col items-center justify-center">
+      <div className="w-[450px] h-auto bg-white p-6 rounded-md shadow-md">
         <h2 className="text-xl font-bold mb-6">Update Course</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -173,9 +225,10 @@ const Page = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-[#213458] hover:bg-blue-600 text-white py-2 rounded-md"
+            className={`w-full ${isSubmitting ? 'bg-gray-400' : 'bg-[#213458] hover:bg-blue-600'} text-white py-2 rounded-md`}
+            disabled={isSubmitting}
           >
-            Update Course
+            {isSubmitting ? "Updating..." : "Update Course"}
           </button>
         </form>
       </div>

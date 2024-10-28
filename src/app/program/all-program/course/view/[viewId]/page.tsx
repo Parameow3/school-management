@@ -31,10 +31,8 @@ const Page = ( {params }: { params: { id: string } }) => {
         setLoading(false);
       }
     };
-
     fetchEnrollmentData();
   }, []);
-
   const handleBack = () => {
     router.push(`/program/all-program`);
   };

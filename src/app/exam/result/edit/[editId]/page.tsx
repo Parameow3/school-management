@@ -19,8 +19,6 @@ const Page = () => {
   const params = useParams();
   const id = parseInt(params.editId as string, 10);
   useEffect(() => {
-    console.log('editId (examResultId):', id); // Log the editId (examResultId)
-
     const token = localStorage.getItem('authToken');
     if (!token) {
       router.push('/login'); // Redirect to login if no token found

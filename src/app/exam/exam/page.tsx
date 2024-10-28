@@ -1,110 +1,246 @@
-'use client'; // Next.js directive for client-side code
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
-// Helper function to format time if needed
-const formatTime = (time: string) => {
-  const [hours, minutes] = time.split(':'); // Split the time into hours and minutes
-  return `${hours}:${minutes}`; // Return the formatted time without seconds
-};
+"use client";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Modal from "@/components/Modal";
+import Image from "next/image";
 
 const Page = () => {
   const [token, setToken] = useState<string | null>(null);
-  const [exams, setExams] = useState<any[]>([]); // Ensure 'exams' is always an array
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [exams, setExams] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]); // Initialize as an empty array
+  const [classrooms, setClassrooms] = useState<any[]>([]); // Initialize as an empty array
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false); // State for modal visibility
+  const [examToDelete, setExamToDelete] = useState<number | null>(null); // State for tracking the exam to be deleted
   const router = useRouter();
 
-  // Retrieve token from local storage or redirect to login if not found
+  // Retrieve token from local storage
   useEffect(() => {
-    const tokenFromLocalStorage = localStorage.getItem('authToken');
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
-      setToken(tokenFromLocalStorage); // Set token state
+      setToken(tokenFromLocalStorage);
     } else {
-      router.push('/login'); // Redirect to login
+      router.push("/login");
     }
   }, [router]);
 
-  // Fetch exam data if token is present
+  // Fetch exam, course, and classroom data
   useEffect(() => {
     if (token) {
-      console.log('Fetching exam data...');
-      setLoading(true); // Set loading to true while fetching data
+      setLoading(true);
+
+      // Fetch exams
       fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/exams/`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`, // Attach the token in Authorization header
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
       })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log('Data received:', data); // Log the received data
-          setExams(data || []); // Use the array directly from data
-          setLoading(false); // Set loading to false after fetching data
-        })
-        .catch((error) => {
-          console.error('Error fetching exams:', error); // Log any errors
-          setLoading(false); // Ensure loading is set to false on error
-        });
+        .then((response) => response.json())
+        .then((data) => setExams(data || []))
+        .catch((error) => console.error("Error fetching exams:", error));
+
+      // Fetch courses
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => setCourses(data || []))
+        .catch((error) => console.error("Error fetching courses:", error));
+
+      // Fetch classrooms (ensure we access the results field)
+      fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => setClassrooms(data.results || [])) // Extract 'results'
+        .catch((error) => console.error("Error fetching classrooms:", error));
+
+      setLoading(false);
     }
   }, [token]);
 
-  // Handler for button click to add new exam
+  // Get course name by ID
+  const getCourseName = (courseId: number) => {
+    if (!Array.isArray(courses)) return "N/A"; // Guard clause
+    const course = courses.find((course: any) => course.id === courseId);
+    return course ? course.name : "N/A";
+  };
+
+  // Get classroom name by ID (from the 'results' array)
+  const getClassroomName = (classroomId: number) => {
+    if (!Array.isArray(classrooms)) return "N/A"; // Guard clause
+    const classroom = classrooms.find((classroom: any) => classroom.id === classroomId);
+    return classroom ? classroom.name : "N/A";
+  };
+
+  // Handle Edit
+  const handleEdit = (id: number) => {
+    router.push(`/exam/exam/edit/${id}`);
+  };
+
+  // Handle Delete
+  const handleDelete = (id: number) => {
+    setExamToDelete(id); // Set the exam to be deleted
+    setShowModal(true); // Show the confirmation modal
+  };
+
+  // Handle Confirm Delete
+  const confirmDelete = () => {
+    if (examToDelete) {
+      // Perform the delete request here
+      fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/exams/${examToDelete}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to delete exam");
+          }
+          // Remove the deleted exam from the state
+          setExams((prevExams) =>
+            prevExams.filter((exam) => exam.id !== examToDelete)
+          );
+          setShowModal(false); // Close the modal after deletion
+        })
+        .catch((error) => {
+          console.error("Error deleting exam:", error);
+        });
+    }
+  };
+
   const handleButtonClick = () => {
     router.push(`/exam/exam/add`);
   };
 
   return (
     <div className="lg:ml-[16%] ml-[11%] mt-20">
-      <h1 className="text-3xl font-bold mb-6 col-span-full items-center justify-center flex">Exam Details</h1>
-      
-      {/* Button to add a new exam */}
-      <div className="mb-4">
-        <button
-          onClick={handleButtonClick}
-          className="bg-[#213458] text-white px-6 py-3 rounded-lg hover:bg-[#1b2d4e] shadow-lg transition-transform transform hover:scale-105 duration-300"
-        >
-          Add New Exam
-        </button>
+      <div className="flex justify-between">
+        <h1 className="text-3xl font-bold mb-6 col-span-full items-center justify-center flex">
+          Exam Details
+        </h1>
+
+        {/* Button to add a new exam */}
+        <div className="mb-2">
+          <button
+            onClick={handleButtonClick}
+            className="bg-[#213458] text-white px-6 py-3 rounded-lg hover:bg-[#1b2d4e] shadow-lg transition-transform transform hover:scale-105 duration-300"
+          >
+            Add New Exam
+          </button>
+        </div>
       </div>
 
       {/* Conditional rendering for loading state */}
       {loading ? (
-        <p className="text-lg text-gray-600">Loading exam details...</p> // Show a loading message while fetching data
+        <p className="text-lg text-gray-600">Loading exam details...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {exams && exams.length > 0 ? (
-            exams.map((exam) => (
-              <div
-                key={exam.id}
-                className="bg-white border border-gray-200 rounded-lg shadow-lg p-6 hover:shadow-2xl transition-shadow duration-300"
-              >
-                <div className="flex justify-between items-center mb-4 gap-4">
-                  <h2 className="text-2xl font-bold text-gray-800">{exam.title}</h2>
-                  <p className="text-lg text-gray-500">{exam.exam_date}</p>
-                </div>
-                <p className="text-lg text-[#213458] text-center font-semibold mb-4">{exam.description}</p>
-                <div className="flex justify-between items-center">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">Start Time</p>
-                    <p className="text-lg font-semibold text-gray-800">{formatTime(exam.start_time)}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm text-gray-500">End Time</p>
-                    <p className="text-lg font-semibold text-gray-800">{formatTime(exam.end_time)}</p>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-lg text-gray-600 mt-4 w-full text-center">No exam details available</p>
-          )}
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+            <thead className="bg-[#213458] text-white">
+              <tr>
+                <th className="w-1/6 text-left py-3 px-4 uppercase font-semibold text-sm">
+                  Course Name
+                </th>
+                <th className="w-1/6 text-left py-3 px-4 uppercase font-semibold text-sm">
+                  Classroom
+                </th>
+                <th className="w-1/6 text-left py-3 px-4 uppercase font-semibold text-sm">
+                  Title
+                </th>
+                <th className="w-1/6 text-left py-3 px-4 uppercase font-semibold text-sm">
+                  Date
+                </th>
+                <th className="w-1/6 text-center py-3 px-4 uppercase font-semibold text-sm">
+                  Start Time
+                </th>
+                <th className="w-1/6 text-center py-3 px-4 uppercase font-semibold text-sm">
+                  End Time
+                </th>
+                <th className="w-1/6 text-center py-3 px-4 uppercase font-semibold text-sm">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="text-gray-700">
+              {exams.map((exam) => (
+                <tr
+                  key={exam.id}
+                  className="bg-gray-50 hover:bg-gray-100 transition-all"
+                >
+                  <td className="w-1/6 text-left py-3 px-4 font-medium">
+                    {getCourseName(exam.course)}
+                  </td>
+                  <td className="w-1/6 text-left py-3 px-4 font-medium">
+                    {getClassroomName(exam.class_instance)}
+                  </td>
+                  <td className="w-1/6 text-left py-3 px-4 font-medium">
+                    {exam.title}
+                  </td>
+                  <td className="w-1/6 text-left py-3 px-4">{exam.exam_date}</td>
+                  <td className="w-1/6 text-center py-3 px-4">
+                    {exam.start_time}
+                  </td>
+                  <td className="w-1/6 text-center py-3 px-4">
+                    {exam.end_time}
+                  </td>
+                  <td className="w-1/6 text-center py-3 px-4">
+                    <div className="flex justify-center space-x-2">
+                      <button
+                        className="text-blue-500 hover:text-blue-700"
+                        onClick={() => handleEdit(exam.id)}
+                      >
+                        <Image
+                          src="/edit.svg"
+                          alt="Edit"
+                          width={25}
+                          height={25}
+                          className="w-[25px] h-[25px]"
+                        />
+                      </button>
+                      <button
+                        className="text-red-500 hover:text-red-700"
+                        onClick={() => handleDelete(exam.id)}
+                      >
+                        <Image
+                          src="/delete.svg"
+                          alt="Delete"
+                          width={25}
+                          height={25}
+                          className="w-[25px] h-[25px]"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+      )}
+
+      {/* Modal for delete confirmation */}
+      {showModal && (
+        <Modal
+          onClose={() => setShowModal(false)}
+          onConfirm={confirmDelete}
+          message="Are you sure you want to delete this exam?"
+        />
       )}
     </div>
   );

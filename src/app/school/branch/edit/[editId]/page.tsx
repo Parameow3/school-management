@@ -27,10 +27,9 @@ const Page: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
   const params = useParams();
-  const [token, setToken] = useState<string | null>(null);
   const id = parseInt(params.editId as string, 10);
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -40,8 +39,6 @@ const Page: React.FC = () => {
       router.push("/login");
     }
   }, [router]);
-
-  // Fetch schools and branch data when token and branchId are available
   useEffect(() => {
     console.log("Branch ID:",id); // Log branchId to ensure it's being retrieved correctly
     if (!token || !id) return;
@@ -81,14 +78,10 @@ const Page: React.FC = () => {
 
     fetchSchoolsAndBranch();
   }, [token, id]);
-
-  // Handle school change
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = Number(e.target.value);
     setSelectedSchool(selectedId);
   };
-
-  // Handle form submission for update
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
