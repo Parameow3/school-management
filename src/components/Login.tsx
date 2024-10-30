@@ -15,7 +15,7 @@ const Login = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
-  // Handle input changes
+  // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({
@@ -28,58 +28,65 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setPasswordVisible(!passwordVisible);
   };
+
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");  // Clear any previous error message
 
     try {
-        // Clear old token and user data
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("userInfo");
-        localStorage.removeItem("userId");
+      // Clear any old token and user data
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userInfo");
+      localStorage.removeItem("userId");
 
-        // Call the login API
-        const response = await axios.post(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`,
-            formData,
-        );
+      // Call the login API
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/login`,
+        formData
+      );
 
-        const newToken = response.data.token;
+      const newToken = response.data.token;
+      const userId = response.data.id;
 
-        // Store the new token
-        localStorage.setItem("authToken", newToken);
+      // Store the new token in localStorage
+      localStorage.setItem("authToken", newToken);
+      console.log("New authToken set:", newToken);
 
-        const userId = response.data.id;
-
-        // Fetch user profile with the new token
-        const profileResponse = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${newToken}`,
-                },
-            }
-        );
-
-        const newUser = profileResponse.data;
-
-        // Store user info and ID
-        localStorage.setItem("userInfo", JSON.stringify(newUser));
-        localStorage.setItem("userId", newUser.id);
-
-        router.push("/");
-    } catch (error:any) {
-        // Check for specific error response from the backend
-        if (error.response && error.response.status === 400) {
-            setErrorMessage("Invalid email or password.");
-        } else {
-            setErrorMessage("Login failed. Please try again.");
+      // Fetch user profile using the new token
+      const profileResponse = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${newToken}`,
+          },
         }
-    } finally {
-        setIsSubmitting(false);
-    }
-};
+      );
 
+      const newUser = profileResponse.data;
+      localStorage.setItem("userInfo", JSON.stringify(newUser));
+      localStorage.setItem("userId", newUser.id.toString());
+      console.log("New userInfo set:", newUser);
+      console.log("New userId set:", newUser.id);
+
+      // Redirect to home page after successful login
+      router.push("/");
+    } catch (error: any) {
+      // Error handling for failed login
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 400) {
+          setErrorMessage("Invalid email or password.");
+        } else {
+          setErrorMessage("Login failed. Please try again.");
+        }
+      } else {
+        setErrorMessage("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -97,9 +104,13 @@ const Login = () => {
             Welcome back! Please login to your account
           </p>
         </div>
+
+        {/* Error message display */}
         {errorMessage && (
           <p className="text-red-600 text-center mb-4">{errorMessage}</p>
         )}
+
+        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Username Input */}
           <div className="relative">
@@ -164,6 +175,7 @@ const Login = () => {
             </button>
           </div>
 
+          {/* Action Buttons */}
           <div className="flex space-x-4 mt-4">
             <button
               type="submit"
@@ -181,6 +193,8 @@ const Login = () => {
             </button>
           </div>
         </form>
+
+        {/* Terms and Privacy Policy */}
         <div className="text-sm text-gray-500 mt-8 text-center">
           By signing up, you agree to our company's{" "}
           <a href="#" className="text-blue-600 hover:text-blue-800">
@@ -189,8 +203,7 @@ const Login = () => {
           and{" "}
           <a href="#" className="text-blue-600 hover:text-blue-800">
             Privacy Policy
-          </a>
-          .
+          </a>.
         </div>
       </div>
     </div>

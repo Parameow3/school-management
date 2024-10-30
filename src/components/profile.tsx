@@ -8,8 +8,6 @@ const Profile = () => {
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-
-  // Retrieve token and userId from localStorage once
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     const userIdFromLocalStorage = localStorage.getItem("userId");
@@ -23,7 +21,6 @@ const Profile = () => {
     }
   }, [router]);
 
-  // Fetch user profile
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!token || !userId) {
@@ -41,14 +38,8 @@ const Profile = () => {
             },
           }
         );
-
-        console.log('Fetched Profile Data:', response.data);
-        
-        const { username, profileImage } = response.data;
+        const { username } = response.data;
         setUserName(username || 'User');
-        // if (profileImage) {
-        //   setProfileImage(profileImage);
-        // }
       } catch (error: any) {
         console.error('Error fetching profile:', error);
         if (error.response && error.response.status === 403) {
@@ -65,7 +56,6 @@ const Profile = () => {
   return (
     <nav className="p-4 ml-6 flex justify-between items-center">
       <div className="flex items-center space-x-4">
-        {/* <img src={profileImage} alt="Profile" className="w-10 h-10 rounded-full" /> */}
         <span className="text-white">{error ? error : username}</span>
       </div>
     </nav>

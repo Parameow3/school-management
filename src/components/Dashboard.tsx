@@ -57,6 +57,7 @@ const navigation: NavigationItem[] = [
     subItems: [
       { name: 'All Programs', href: '/program/all-program', current: false },
       { name: 'New Programs', href: '/program/new-program', current: false },
+      { name: 'Courses', href: '/program/course', current: false },
     ],
   },
   {

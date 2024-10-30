@@ -1,17 +1,16 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
-// Define the types
+interface Student {
+  id: number;
+  first_name: string;
+}
+
 interface Course {
   id: number;
   name: string;
-}
-
-interface Student {
-  first_name: string;
-  id: number;
 }
 
 const Page = () => {
@@ -22,9 +21,10 @@ const Page = () => {
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const router = useRouter();
+  const params = useParams();
+  const enrollmentId = params.enrollmentId; // Retrieve enrollment ID from URL parameters
 
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -35,10 +35,11 @@ const Page = () => {
     }
   }, [router]);
 
+  // Fetch existing enrollment data, students, and courses
   useEffect(() => {
     if (!token) return;
 
-    const fetchStudentsAndCourses = async () => {
+    const fetchData = async () => {
       setError(null);
       setDataLoading(true);
 
@@ -47,42 +48,52 @@ const Page = () => {
           headers: { Authorization: `Bearer ${token}` },
         };
 
-        const studentResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+        // Fetch the specific enrollment data
+        const enrollmentResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${enrollmentId}/`,
           config
         );
-        const courseResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
-          config
-        );
+        const enrollmentData = enrollmentResponse.data;
 
-        setStudents(studentResponse.data.results || []);
-        setCourses(courseResponse.data || []);
+        if (!enrollmentData || !enrollmentData.student || !enrollmentData.courses) {
+          throw new Error("Invalid enrollment data structure");
+        }
+
+        // Pre-fill form with enrollment data
+        setSelectedStudent(enrollmentData.student.id);
+        setSelectedCourses(enrollmentData.courses.map((course: Course) => course.id));
+
+        // Fetch students and courses data
+        const [studentsResponse, coursesResponse] = await Promise.all([
+          axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`, config),
+          axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`, config),
+        ]);
+
+        setStudents(studentsResponse.data.results || []);
+        setCourses(coursesResponse.data || []);
       } catch (err) {
-        setError("Failed to load students or courses.");
+        setError("Failed to load data. Please check the network or data structure.");
+        console.error("Data loading error:", err);
       } finally {
         setDataLoading(false);
       }
     };
 
-    fetchStudentsAndCourses();
-  }, [token]);
+    fetchData();
+  }, [token, enrollmentId]);
 
   const handleCourseChange = (courseId: number) => {
-    setSelectedCourses((prevSelectedCourses) => {
-      if (prevSelectedCourses.includes(courseId)) {
-        return prevSelectedCourses.filter((id) => id !== courseId);
-      } else {
-        return [...prevSelectedCourses, courseId];
-      }
-    });
+    setSelectedCourses((prevSelectedCourses) =>
+      prevSelectedCourses.includes(courseId)
+        ? prevSelectedCourses.filter((id) => id !== courseId)
+        : [...prevSelectedCourses, courseId]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     if (!selectedStudent || selectedCourses.length === 0) {
       setError("Please select a student and at least one course.");
@@ -90,7 +101,7 @@ const Page = () => {
       return;
     }
 
-    const enrollmentData = {
+    const updatedEnrollmentData = {
       student: selectedStudent,
       courses: selectedCourses,
     };
@@ -99,39 +110,17 @@ const Page = () => {
       const config = {
         headers: { Authorization: `Bearer ${token}` },
       };
-
-      // Pre-check for existing enrollment
-      const checkEnrollmentResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/check/`,
-        enrollmentData,
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${enrollmentId}/`,
+        updatedEnrollmentData,
         config
       );
 
-      if (checkEnrollmentResponse.data.alreadyEnrolled.length > 0) {
-        const alreadyEnrolledCourses =
-          checkEnrollmentResponse.data.alreadyEnrolled
-            .map((course: { name: string }) => course.name)
-            .join(", ");
-
-        window.alert(
-          `Student is already enrolled in the following courses: ${alreadyEnrolledCourses}`
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Proceed with enrollment if no existing enrollment found
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/`,
-        enrollmentData,
-        config
-      );
-      setSuccess("Enrollment successful!");
-      window.alert("Enrollment successful!");
+      alert("Enrollment updated successfully!");
+      router.push("/enrollment-history");
     } catch (err) {
-      setError("Failed to enroll student.");
-      window.alert("Failed to enroll student.");
-      console.error(err);
+      setError("Failed to update enrollment. Please try again later.");
+      console.error("Update error:", err);
     } finally {
       setLoading(false);
     }
@@ -140,17 +129,9 @@ const Page = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6">Student Enrollment</h1>
-        <button
-          type="button"
-          onClick={() => router.push("/class/enrollment/view")}
-          className="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg w-full hover:bg-gray-600 mt-2"
-        >
-          View Enrollment History
-        </button>
+        <h1 className="text-2xl font-bold mb-6">Update Enrollment</h1>
 
         {error && <div className="text-red-500 mb-4">{error}</div>}
-        {success && <div className="text-green-500 mb-4">{success}</div>}
 
         <form onSubmit={handleSubmit}>
           {/* Select Student */}
@@ -211,7 +192,7 @@ const Page = () => {
             }`}
             disabled={loading}
           >
-            {loading ? "Enrolling..." : "Enroll Student"}
+            {loading ? "Updating..." : "Update Enrollment"}
           </button>
         </form>
       </div>

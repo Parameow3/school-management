@@ -11,7 +11,7 @@ interface Program {
   name: string;
   description: string;
   branch: number;
-  school: number; // Assuming programs are associated with schools by an ID
+  school: number;
   course_list?: string[];
 }
 
@@ -32,9 +32,8 @@ const Page = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>("all"); // For filtering by school
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>("all");
 
-  // Fetch token from localStorage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -44,7 +43,6 @@ const Page = () => {
     }
   }, [router]);
 
-  // Fetch programs and schools on component mount
   useEffect(() => {
     const fetchProgramsAndSchools = async () => {
       if (!token) return;
@@ -55,14 +53,14 @@ const Page = () => {
           axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://127.0.0.1:8000/api/schools", {
+          axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
 
         setPrograms(programResponse.data.results || []);
-        setFilteredPrograms(programResponse.data.results || []); // Initialize with all programs
-        setSchools(schoolResponse.data.results || []); // Set schools for dropdown
+        setFilteredPrograms(programResponse.data.results || []);
+        setSchools(schoolResponse.data.results || []);
 
       } catch (err) {
         setError("Failed to fetch programs or schools");
@@ -74,7 +72,6 @@ const Page = () => {
     fetchProgramsAndSchools();
   }, [token]);
 
-  // Filter programs based on selected school
   useEffect(() => {
     if (selectedSchoolId === "all") {
       setFilteredPrograms(programs);
@@ -86,7 +83,7 @@ const Page = () => {
 
   const handleSchoolSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedSchoolId(event.target.value);
-    setSelectedProgram(null); // Reset detailed view when changing filter
+    setSelectedProgram(null);
   };
 
   const handleCardClick = (program: Program) => {
@@ -95,13 +92,13 @@ const Page = () => {
 
   const handleDeleteClick = (program: Program) => {
     setProgramToDelete(program);
-    setCourseToDelete(null); // Clear courseToDelete when deleting a program
+    setCourseToDelete(null);
     setIsModalOpen(true);
   };
 
   const handleCourseDeleteClick = (courseId: string) => {
     setCourseToDelete(courseId);
-    setProgramToDelete(null); // Clear programToDelete when deleting a course
+    setProgramToDelete(null);
     setIsModalOpen(true);
   };
 
@@ -158,20 +155,16 @@ const Page = () => {
     }
   };
 
+  // Dynamic routing for program edit
   const handleEditClick = (id: number) => {
     router.push(`/program/all-program/edit/${id}`);
+  };
+  const handleAddCourse = (programId: number) => {
+    router.push(`/program/course/add/${programId}`);
   };
 
   const handleAddClick = () => {
     router.push(`/program/new-program`);
-  };
-
-  const handleAddCourse = (programId: number) => {
-    router.push(`/program/all-program/course/add/${programId}`);
-  };
-
-  const handleEditCourse = (courseId: string) => {
-    router.push(`/program/all-program/course/edit/${courseId}`);
   };
 
   return (
@@ -221,9 +214,7 @@ const Page = () => {
           <div
             key={program.id}
             onClick={() => handleCardClick(program)}
-            className={`p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between ${
-              selectedProgram && selectedProgram.id !== program.id ? "hidden" : ""
-            }`}
+            className={`p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between`}
           >
             <div className="flex justify-between items-center">
               <h2 className="font-bold text-[18px]">{program.name}</h2>
@@ -284,7 +275,6 @@ const Page = () => {
                 <thead>
                   <tr className="border text-center">
                     <th className="border border-black px-2 py-2">Course Name</th>
-                    <th className="border border-black px-2 py-2">Action</th>
                   </tr>
                 </thead>
                 <tbody className="justify-center items-center text-center">
@@ -292,34 +282,6 @@ const Page = () => {
                     selectedProgram.course_list.map((course, index) => (
                       <tr key={index} className="border text-center">
                         <td className="border border-black px-2 py-2">{course}</td>
-                        <td className="border border-black px-2 py-2">
-                          <div className="flex space-x-3">
-                            <button
-                              onClick={() => handleEditCourse(course)}
-                              className="hover:scale-110 transition-transform transform hover:bg-gray-200 p-1 rounded-full"
-                            >
-                              <Image
-                                src="/edit.svg"
-                                alt="Edit"
-                                width={25}
-                                height={25}
-                                className="w-[25px] h-[25px]"
-                              />
-                            </button>
-                            <button
-                              onClick={() => handleCourseDeleteClick(course)}
-                              className="hover:scale-110 transition-transform transform hover:bg-gray-200 p-1 rounded-full"
-                            >
-                              <Image
-                                src="/delete.svg"
-                                alt="Delete"
-                                width={25}
-                                height={25}
-                                className="w-[25px] h-[25px]"
-                              />
-                            </button>
-                          </div>
-                        </td>
                       </tr>
                     ))
                   ) : (
