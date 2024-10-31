@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface School {
   id: number;
@@ -10,7 +10,10 @@ interface School {
 
 const Page = () => {
   const router = useRouter();
-  const courseId = 1; // Hardcode courseId to 1 for testing
+  const pathname = usePathname();
+  
+  // Extract courseId from the URL path
+  const courseId = pathname.split("/").pop(); // This will get the last segment of the URL, i.e., the course ID
 
   const [schools, setSchools] = useState<School[]>([]);
   const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
@@ -36,7 +39,7 @@ const Page = () => {
   // Fetch the course details, program name, and available schools
   useEffect(() => {
     const fetchData = async () => {
-      if (!token) return;
+      if (!token || !courseId) return;
 
       try {
         setLoading(true);
@@ -102,7 +105,7 @@ const Page = () => {
     };
 
     fetchData();
-  }, [token]);
+  }, [token, courseId]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

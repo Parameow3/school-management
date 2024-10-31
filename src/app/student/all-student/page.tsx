@@ -198,17 +198,18 @@ const Page = () => {
             <p>No student found.</p>
           ) : (
             filteredProfiles.map((profile) => (
-              <ProfileCard
-                key={profile.id}
-                pic={profile.image || "/photo.jpg"} // Pass only the image URL string
-                first_name={`${profile.first_name} ${profile.last_name}`} // Combine first and last name
-                job={profile.job || "Student"} // Assuming 'belt_level' is like a rank or title
-                onViewClick={() => handleViewClick(profile.id)}
-                onEditClick={() => handleEditClick(profile.id)}
-                onDeleteClick={() => handleDeleteClick(profile.id)}
-                editPath={`/student/edit/${profile.id}`} // Provide edit path
-                viewPath={`/student/view/${profile.id}`} // Provide view path
-              />
+<ProfileCard
+  key={profile.id}
+  pic={profile.image || "/default-image.jpg"} // Use a default image if profile.image is null
+  first_name={`${profile.first_name} ${profile.last_name}`}
+  job={"Student"}
+  onViewClick={() => handleViewClick(profile.id)}
+  onEditClick={() => handleEditClick(profile.id)}
+  onDeleteClick={() => handleDeleteClick(profile.id)}
+  editPath={`/student/edit/${profile.id}`}
+  viewPath={`/student/view/${profile.id}`}
+/>
+
             ))
           )}
         </div>

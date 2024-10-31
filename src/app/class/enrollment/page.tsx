@@ -102,7 +102,7 @@ const Page = () => {
 
       // Pre-check for existing enrollment
       const checkEnrollmentResponse = await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/check/`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/`,
         enrollmentData,
         config
       );

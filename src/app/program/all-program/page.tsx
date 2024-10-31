@@ -3,19 +3,19 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Modal from "@/components/Modal";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"; 
 import axios from "axios";
+import Dropdown from "@/components/Dropdown"; // Assuming this is a custom dropdown component
 
 interface Program {
   id: number;
   name: string;
   description: string;
   branch: number;
-  school: number;
   course_list?: string[];
 }
 
-interface School {
+interface Branch {
   id: number;
   name: string;
 }
@@ -27,12 +27,12 @@ const Page = () => {
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [filteredPrograms, setFilteredPrograms] = useState<Program[]>([]);
-  const [schools, setSchools] = useState<School[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>("all");
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("all");
 
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -44,46 +44,47 @@ const Page = () => {
   }, [router]);
 
   useEffect(() => {
-    const fetchProgramsAndSchools = async () => {
+    const fetchProgramsAndBranches = async () => {
       if (!token) return;
       setLoading(true);
 
       try {
-        const [programResponse, schoolResponse] = await Promise.all([
+        const [programResponse, branchResponse] = await Promise.all([
           axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools`, {
+          axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
 
         setPrograms(programResponse.data.results || []);
-        setFilteredPrograms(programResponse.data.results || []);
-        setSchools(schoolResponse.data.results || []);
+        setFilteredPrograms(programResponse.data.results || []); // Initially show all programs
+        setBranches(branchResponse.data.results || []);
 
       } catch (err) {
-        setError("Failed to fetch programs or schools");
+        setError("Failed to fetch programs or branches");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProgramsAndSchools();
+    fetchProgramsAndBranches();
   }, [token]);
 
+  // Filter programs based on selected branch
   useEffect(() => {
-    if (selectedSchoolId === "all") {
-      setFilteredPrograms(programs);
+    if (selectedBranchId === "all") {
+      setFilteredPrograms(programs); // Show all programs when "All Branches" is selected
     } else {
-      const filtered = programs.filter((program) => program.school === Number(selectedSchoolId));
-      setFilteredPrograms(filtered);
+      const filtered = programs.filter((program) => program.branch === Number(selectedBranchId));
+      setFilteredPrograms(filtered); // Filtered programs based on selected branch
     }
-  }, [selectedSchoolId, programs]);
+  }, [selectedBranchId, programs]);
 
-  const handleSchoolSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSchoolId(event.target.value);
-    setSelectedProgram(null);
+  const handleBranchSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedBranchId(event.target.value); // Update selected branch ID
+    setSelectedProgram(null); // Reset selected program when branch changes
   };
 
   const handleCardClick = (program: Program) => {
@@ -183,17 +184,17 @@ const Page = () => {
         </Link>
       </div>
 
-      {/* School Filter Dropdown */}
+      {/* Branch Filter Dropdown */}
       <div className="relative mt-4 flex justify-between">
         <select
-          value={selectedSchoolId}
-          onChange={handleSchoolSelect}
+          value={selectedBranchId}
+          onChange={handleBranchSelect}
           className="border border-gray-300 rounded-md w-full max-w-xs px-3 py-2 mb-4"
         >
-          <option value="all">All Schools</option>
-          {schools.map((school) => (
-            <option key={school.id} value={school.id}>
-              {school.name}
+          <option value="all">All Branches</option>
+          {branches.map((branch) => (
+            <option key={branch.id} value={branch.id}>
+              {branch.name}
             </option>
           ))}
         </select>
