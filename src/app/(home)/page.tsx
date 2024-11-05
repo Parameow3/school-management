@@ -1,11 +1,146 @@
-import React from "react";
+'use client'
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Card from "@/components/Card";
 import Report from "@/components/Report";
 import Calender from "@/components/Calender";
 import FacebookCard from "@/components/facebookCard";
 import Typography from "@/components/Typography";
-const page = () => {
+import { useRouter } from "next/navigation";
+
+const Page = () => {
+  const [data, setData] = useState([]);
+  const [studentCount, setStudentCount] = useState(0);
+  const [teacherCount, setTeacherCount] = useState(0);   
+  const [token, setToken] = useState<string | null>(null);
+  const [classCount, setClassCount] = useState(0);
+  const [trailCount, setTrailCount] = useState(0);
+  const router = useRouter();
+
+  useEffect(() => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage); // Set token state
+    } else {
+      router.push("/login"); // Redirect to login
+    }
+  }, [router]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!token) return;
+  
+        // Fetch Students
+        const studentsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (!studentsResponse.ok) {
+          throw new Error(`Error: ${studentsResponse.status} ${studentsResponse.statusText}`);
+        }
+  
+        const studentsData = await studentsResponse.json();
+        console.log("Fetched Students Data:", studentsData);
+  
+        // Update student count if `results` exists and is an array
+        if (studentsData && Array.isArray(studentsData.results)) {
+          setStudentCount(studentsData.results.length);
+        } else {
+          console.error('Error: `results` is not an array or does not exist in students response');
+        }
+  
+        // Fetch Classrooms
+        const classroomsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (!classroomsResponse.ok) {
+          throw new Error(`Error: ${classroomsResponse.status} ${classroomsResponse.statusText}`);
+        }
+  
+        const classroomsData = await classroomsResponse.json();
+        console.log("Fetched Classrooms Data:", classroomsData);
+  
+        // Update class count if `results` exists and is an array
+        if (classroomsData && Array.isArray(classroomsData.results)) {
+          setClassCount(classroomsData.results.length);
+        } else {
+          console.error('Error: `results` is not an array or does not exist in classrooms response');
+        }
+  
+        // Fetch Student Trails
+        const trailsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (!trailsResponse.ok) {
+          throw new Error(`Error: ${trailsResponse.status} ${trailsResponse.statusText}`);
+        }
+  
+        const trailsData = await trailsResponse.json();
+        console.log("Fetched Trails Data:", trailsData);
+  
+        // Update trail count if `trailsData` is an array
+        if (Array.isArray(trailsData)) {
+          setTrailCount(trailsData.length);
+        } else {
+          console.error('Error: Trails data is not an array');
+        }
+  
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+  
+    fetchData();
+  }, [token]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (!token) return;
+  
+        // Fetch Teachers
+        const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (!usersResponse.ok) {
+          throw new Error(`Error: ${usersResponse.status} ${usersResponse.statusText}`);
+        }
+  
+        const usersData = await usersResponse.json();
+        console.log("Fetched Users Data:", usersData);
+  
+        // Filter users by role "teacher"
+        const teachers = usersData.results.filter((user: { roles_name: string; }) => user.roles_name === "teacher");
+  
+        // Update teacher count
+        setTeacherCount(teachers.length);
+  
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+  
+    fetchData();
+  }, [token]);
+  
   return (
     <>
       <div className="flex justify-center lg:ml-[16%] ml-[11%] mt-16">
@@ -30,16 +165,16 @@ const page = () => {
             </div>
             <div className="grid grid-cols-2 lg:flex-row lg:flex lg:gap-4 m-0 w-[310px]">
               <div className="p-0 m-0">
-                <Card title={"Students"} value={100} color={"#4CAF50"} />
+                <Card title={"Students"} value={studentCount} color={"#4CAF50"} />
               </div>
               <div className="p-0 m-0">
-                <Card title={"Teachers"} value={50} color={"#869DCA"} />
+                <Card title={"Teachers"} value={teacherCount} color={"#869DCA"} />
               </div>
               <div className="p-0 m-0">
-                <Card title={"Trails"} value={12} color={"#213458"} />
+                <Card title={"Trails"} value={trailCount} color={"#213458"} />
               </div>
               <div className="p-0 m-0">
-                <Card title={"Classes"} value={5} color={"#3A6EA5"} />
+                <Card title={"Classes"} value={classCount} color={"#3A6EA5"} />
               </div>
             </div>
 
@@ -103,4 +238,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

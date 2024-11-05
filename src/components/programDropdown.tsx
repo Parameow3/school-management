@@ -4,14 +4,13 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 interface ProgramDropdownProps {
-  onSelect: (selectedPrograms: number[]) => void; // This is already defined
-  selectedPrograms?: number[]; // You need to add this property
+  onSelect: (selectedPrograms: number[]) => void; // Prop to handle selected programs
+  selectedPrograms?: number[]; // Prop to hold currently selected programs
 }
 
-const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect ,selectedPrograms}) => {
+const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect, selectedPrograms = [] }) => {
   const router = useRouter();
   const [availablePrograms, setAvailablePrograms] = useState<any[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,9 +50,8 @@ const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect ,selectedPro
   }, [token]); // Trigger when the token is available
 
   const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = Number(e.target.value);
-    setSelectedProgram(selectedValue); // Store the selected program as a number
-    onSelect([selectedValue]); // Send the selected program ID to the parent as an array
+    const selectedValues = Array.from(e.target.selectedOptions, (option) => Number(option.value));
+    onSelect(selectedValues); // Send the selected program IDs to the parent
   };
 
   return (
@@ -62,12 +60,13 @@ const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect ,selectedPro
       <select
         id="programs"
         name="programs"
-        value={selectedProgram ?? ""} // Set the selected value, or default to an empty string
+        multiple // Enable multiple selection
+        value={selectedPrograms.map(String)} // Convert selectedPrograms to strings for the select value
         onChange={handleProgramChange}
         className="mt-1 block w-full h-[40px] pl-3 pr-10 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <option value="" disabled>
-          Select a program
+          Select programs
         </option>
         {availablePrograms.length > 0 ? (
           availablePrograms.map((program) => (

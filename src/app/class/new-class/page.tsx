@@ -16,7 +16,7 @@ const Page = () => {
   const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState({
     className: "",
-    course: "", // Updated to course
+    course: "",
     teacher: "",
     credit: "",
     start_date: "",
@@ -30,11 +30,12 @@ const Page = () => {
   const [errorCourses, setErrorCourses] = useState<string | null>(null);
   const [errorTeachers, setErrorTeachers] = useState<string | null>(null);
 
+  // Mount the component
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Fetch courses and teachers
+  // Fetch teachers and courses on mount
   useEffect(() => {
     if (isMounted) {
       const fetchTeachers = async () => {
@@ -46,9 +47,11 @@ const Page = () => {
           });
           const teacherUsers = response.data.results.filter((user: any) => user.roles_name === "teacher");
           setTeachers(teacherUsers);
-          setLoadingTeachers(false);
         } catch (err: any) {
-          setErrorTeachers("Error loading teachers: " + err.message);
+          const errorMessage = err.response?.data?.detail || err.message;
+          setErrorTeachers(`Error loading teachers: ${errorMessage}`);
+          console.error("Error fetching teachers:", errorMessage);
+        } finally {
           setLoadingTeachers(false);
         }
       };
@@ -60,18 +63,16 @@ const Page = () => {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             },
           });
-
-          console.log("Courses API response:", response.data);
-
-          if (response.data && Array.isArray(response.data)) {
-            setCourses(response.data); // Set the courses to the state
+          if (Array.isArray(response.data)) {
+            setCourses(response.data);
           } else {
             console.error("Invalid courses data format:", response.data);
           }
-
-          setLoadingCourses(false);
         } catch (err: any) {
-          setErrorCourses("Error loading courses: " + err.message);
+          const errorMessage = err.response?.data?.detail || err.message;
+          setErrorCourses(`Error loading courses: ${errorMessage}`);
+          console.error("Error fetching courses:", errorMessage);
+        } finally {
           setLoadingCourses(false);
         }
       };
@@ -92,15 +93,20 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Basic validation
+    if (!formData.className || !formData.course || !formData.teacher || !formData.start_date || !formData.end_date) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
     const postData = {
       name: formData.className,
-      courses: [parseInt(formData.course)], // Use course instead of program
+      courses: [parseInt(formData.course)],
       teacher: parseInt(formData.teacher),
       start_date: formData.start_date,
       end_date: formData.end_date,
     };
 
-    // Console log the data
     console.log("Form Data Submitted:", postData);
 
     try {
@@ -113,12 +119,9 @@ const Page = () => {
       console.log("Response:", response.data);
       alert("Classroom created successfully!");
     } catch (error: any) {
-      console.error("Error submitting the form:", error);
-      if (error.response && error.response.data) {
-        alert(`Error: ${error.response.data.detail || "An error occurred."}`);
-      } else {
-        alert("Failed to submit the form.");
-      }
+      const errorMessage = error.response?.data?.detail || error.message || "An unknown error occurred.";
+      console.error("Error submitting the form:", errorMessage);
+      alert(`Error: ${errorMessage}`);
     }
   };
 
