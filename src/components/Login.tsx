@@ -187,21 +187,32 @@ const Login = () => {
             <button
               type="button"
               className="w-full bg-white text-blue-600 border border-blue-600 py-3 rounded-lg font-semibold hover:bg-gray-100 transition duration-300"
-              onClick={() => router.push("/")}
-            >
+              onClick={() => router.push("/")}>
               Cancel
             </button>
           </div>
         </form>
 
+        {/* Registration Link */}
+        <div className="text-center mt-4">
+          <p className="text-sm text-gray-600">
+            Don't have an account?{" "}
+            <span
+              className="text-blue-600 cursor-pointer hover:underline"
+              onClick={() => router.push("/register")}>
+              Register here
+            </span>
+          </p>
+        </div>
+
         {/* Terms and Privacy Policy */}
         <div className="text-sm text-gray-500 mt-8 text-center">
           By signing up, you agree to our company's{" "}
-          <a href="#" className="text-blue-600 hover:text-blue-800">
+          <a href="#" className="text-[#213458] hover:text-blue-800">
             Terms and Conditions
           </a>{" "}
           and{" "}
-          <a href="#" className="text-blue-600 hover:text-blue-800">
+          <a href="#" className="text-[#213458] hover:text-[#213498]">
             Privacy Policy
           </a>.
         </div>

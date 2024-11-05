@@ -1,9 +1,10 @@
 import React from 'react'
+import Register from '@/components/register'
 
 const page = () => {
   return (
-    <div>
-      heelo
+    <div className='flex align-middle justify-center'>
+      <Register></Register>
     </div>
   )
 }
