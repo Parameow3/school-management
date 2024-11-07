@@ -29,8 +29,6 @@ const Page = () => {
     const fetchData = async () => {
       try {
         if (!token) return;
-  
-        // Fetch Students
         const studentsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`, {
           method: 'GET',
           headers: {
@@ -44,9 +42,6 @@ const Page = () => {
         }
   
         const studentsData = await studentsResponse.json();
-        console.log("Fetched Students Data:", studentsData);
-  
-        // Update student count if `results` exists and is an array
         if (studentsData && Array.isArray(studentsData.results)) {
           setStudentCount(studentsData.results.length);
         } else {
@@ -67,9 +62,6 @@ const Page = () => {
         }
   
         const classroomsData = await classroomsResponse.json();
-        console.log("Fetched Classrooms Data:", classroomsData);
-  
-        // Update class count if `results` exists and is an array
         if (classroomsData && Array.isArray(classroomsData.results)) {
           setClassCount(classroomsData.results.length);
         } else {
@@ -90,9 +82,6 @@ const Page = () => {
         }
   
         const trailsData = await trailsResponse.json();
-        console.log("Fetched Trails Data:", trailsData);
-  
-        // Update trail count if `trailsData` is an array
         if (Array.isArray(trailsData)) {
           setTrailCount(trailsData.length);
         } else {
@@ -125,12 +114,8 @@ const Page = () => {
         }
   
         const usersData = await usersResponse.json();
-        console.log("Fetched Users Data:", usersData);
-  
-        // Filter users by role "teacher"
         const teachers = usersData.results.filter((user: { roles_name: string; }) => user.roles_name === "teacher");
-  
-        // Update teacher count
+
         setTeacherCount(teachers.length);
   
       } catch (error) {

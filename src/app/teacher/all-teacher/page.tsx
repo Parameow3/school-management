@@ -206,9 +206,6 @@ const Page = () => {
     ? filteredProfiles.filter((profile) => profile.specialization === selectedSpecialization)
     : filteredProfiles;
 
-  const handleAdd = () => {
-    router.push(`/teacher/new-teacher`);
-  };
 
   return (
     <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
@@ -255,13 +252,6 @@ const Page = () => {
           onChange={handleSearchChange}
           className="mt-1 block lg:w-[297px] text-[15px] p-2 w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
         />
-
-        <button
-          onClick={handleAdd}
-          className="bg-[#213458] text-[15px] text-white py-2 px-5 rounded-lg shadow-lg hover:bg-[#213498] transition-all duration-300 ease-in-out transform hover:scale-105"
-        >
-          New Teacher
-        </button>
       </div>
 
       {loading ? (

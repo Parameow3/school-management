@@ -193,18 +193,6 @@ const Login = () => {
           </div>
         </form>
 
-        {/* Registration Link */}
-        <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-            Don't have an account?{" "}
-            <span
-              className="text-blue-600 cursor-pointer hover:underline"
-              onClick={() => router.push("/register")}>
-              Register here
-            </span>
-          </p>
-        </div>
-
         {/* Terms and Privacy Policy */}
         <div className="text-sm text-gray-500 mt-8 text-center">
           By signing up, you agree to our company's{" "}

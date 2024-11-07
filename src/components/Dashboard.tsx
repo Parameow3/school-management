@@ -37,104 +37,187 @@ type NavigationItem = {
   subItems?: { name: string; href: string; current?: boolean }[];
 };
 
-const navigation: NavigationItem[] = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
-  {
-    name: 'School',
-    href: '#',
-    current: false,
-    icon: LightBulbIcon,
-    subItems: [
-      { name: 'School', href: '/school/school', current: false },
-      { name: 'Branch', href: '/school/branch', current: false },
-    ],
-  },
-  {
-    name: 'Program',
-    href: '#',
-    current: false,
-    icon: ClipboardDocumentListIcon,
-    subItems: [
-      { name: 'All Programs', href: '/program/all-program', current: false },
-      { name: 'New Programs', href: '/program/new-program', current: false },
-      { name: 'Courses', href: '/program/course', current: false },
-    ],
-  },
-  {
-    name: 'Class',
-    href: '#',
-    current: false,
-    icon: BuildingLibraryIcon,
-    subItems: [
-      { name: 'All Classes', href: '/class/all-class', current: false },
-      { name: 'New Class', href: '/class/new-class', current: false },
-      { name: 'Enrollment', href: '/class/enrollment', current: false },
-    ],
-  },
-  {
-    name: 'Student',
-    href: '#',
-    current: false,
-    icon: AcademicCapIcon,
-    subItems: [
-      { name: 'All Students', href: '/student/all-student', current: false },
-      { name: 'Add New Students', href: '/student/new-student', current: false },
-      { name: 'Trial Students', href: '/student/trial-student', current: false },
-    ],
-  },
-  {
-    name: 'Teacher',
-    href: '#',
-    current: false,
-    icon: BookOpenIcon,
-    subItems: [
-      { name: 'All Teachers', href: '/teacher/all-teacher', current: false },
-      { name: 'New Teachers', href: '/teacher/new-teacher', current: false },
-    ],
-  },
-  {
-    name: 'Exam',
-    href: '#',
-    current: false,
-    icon: DocumentTextIcon,
-    subItems: [
-      { name: 'Exam List', href: '/exam/exam', current: false },
-      { name: 'Exam Result', href: '/exam/result', current: false },
-    ],
-  },
-  {
-    name: 'Attendance',
-    href: '#',
-    current: false,
-    icon: CheckBadgeIcon,
-    subItems: [
-      {
-        name: 'Student Attendance',
-        href: '/attendance/student',
-        current: false,
-      },
-      {
-        name: 'Teacher Attendance',
-        href: '/attendance/teacher',
-        current: false,
-      },
-    ],
-  },
-  {
-    name: 'Setting',
-    href: '#',
-    current: false,
-    icon: Cog6ToothIcon,
-    subItems: [
-      {
-        name: 'Account Setting',
-        href: '/setting/account-setting',
-        current: false,
-      },
-      { name: 'Logout', href: '#', current: false },
-    ],
-  },
-];
+const roleNavigationMap: Record<string, NavigationItem[]> = {
+  admin: [
+    { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
+    {
+      name: 'School',
+      href: '#',
+      current: false,
+      icon: LightBulbIcon,
+      subItems: [
+        { name: 'School', href: '/school/school', current: false },
+        { name: 'Branch', href: '/school/branch', current: false },
+      ],
+    },
+    {
+      name: 'Program',
+      href: '#',
+      current: false,
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { name: 'All Programs', href: '/program/all-program', current: false },
+        { name: 'New Programs', href: '/program/new-program', current: false },
+        { name: 'Courses', href: '/program/course', current: false },
+      ],
+    },
+    {
+      name: 'Class',
+      href: '#',
+      current: false,
+      icon: BuildingLibraryIcon,
+      subItems: [
+        { name: 'All Classes', href: '/class/all-class', current: false },
+        { name: 'New Class', href: '/class/new-class', current: false },
+        { name: 'Enrollment', href: '/class/enrollment', current: false },
+      ],
+    },
+    {
+      name: 'Student',
+      href: '#',
+      current: false,
+      icon: AcademicCapIcon,
+      subItems: [
+        { name: 'All Students', href: '/student/all-student', current: false },
+        { name: 'Add New Students', href: '/student/new-student', current: false },
+        { name: 'Trial Students', href: '/student/trial-student', current: false },
+      ],
+    },
+    {
+      name: 'Teacher',
+      href: '#',
+      current: false,
+      icon: BookOpenIcon,
+      subItems: [
+        { name: 'All Teachers', href: '/teacher/all-teacher', current: false },
+        { name: 'New Teachers', href: '/teacher/new-teacher', current: false },
+      ],
+    },
+    {
+      name: 'Exam',
+      href: '#',
+      current: false,
+      icon: DocumentTextIcon,
+      subItems: [
+        { name: 'Exam List', href: '/exam/exam', current: false },
+        { name: 'Exam Result', href: '/exam/result', current: false },
+      ],
+    },
+    {
+      name: 'Attendance',
+      href: '#',
+      current: false,
+      icon: CheckBadgeIcon,
+      subItems: [
+        {
+          name: 'Student Attendance',
+          href: '/attendance/student',
+          current: false,
+        },
+        {
+          name: 'Teacher Attendance',
+          href: '/attendance/teacher',
+          current: false,
+        },
+      ],
+    },
+    {
+      name: 'Setting',
+      href: '#',
+      current: false,
+      icon: Cog6ToothIcon,
+      subItems: [
+        {
+          name: 'Account Setting',
+          href: '/setting/account-setting',
+          current: false,
+        },
+        {
+          name: 'Create User',
+          href: '/setting/register',
+          current: false,
+        },
+        { name: 'Logout', href: '#', current: false },
+      ],
+    },
+    // Add other items accessible to admin
+  ],
+  teacher: [
+    { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
+    {
+      name: 'Student',
+      href: '#',
+      current: false,
+      icon: AcademicCapIcon,
+      subItems: [
+        { name: 'All Students', href: '/student/all-student', current: false },
+        { name: 'Add New Students', href: '/student/new-student', current: false },
+        // { name: 'Trial Students', href: '/student/trial-student', current: false },
+      ],
+    },
+    {
+      name: 'Attendance',
+      href: '#',
+      current: false,
+      icon: CheckBadgeIcon,
+      subItems: [
+        {
+          name: 'Student Attendance',
+          href: '/attendance/student',
+          current: false,
+        },
+        {
+          name: 'Teacher Attendance',
+          href: '/attendance/teacher',
+          current: false,
+        },
+      ],
+    },
+    {
+      name: 'Setting',
+      href: '#',
+      current: false,
+      icon: Cog6ToothIcon,
+      subItems: [
+        {
+          name: 'Account Setting',
+          href: '/setting/account-setting',
+          current: false,
+        },
+        { name: 'Logout', href: '#', current: false },
+      ],
+    },
+    // Add other items accessible to teachers
+  ],
+  student: [
+    { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
+    {
+      name: 'Class',
+      href: '#',
+      current: false,
+      icon: BuildingLibraryIcon,
+      subItems: [
+        { name: 'All Classes', href: '/class/all-class', current: false },
+        { name: 'New Class', href: '/class/new-class', current: false },
+        { name: 'Enrollment', href: '/class/enrollment', current: false },
+      ],
+    },
+    {
+      name: 'Setting',
+      href: '#',
+      current: false,
+      icon: Cog6ToothIcon,
+      subItems: [
+        {
+          name: 'Account Setting',
+          href: '/setting/account-setting',
+          current: false,
+        },
+        { name: 'Logout', href: '#', current: false },
+      ],
+    },
+  ],
+};
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -147,7 +230,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [navigationData, setNavigationData] = useState(navigation);
+  const [navigationData, setNavigationData] = useState<NavigationItem[]>([]);
   const router = useRouter();
 
   const toggleSidebar = () => {
@@ -172,33 +255,35 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    // Retrieve user information from local storage or wherever you store it
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+  
+    // Get the user role from the user object; default to 'student' if not available
+    const userRole = userInfo.roles_name || 'student'; // Updated to use roles_name
+  
+    const updatedNavigation = roleNavigationMap[userRole] || [];
+  
     const currentPath = window.location.pathname;
-    const updatedNavigation = navigation.map((item) => {
-      const isParentCurrent = !!(
-        item.href && currentPath.startsWith(item.href)
-      );
+  
+    updatedNavigation.forEach((item) => {
+      const isParentCurrent = !!(item.href && currentPath.startsWith(item.href));
       const subItemCurrent =
         item.subItems?.some((subItem) => currentPath.startsWith(subItem.href)) ||
         false;
-
+  
       if (subItemCurrent) {
         setOpenMenu(item.name);
       }
-
-      return {
-        ...item,
-        current: isParentCurrent || subItemCurrent,
-        subItems:
-          item.subItems?.map((subItem) => ({
-            ...subItem,
-            current: currentPath.startsWith(subItem.href),
-          })) || [],
-      };
+  
+      item.current = isParentCurrent || subItemCurrent;
+      item.subItems = item.subItems?.map((subItem) => ({
+        ...subItem,
+        current: currentPath.startsWith(subItem.href),
+      })) || [];
     });
-
+  
     setNavigationData(updatedNavigation);
   }, []);
-
   return (
     <div className="flex overflow-hidden">
       {/* Sidebar */}
