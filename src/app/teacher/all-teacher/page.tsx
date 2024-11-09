@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProfileCard from "@/components/ProfileCard";
 import Modal from "@/components/Modal";
-
 interface TeacherProfile {
   id: number;
   pic: string;
