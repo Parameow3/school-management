@@ -9,9 +9,9 @@ import Typography from "@/components/Typography";
 import { useRouter } from "next/navigation";
 
 const Page = () => {
-  const [data, setData] = useState([]);
   const [studentCount, setStudentCount] = useState(0);
-  const [teacherCount, setTeacherCount] = useState(0);   
+  const [teacherCount, setTeacherCount] = useState(0);  
+  const [todayStudentCount, setTodayStudentCount] = useState(0); 
   const [token, setToken] = useState<string | null>(null);
   const [classCount, setClassCount] = useState(0);
   const [trailCount, setTrailCount] = useState(0);
@@ -25,6 +25,11 @@ const Page = () => {
       router.push("/login"); // Redirect to login
     }
   }, [router]);
+  const isToday = (dateString: string) => {
+    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+    const recordDate = new Date(dateString).toISOString().split("T")[0]; // Record's date in YYYY-MM-DD format
+    return today === recordDate;
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -44,6 +49,7 @@ const Page = () => {
         const studentsData = await studentsResponse.json();
         if (studentsData && Array.isArray(studentsData.results)) {
           setStudentCount(studentsData.results.length);
+          setTodayStudentCount(studentsData.results.filter((student: { created_at: string }) => isToday(student.created_at)).length);
         } else {
           console.error('Error: `results` is not an array or does not exist in students response');
         }
@@ -169,50 +175,24 @@ const Page = () => {
           <div className="w-[329px] h-full lg:m-2 shadow-sm rounded-lg">
             <Calender></Calender>
             {/* progressBar */}
-            <div className="mt-4 p-4 w-[326px] h-[200px] rounded-sm bg-white">
-              <p className="text-[15px] font-bold text-gray-900">
+             <div className="mt-4 p-4 w-[326px] h-[200px] rounded-sm bg-white">
+             <p className="text-[15px] font-bold text-gray-900">
                 Today New Student
               </p>
               <div aria-hidden="true" className="mt-2 flex items-center">
                 <div className="flex-grow overflow-hidden rounded-full bg-gray-200">
                   <div
-                    style={{ width: "50%" }}
+                    style={{ width: `${(todayStudentCount / studentCount) * 100}%` }}
                     className="h-2 rounded-full bg-indigo-600"
                   />
                 </div>
                 <span className="ml-2 text-sm font-medium text-gray-900">
-                  50%
+                  {todayStudentCount}
                 </span>
               </div>
-              <p className="text-[15px] font-bold text-gray-900">
-                Today New Teacher
-              </p>
-              <div aria-hidden="true" className="mt-2 flex items-center">
-                <div className="flex-grow overflow-hidden rounded-full bg-gray-200">
-                  <div
-                    style={{ width: "60%" }}
-                    className="h-2 rounded-full bg-indigo-600"
-                  />
-                </div>
-                <span className="ml-2 text-sm font-medium text-gray-900">
-                  60%
-                </span>
-              </div>
-              <p className="text-[15px] font-bold text-gray-900">
-                Today Trail Student
-              </p>
-              <div aria-hidden="true" className="mt-2 flex items-center">
-                <div className="flex-grow overflow-hidden rounded-full bg-gray-200">
-                  <div
-                    style={{ width: "30%" }}
-                    className="h-2 rounded-full bg-indigo-600"
-                  />
-                </div>
-                <span className="ml-2 text-sm font-medium text-gray-900">
-                  30%
-                </span>
-              </div>
+
             </div>
+
             <div className="mt-4">
               <FacebookCard></FacebookCard>
             </div>

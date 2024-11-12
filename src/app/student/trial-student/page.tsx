@@ -13,15 +13,16 @@ const Page = () => {
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
   const [teachers, setTeachers] = useState<{ id: number; username: string }[]>([]);
   const [selectedTeacher, setSelectedTeacher] = useState<number | "">("");
+  const [selectedPrograms, setSelectedPrograms] = useState<number[]>([]);
 
   const [formData, setFormData] = useState({
     client: "",
     phone: "",
-    number_student: 1,
+    number_student: "",
     programs: [] as number[],
     status: "Pending",
-    assign_by: 1, // Initialize as a number
-    handle_by: [] as number[], // Initialize as an array
+    assign_by: 1,
+    handle_by: [] as number[],
   });
 
   useEffect(() => {
@@ -54,7 +55,7 @@ const Page = () => {
           const data = await response.json();
           const adminUsers = data.results.filter((user: any) => user.roles === 1);
           const teacherUsers = data.results.filter((user: any) => user.roles_name === "teacher");
-          
+
           setUsers(adminUsers);
           setTeachers(teacherUsers);
         } catch (error) {
@@ -71,45 +72,33 @@ const Page = () => {
     setSelectedTeacher(teacherId);
     setFormData((prev) => ({
       ...prev,
-      handle_by: [teacherId], // Set handle_by as an array containing the selected teacher's ID
+      handle_by: [teacherId],
     }));
   };
 
   const handleProgramSelect = (selectedPrograms: number[]) => {
-    setFormData((prevData) => ({ ...prevData, programs: selectedPrograms }));
+    setSelectedPrograms(selectedPrograms);
+    setFormData((prevData) => ({
+      ...prevData,
+      programs: selectedPrograms,
+    }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
-    if (name === "number_student") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: parseInt(value), // Ensure this is an integer
-      }));
-    } else if (name === "assign_by") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: parseInt(value), // Ensure this is an integer
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleViewClick = () => {
-    router.push(`/student/trial-student/view`);
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "number_student" || name === "assign_by" ? parseInt(value) : value,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!token) {
       alert("Authorization token is missing. Please log in.");
       return;
     }
 
-    // Prepare payload
     const dataToSubmit = {
       client: formData.client,
       phone: formData.phone,
@@ -119,8 +108,6 @@ const Page = () => {
       assign_by: formData.assign_by,
       handle_by: formData.handle_by,
     };
-
-    console.log("Posting data:", JSON.stringify(dataToSubmit, null, 2)); // Log the payload
 
     try {
       const response = await fetch(
@@ -136,12 +123,9 @@ const Page = () => {
       );
 
       if (response.ok) {
-        const responseData = await response.json();
-        console.log("API Response:", responseData);
         alert("Trial information submitted successfully!");
       } else {
         const errorData = await response.json();
-        console.error("Error response:", errorData);
         alert(`Failed to submit trial information: ${errorData.detail || errorData.message}`);
       }
     } catch (error) {
@@ -159,7 +143,6 @@ const Page = () => {
           <Image src="/home.svg" width={15} height={15} alt="public" />{" "}
           New-student
         </span>
-
         <Link href="/#" passHref>
           <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
             <Image src="/refresh.svg" width={16} height={16} alt="Refresh" />
@@ -171,7 +154,7 @@ const Page = () => {
         <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">
           Trial Form
         </h1>
-        <Button className="w-[180px] p-2" onClick={handleViewClick}>
+        <Button className="w-[180px] p-2" onClick={() => router.push(`/student/trial-student/view`)}>
           View
         </Button>
       </div>
@@ -213,7 +196,7 @@ const Page = () => {
         {/* Number of Students */}
         <div>
           <label htmlFor="number_student" className="block text-sm font-medium text-gray-700">
-            Number of Students
+            Number Of Students
           </label>
           <input
             type="number"
@@ -232,9 +215,9 @@ const Page = () => {
             Select Programs:
           </label>
           <ProgramDropdown 
-        onSelect={handleProgramSelect} // Use onSelect here
-        selectedPrograms={formData.programs} // Pass the currently selected programs
-      />
+            onSelect={handleProgramSelect}
+            selectedPrograms={selectedPrograms}
+          />
         </div>
 
         {/* Status */}
@@ -269,31 +252,29 @@ const Page = () => {
             className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
             required
           >
-            <option value="">Select User</option>
-            {Array.isArray(users) && users.length > 0 ? (
-              users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.username}
-                </option>
-              ))
-            ) : (
-              <option value="">No users available</option>
-            )}
+            <option value="">Select an admin</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.username}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Handled By */}
         <div>
-          <label htmlFor="teacher" className="block text-sm font-medium text-gray-700">
-            Select a Teacher:
+          <label htmlFor="handle_by" className="block text-sm font-medium text-gray-700">
+            Handle By
           </label>
           <select
-            id="teacher"
-            value={selectedTeacher}
+            id="handle_by"
+            name="handle_by"
+            value={selectedTeacher || ""}
             onChange={handleTeacherChange}
             className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            required
           >
-            <option value="">Select a Teacher</option>
+            <option value="">Select a teacher</option>
             {teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
                 {teacher.username}
@@ -301,8 +282,7 @@ const Page = () => {
             ))}
           </select>
         </div>
-        
-        {/* Submit Button */}
+
         <div className="lg:col-span-3 flex justify-center items-center space-x-4">
           <Button className="lg:h-[40px] h-[40px] flex justify-center items-center px-6 py-2 bg-[#213458] text-white font-medium rounded hover:bg-blue-500">
             Submit

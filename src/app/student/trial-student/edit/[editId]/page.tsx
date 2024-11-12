@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,7 +22,7 @@ const Page = () => {
     client: '',
     phone: '',
     number_student: 1,
-    programs: [] as number[],
+    programs: [] as number[], 
     status: 'Pending',
     assign_by: 1,
     handle_by: [] as number[],
@@ -115,7 +115,6 @@ const Page = () => {
     }));
   };
 
-  // Handle program selection
   const handleProgramSelect = (selectedPrograms: number[]) => {
     setFormData((prevData) => ({ ...prevData, programs: selectedPrograms }));
   };
