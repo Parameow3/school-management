@@ -51,8 +51,8 @@ const Page= ()=> {
     parent_contact: "",
     student_passport: "",
     admission_date: "",
-    branch: null, // Initialize branch as null
-    image: null, // Initialize image as null
+    branch: null, 
+    image: null, 
     classrooms: [],
   });
 
@@ -78,7 +78,7 @@ const Page= ()=> {
   const handleBranchChange = (selectedBranchId: number) => {
     setFormData({
       ...formData,
-      branch: selectedBranchId, // Update branch ID in formData
+      branch: selectedBranchId,
     });
   };
 

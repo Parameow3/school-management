@@ -44,8 +44,6 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {}, value }) => {
               },
             }
           );
-
-          // Assuming the API response contains the branch name directly in `branch.name`
           const branchesData = response.data.results.map((item: any) => ({
             id: item.id, // Assuming `id` is the branch ID
             name: item.name, // Assuming `name` is the branch name
@@ -68,12 +66,10 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {}, value }) => {
 
     fetchBranches();
   }, [token]);
-
-  // Handle dropdown change event
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = Number(e.target.value);
     setSelectedBranch(selectedValue); // Store the selected branch as a number
-    onChange(selectedValue); // Send the selected branch ID to the parent component
+    onChange(selectedValue); 
   };
 
   return (

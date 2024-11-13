@@ -139,7 +139,7 @@ const Page = () => {
         <div className="mb-2">
           <button
             onClick={handleButtonClick}
-            className="bg-[#213458] text-white px-6 py-3 rounded-lg hover:bg-[#1b2d4e] shadow-lg transition-transform transform hover:scale-105 duration-300"
+            className="bg-[#213458] text-white px-6 py-3 rounded-sm hover:bg-[#1b2d4e] shadow-lg transition-transform transform hover:scale-105 duration-300"
           >
             Add New Exam
           </button>

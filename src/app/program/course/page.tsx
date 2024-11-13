@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Modal from "@/components/Modal";
+import Typography from '@/components/Typography';
 
 interface Course {
   id: number;
@@ -11,6 +12,14 @@ interface Course {
   description: string;
   program: string;
   credits: number;
+  enrolled_students?: Student[];
+}
+
+interface Student {
+  id: number;
+  first_name: string;
+  last_name: string;
+  course_names: string[];  // List of course names the student is enrolled in
 }
 
 interface Program {
@@ -26,15 +35,15 @@ const Page: React.FC = () => {
   const [token, setToken] = useState<string | null>(null);
   const [programs, setPrograms] = useState<Program[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null); // State to store course to delete
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
     } else {
-      router.push("/login"); 
+      router.push("/login");
     }
   }, [router]);
 
@@ -50,10 +59,7 @@ const Page: React.FC = () => {
           },
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch programs');
-        }
-
+        if (!response.ok) throw new Error('Failed to fetch programs');
         const data = await response.json();
         setPrograms(Array.isArray(data.results) ? data.results : []);
       } catch (error) {
@@ -68,7 +74,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     if (!token) return;
 
-    const fetchCourses = async () => {
+    const fetchCoursesWithStudents = async () => {
       setLoading(true);
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course`, {
@@ -77,13 +83,44 @@ const Page: React.FC = () => {
             'Authorization': `Bearer ${token}`,
           },
         });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch courses');
-        }
 
-        const data = await response.json();
-        setCourses(Array.isArray(data) ? data : []);
+        if (!response.ok) throw new Error('Failed to fetch courses');
+        const coursesData = await response.json();
+        const courses = Array.isArray(coursesData) ? coursesData : [];
+
+        // Fetch enrolled students for each course
+        const coursesWithStudents = await Promise.all(
+          courses.map(async (course) => {
+            try {
+              const enrollmentResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/?course_id=${course.id}`,
+                {
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                  },
+                }
+              );
+
+              if (!enrollmentResponse.ok) {
+                throw new Error(`Failed to fetch students for course ${course.id}`);
+              }
+
+              const enrollmentData = await enrollmentResponse.json();
+              // Match students based on course names
+              const studentsEnrolledInCourse = enrollmentData.students.filter((student: Student) =>
+                student.course_names.includes(course.name)
+              );
+
+              return { ...course, enrolled_students: studentsEnrolledInCourse || [] };
+            } catch (error) {
+              console.error('Error fetching enrollment data:', error);
+              return { ...course, enrolled_students: [] };  // Fallback to an empty array
+            }
+          })
+        );
+
+        setCourses(coursesWithStudents);
       } catch (error) {
         console.error('Error fetching course data:', error);
         setError('Failed to load courses. Please try again later.');
@@ -92,7 +129,7 @@ const Page: React.FC = () => {
       }
     };
 
-    fetchCourses();
+    fetchCoursesWithStudents();
   }, [token]);
 
   const getProgramNameForCourse = (courseName: string) => {
@@ -105,24 +142,21 @@ const Page: React.FC = () => {
   };
 
   const handleDeleteClick = (course: Course) => {
-    setSelectedCourse(course); // Set the selected course to delete
-    setIsModalOpen(true); // Open the modal
+    setSelectedCourse(course);
+    setIsModalOpen(true);
   };
 
   const handleDeleteConfirm = () => {
     if (selectedCourse) {
-      console.log("Confirmed delete for course:", selectedCourse);
-      // Call your delete API or function here
-      setCourses(courses.filter((course) => course.id !== selectedCourse.id)); // Remove course from list
-      setIsModalOpen(false); // Close the modal
-      setSelectedCourse(null); // Clear selected course
+      setCourses(courses.filter((course) => course.id !== selectedCourse.id));
+      setIsModalOpen(false);
+      setSelectedCourse(null);
     }
   };
 
   if (loading) return <p>Loading courses...</p>;
   if (error) return <p>{error}</p>;
 
-  // Group courses by program name
   const coursesByProgram = courses.reduce((acc: { [key: string]: Course[] }, course) => {
     const programName = getProgramNameForCourse(course.name);
     (acc[programName] = acc[programName] || []).push(course);
@@ -131,8 +165,7 @@ const Page: React.FC = () => {
 
   return (
     <div className='lg:ml-[16%] ml-[11%] mt-20 flex flex-col'>
-      <h1>Course Information</h1>
-
+      <Typography className='font-bold text-black' fontsize='24px'>Course Information</Typography>
       {Object.keys(coursesByProgram).map((programName) => (
         <div key={programName} className='mt-8'>
           <h2 className="text-lg font-bold mb-4">{programName}</h2>
@@ -143,6 +176,7 @@ const Page: React.FC = () => {
                 <th className="border px-4 py-2">Course Name</th>
                 <th className="border px-4 py-2">Description</th>
                 <th className="border px-4 py-2">Credits</th>
+                {/* <th className="border px-4 py-2">Enrolled Students</th> */}
                 <th className="border px-4 py-2">Action</th>
               </tr>
             </thead>
@@ -153,6 +187,17 @@ const Page: React.FC = () => {
                   <td className="border px-4 py-2">{course.name}</td>
                   <td className="border px-4 py-2">{course.description}</td>
                   <td className="border px-4 py-2">{course.credits}</td>
+                  {/* <td className="border px-4 py-2">
+                    {course.enrolled_students && course.enrolled_students.length > 0 ? (
+                      course.enrolled_students.map((student) => (
+                        <div key={student.id}>
+                          {student.first_name} {student.last_name}
+                        </div>
+                      ))
+                    ) : (
+                      <span>No students enrolled</span>
+                    )}
+                  </td> */}
                   <td className="border px-4 py-2">
                     <div className="flex gap-2">
                       <Image
@@ -184,7 +229,6 @@ const Page: React.FC = () => {
         </div>
       ))}
 
-      {/* Render Modal for Deletion Confirmation */}
       {isModalOpen && (
         <Modal
           onClose={() => setIsModalOpen(false)}

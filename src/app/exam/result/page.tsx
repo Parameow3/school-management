@@ -146,7 +146,7 @@ const Page = () => {
           Exam Results
         </h1>
         <button
-          className="bg-[#213458] rounded-full text-white text-sm font-semibold py-2 px-4 shadow-md hover:bg-[#1a2844] transition duration-300 ease-in-out transform hover:scale-105"
+          className="bg-[#213458] rounded-md text-white text-sm font-semibold py-2 px-4 shadow-md hover:bg-[#1a2844] transition duration-300 ease-in-out transform hover:scale-105"
           onClick={() => router.push(`/result/add`)}
         >
           Add Exam Result

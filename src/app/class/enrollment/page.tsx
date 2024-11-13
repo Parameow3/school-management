@@ -1,4 +1,4 @@
-"use client";
+'use client'
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
@@ -60,6 +60,7 @@ const Page = () => {
         setCourses(courseResponse.data || []);
       } catch (err) {
         setError("Failed to load students or courses.");
+        console.error("Fetch Error:", err);
       } finally {
         setDataLoading(false);
       }
@@ -81,11 +82,11 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
     setSuccess(null);
+    setError(null);
 
     if (!selectedStudent || selectedCourses.length === 0) {
-      setError("Please select a student and at least one course.");
+      window.alert("Please select a student and at least one course.");
       setLoading(false);
       return;
     }
@@ -95,60 +96,66 @@ const Page = () => {
       courses: selectedCourses,
     };
 
+    console.log("Enrollment Data:", enrollmentData); // Log data being sent to server
+
     try {
       const config = {
         headers: { Authorization: `Bearer ${token}` },
       };
 
-      // Pre-check for existing enrollment
-      const checkEnrollmentResponse = await axios.post(
+      const enrollResponse = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/`,
         enrollmentData,
         config
       );
 
-      if (checkEnrollmentResponse.data.alreadyEnrolled.length > 0) {
-        const alreadyEnrolledCourses =
-          checkEnrollmentResponse.data.alreadyEnrolled
-            .map((course: { name: string }) => course.name)
-            .join(", ");
-
-        window.alert(
-          `Student is already enrolled in the following courses: ${alreadyEnrolledCourses}`
-        );
-        setLoading(false);
-        return;
-      }
-
-      // Proceed with enrollment if no existing enrollment found
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/`,
-        enrollmentData,
-        config
-      );
-      setSuccess("Enrollment successful!");
+      console.log("Enrollment Response:", enrollResponse.data);
       window.alert("Enrollment successful!");
-    } catch (err) {
-      setError("Failed to enroll student.");
-      window.alert("Failed to enroll student.");
-      console.error(err);
+      setSuccess("Enrollment successful!");
+    } catch (err: any) {
+      console.error("Enrollment Error:", err);
+
+      if (err.response) {
+        console.error("Response error data:", err.response.data);
+        setError(
+          err.response.data?.detail ||
+            "Failed to enroll student due to a validation error."
+        );
+        window.alert(
+          `Failed to enroll student: ${
+            err.response.data?.detail || "An unknown error occurred."
+          }`
+        );
+      } else {
+        setError("An unknown error occurred.");
+        window.alert("An unknown error occurred.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6">Student Enrollment</h1>
+    <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col items-center min-h-screen bg-gray-100">
+      <div className="flex gap-4 mt-4 flex-row justify-between  max-w-md">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex-1 bg-[#213458] text-white font-bold py-2 px-2 rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          Back
+        </button>
         <button
           type="button"
           onClick={() => router.push("/class/enrollment/view")}
-          className="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg w-full hover:bg-gray-600 mt-2"
+          className="flex-1 bg-[#213458] w-[445px] text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
         >
           View Enrollment History
         </button>
+      </div>
 
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mt-6">
+        <h1 className="text-2xl font-bold mb-6 text-center">Student Enrollment</h1>
         {error && <div className="text-red-500 mb-4">{error}</div>}
         {success && <div className="text-green-500 mb-4">{success}</div>}
 
@@ -182,7 +189,6 @@ const Page = () => {
             <label className="block text-gray-700 text-sm font-semibold mb-2">
               Select Courses
             </label>
-
             {dataLoading ? (
               <div className="text-gray-500">Loading courses...</div>
             ) : courses && courses.length > 0 ? (

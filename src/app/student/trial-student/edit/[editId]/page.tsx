@@ -27,8 +27,6 @@ const Page = () => {
     assign_by: 1,
     handle_by: [] as number[],
   });
-
-  // Fetch token from localStorage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem('authToken');
     if (tokenFromLocalStorage) {

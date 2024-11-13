@@ -4,7 +4,7 @@ import axios from "axios";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Modal from "@/components/Modal"; // Import your modal component
+import Modal from "@/components/Modal"; // Import Modal component
 
 interface School {
   id: number;
@@ -32,8 +32,8 @@ const Page: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // For modal state
-  const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null); // Track the branch to delete
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -41,11 +41,30 @@ const Page: React.FC = () => {
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
     } else {
-      // Redirect to login if no token
       router.push("/login");
-      return; // Prevent further execution if no token
+      return;
     }
   }, [router]);
+
+  useEffect(() => {
+    if (!token) return;
+
+    const fetchBranches = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setBranches(response.data.results);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch branches data.");
+        setLoading(false);
+      }
+    };
+
+    fetchBranches();
+  }, [token]);
 
   const handleAdd = () => {
     router.push(`/school/branch/add/`);
@@ -59,55 +78,28 @@ const Page: React.FC = () => {
     try {
       await axios.delete(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/${branchId}/`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setBranches((prevBranches) =>
         prevBranches.filter((branch) => branch.id !== branchId)
       );
-      setIsModalOpen(false); // Close modal after successful deletion
+      setIsModalOpen(false);
     } catch (err) {
       setError("Failed to delete branch.");
-      setIsModalOpen(false); // Close modal even if error
+      setIsModalOpen(false);
     }
   };
 
   const confirmDelete = (branch: Branch) => {
     setBranchToDelete(branch);
-    setIsModalOpen(true); // Open modal when delete is triggered
+    setIsModalOpen(true);
   };
 
   const handleConfirmDelete = () => {
     if (branchToDelete) {
-      handleDelete(branchToDelete.id); // Call the delete function with the selected branch
+      handleDelete(branchToDelete.id);
     }
   };
-
-  useEffect(() => {
-    if (!token) return;
-
-    const fetchBranches = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setBranches(response.data.results);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch branches data.");
-        setLoading(false);
-      }
-    };
-    fetchBranches();
-  }, [token]);
 
   if (loading) {
     return <div className="text-center text-lg mt-8">Loading...</div>;
@@ -120,9 +112,7 @@ const Page: React.FC = () => {
   return (
     <div className="lg:ml-[18%] ml-[11%] mt-20 flex flex-col">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Branches Information
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-800">Branches Information</h1>
         <Button
           onClick={handleAdd}
           className="p-2 bg-[#213458] hover:bg-[#215498] text-white rounded-md"
@@ -134,19 +124,19 @@ const Page: React.FC = () => {
         <table className="min-w-full bg-white table-auto">
           <thead className="bg-[#213458] text-white">
             <tr>
-              <th className="w-12 px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider">
+              <th className="w-12 px-4 py-3 text-left text-[14px] font-semibold uppercase tracking-wider">
                 Branch ID
               </th>
-              <th className="w-32 px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider">
+              <th className="w-32 px-4 py-3 text-left text-[14px] font-semibold uppercase tracking-wider">
                 Branch Name
               </th>
-              <th className="w-32 px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider">
+              <th className="w-32 px-4 py-3 text-left text-[14px] font-semibold uppercase tracking-wider">
                 Branch Address
               </th>
-              <th className="w-32 px-4 py-3 text-left text-[12px] font-semibold uppercase tracking-wider">
+              <th className="w-32 px-4 py-3 text-left text-[14px] font-semibold uppercase tracking-wider">
                 Branch Location
               </th>
-              <th className="w-48 px-4 py-3 text-left text-[12px] font-semibold ml-20 uppercase tracking-wider">
+              <th className="w-48 px-4 py-3 text-left text-[14px] font-semibold ml-20 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -181,7 +171,7 @@ const Page: React.FC = () => {
                       />
                     </button>
                     <button
-                      onClick={() => confirmDelete(branch)} // Trigger the modal on delete click
+                      onClick={() => confirmDelete(branch)}
                       className="hover:scale-110 transition-transform transform hover:bg-gray-200 p-1 rounded-full"
                     >
                       <Image
@@ -199,8 +189,6 @@ const Page: React.FC = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Modal for confirming deletion */}
       {isModalOpen && branchToDelete && (
         <Modal
           onClose={() => setIsModalOpen(false)}

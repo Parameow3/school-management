@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
@@ -6,6 +6,7 @@ import Link from "next/link";
 import Modal from "@/components/Modal";
 import { useRouter } from "next/navigation";
 import Dropdown from "@/components/Dropdown";
+
 interface Class {
   id: number;
   name: string;
@@ -13,6 +14,7 @@ interface Class {
   teacher_name: string;
   start_date: string;
   end_date: string;
+  students: Student[]; // Add a list of students for each class
 }
 
 interface Student {
@@ -26,14 +28,12 @@ const Page = () => {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<Class | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null); // Track student to delete
   const [classData, setClassData] = useState<Class[]>([]);
-  const [studentData, setStudentData] = useState<Student[]>([]); // New state for student data
-  const [loading, setLoading] = useState(true); 
-  const [studentLoading, setStudentLoading] = useState(false); // Loading state for students
-  const [error, setError] = useState<string | null>(null); 
-  const [token, setToken] = useState<string | null>(null); // Store token here
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -44,49 +44,30 @@ const Page = () => {
   }, [router]);
 
   useEffect(() => {
-    setIsMounted(true);
-    const fetchData = async () => {
-      if(!token) return;
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`,{
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setClassData(response.data.results); 
-        setLoading(false); 
-      } catch (err:any) {
-        setError(err.message);
-        setLoading(false); 
-      }
-    };
-
-    fetchData();
-  }, [token]);
-  const fetchStudents = async (classId: number) => {
-    setStudentLoading(true);
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classId}/students`,{
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setStudentData(response.data.results); 
-      setStudentLoading(false);
-    } catch (err: any) {
-      console.error("Error fetching students:", err);
-      setStudentLoading(false);
+    if (token) {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setClassData(response.data.results);
+          setLoading(false);
+        } catch (err: any) {
+          setError(err.message);
+          setLoading(false);
+        }
+      };
+      fetchData();
     }
-  };
+  }, [token]);
 
   const handleCardClick = (classId: number) => {
     setSelectedClass(classId);
-    fetchStudents(classId);
   };
 
-  const handleDeleteClick = (classInfo: Class) => {
-    setStudentToDelete(classInfo);
-    setIsModalOpen(true);
+  const handleDeleteClick = (student: Student) => {
+    setStudentToDelete(student); // Set the student to delete
+    setIsModalOpen(true); // Open the modal to confirm delete
   };
 
   const closeModal = () => {
@@ -94,24 +75,31 @@ const Page = () => {
     setStudentToDelete(null);
   };
 
-  const handleAddClick = (id: number) => {
-    router.push(`/class/all-class/add/${id}`);
+  const handleDeleteStudent = async () => {
+    if (!studentToDelete || !selectedClass) return;
+    try {
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${selectedClass}/students/${studentToDelete.id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      // After successful deletion, we don't need to fetch students anymore.
+      closeModal(); // Close modal after delete
+    } catch (err: any) {
+      console.error("Error deleting student:", err);
+      setError("Failed to delete student.");
+      closeModal(); // Close modal in case of error as well
+    }
   };
 
-  const handleEditClick = (id: number) => {
-    router.push(`/class/all-class/edit/${id}`);
-  };
-
-  const handleShowAllCards = () => {
-    setSelectedClass(null);
-  };
   const countUniqueTeachers = () => {
     const uniqueTeachers = new Set(classData.map((classInfo) => classInfo.teacher_name));
     return uniqueTeachers.size;
   };
 
   if (loading) {
-    return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>; 
+    return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>;
   }
 
   if (error) {
@@ -140,7 +128,7 @@ const Page = () => {
           <div
             key={classInfo.id}
             onClick={() => handleCardClick(classInfo.id)}
-            className={`p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between`}
+            className="p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between"
           >
             <div className="flex justify-between items-center">
               <h2 className="font-bold text-[18px]">{classInfo.name}</h2>
@@ -152,7 +140,7 @@ const Page = () => {
                   alt="Add"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleAddClick(classInfo.id);
+                    router.push(`/class/all-class/add/${classInfo.id}`);
                   }}
                 />
                 <Image
@@ -162,7 +150,7 @@ const Page = () => {
                   alt="Edit"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleEditClick(classInfo.id);
+                    router.push(`/class/all-class/edit/${classInfo.id}`);
                   }}
                 />
                 <Image
@@ -172,7 +160,10 @@ const Page = () => {
                   alt="Delete"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteClick(classInfo);
+                    // Pass student to delete instead of class
+                    if (classInfo.students.length > 0) {
+                      handleDeleteClick(classInfo.students[0]); // Example: delete first student
+                    }
                   }}
                 />
               </div>
@@ -181,33 +172,20 @@ const Page = () => {
               {classInfo.start_date} - {classInfo.end_date}
             </p>
             <div className="flex justify-between items-center mt-auto">
-              <p className="text-[16px] font-medium"> {classInfo.teacher_name}</p>
-              <p className="text-[16px] font-medium"> {countUniqueTeachers()}</p>
+              <p className="text-[16px] font-medium">{classInfo.teacher_name}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Display students if a class is selected */}
-      {selectedClass && (
-        <div className="mt-6">
-          <h3 className="font-bold text-xl">Students in Class {selectedClass}</h3>
-          {studentLoading ? (
-            <p>Loading students...</p>
-          ) : studentData.length === 0 ? (
-            <p>No students found for this class.</p>
-          ) : (
-            <ul className="mt-4">
-              {studentData.map((student) => (
-                <li key={student.id} className="p-2 bg-white rounded-md shadow-md my-2">
-                  {student.first_name} {student.last_name} ({student.email})
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {/* Delete Confirmation Modal */}
+      {isModalOpen && studentToDelete && (
+        <Modal
+          onClose={closeModal}
+          onConfirm={handleDeleteStudent} // Confirm deletion when Yes button is clicked
+          message={`Are you sure you want to delete the student ${studentToDelete.first_name} ${studentToDelete.last_name}?`} // Custom message for student deletion
+        />
       )}
-      {isModalOpen && <Modal onClose={closeModal} />}
     </div>
   );
 };
