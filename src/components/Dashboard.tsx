@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import {
   ForwardRefExoticComponent,
   ReactNode,
@@ -6,13 +6,13 @@ import {
   SVGProps,
   useEffect,
   useState,
-} from 'react';
+} from "react";
 import {
   Bars3Icon,
   PlusIcon,
   MinusIcon,
   DocumentTextIcon,
-} from '@heroicons/react/24/outline';
+} from "@heroicons/react/24/outline";
 import {
   Cog6ToothIcon,
   HomeIcon,
@@ -22,10 +22,10 @@ import {
   ClipboardDocumentListIcon,
   BuildingLibraryIcon,
   CheckBadgeIcon,
-} from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Profile from './profile';
+} from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Profile from "./profile";
 
 type NavigationItem = {
   name: string;
@@ -38,189 +38,201 @@ type NavigationItem = {
 };
 
 const roleNavigationMap: Record<string, NavigationItem[]> = {
-  admin: [
-    { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
+  AdminOfficer: [
+    { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
     {
-      name: 'School',
-      href: '#',
+      name: "School",
+      href: "#",
       current: false,
       icon: LightBulbIcon,
       subItems: [
-        { name: 'School', href: '/school/school', current: false },
-        { name: 'Branch', href: '/school/branch', current: false },
+        { name: "School", href: "/school/school", current: false },
+        { name: "Branch", href: "/school/branch", current: false },
       ],
     },
     {
-      name: 'Program',
-      href: '#',
+      name: "Program",
+      href: "#",
       current: false,
       icon: ClipboardDocumentListIcon,
       subItems: [
-        { name: 'All Programs', href: '/program/all-program', current: false },
-        { name: 'New Programs', href: '/program/new-program', current: false },
-        { name: 'Courses', href: '/program/course', current: false },
+        { name: "All Programs", href: "/program/all-program", current: false },
+        { name: "New Programs", href: "/program/new-program", current: false },
+        { name: "Courses", href: "/program/course", current: false },
       ],
     },
     {
-      name: 'Class',
-      href: '#',
+      name: "Class",
+      href: "#",
       current: false,
       icon: BuildingLibraryIcon,
       subItems: [
-        { name: 'All Classes', href: '/class/all-class', current: false },
-        { name: 'New Class', href: '/class/new-class', current: false },
-        { name: 'Enrollment', href: '/class/enrollment', current: false },
+        { name: "All Classes", href: "/class/all-class", current: false },
+        { name: "New Class", href: "/class/new-class", current: false },
+        { name: "Enrollment", href: "/class/enrollment", current: false },
       ],
     },
     {
-      name: 'Student',
-      href: '#',
+      name: "Student",
+      href: "#",
       current: false,
       icon: AcademicCapIcon,
       subItems: [
-        { name: 'All Students', href: '/student/all-student', current: false },
-        { name: 'Add New Students', href: '/student/new-student', current: false },
-        { name: 'Trial Students', href: '/student/trial-student', current: false },
+        { name: "All Students", href: "/student/all-student", current: false },
+        {
+          name: "Add New Students",
+          href: "/student/new-student",
+          current: false,
+        },
+        {
+          name: "Trial Students",
+          href: "/student/trial-student",
+          current: false,
+        },
       ],
     },
     {
-      name: 'Teacher',
-      href: '#',
+      name: "Teacher",
+      href: "#",
       current: false,
       icon: BookOpenIcon,
       subItems: [
-        { name: 'All Teachers', href: '/teacher/all-teacher', current: false },
-        { name: 'New Teachers', href: '/teacher/new-teacher', current: false },
+        { name: "All Teachers", href: "/teacher/all-teacher", current: false },
+        { name: "New Teachers", href: "/teacher/new-teacher", current: false },
       ],
     },
     {
-      name: 'Exam',
-      href: '#',
+      name: "Exam",
+      href: "#",
       current: false,
       icon: DocumentTextIcon,
       subItems: [
-        { name: 'Exam List', href: '/exam/exam', current: false },
-        { name: 'Exam Result', href: '/exam/result', current: false },
+        { name: "Exam List", href: "/exam/exam", current: false },
+        { name: "Exam Result", href: "/exam/result", current: false },
       ],
     },
     {
-      name: 'Attendance',
-      href: '#',
+      name: "Attendance",
+      href: "#",
       current: false,
       icon: CheckBadgeIcon,
       subItems: [
         {
-          name: 'Student Attendance',
-          href: '/attendance/student',
+          name: "Student Attendance",
+          href: "/attendance/student",
           current: false,
         },
         {
-          name: 'Teacher Attendance',
-          href: '/attendance/teacher',
+          name: "Teacher Attendance",
+          href: "/attendance/teacher",
           current: false,
         },
       ],
     },
     {
-      name: 'Setting',
-      href: '#',
+      name: "Setting",
+      href: "#",
       current: false,
       icon: Cog6ToothIcon,
       subItems: [
         {
-          name: 'Account Setting',
-          href: '/setting/account-setting',
+          name: "Account Setting",
+          href: "/setting/account-setting",
           current: false,
         },
         {
-          name: 'Create User',
-          href: '/setting/register',
+          name: "Create User",
+          href: "/setting/register",
           current: false,
         },
-        { name: 'Logout', href: '#', current: false },
+        { name: "Logout", href: "#", current: false },
       ],
     },
     // Add other items accessible to admin
   ],
   teacher: [
-    { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
+    { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
     {
-      name: 'Student',
-      href: '#',
+      name: "Student",
+      href: "#",
       current: false,
       icon: AcademicCapIcon,
       subItems: [
-        { name: 'All Students', href: '/student/all-student', current: false },
-        { name: 'Add New Students', href: '/student/new-student', current: false },
+        { name: "All Students", href: "/student/all-student", current: false },
+        {
+          name: "Add New Students",
+          href: "/student/new-student",
+          current: false,
+        },
         // { name: 'Trial Students', href: '/student/trial-student', current: false },
       ],
     },
     {
-      name: 'Attendance',
-      href: '#',
+      name: "Attendance",
+      href: "#",
       current: false,
       icon: CheckBadgeIcon,
       subItems: [
         {
-          name: 'Student Attendance',
-          href: '/attendance/student',
+          name: "Student Attendance",
+          href: "/attendance/student",
           current: false,
         },
         {
-          name: 'Teacher Attendance',
-          href: '/attendance/teacher',
+          name: "Teacher Attendance",
+          href: "/attendance/teacher",
           current: false,
         },
       ],
     },
     {
-      name: 'Setting',
-      href: '#',
+      name: "Setting",
+      href: "#",
       current: false,
       icon: Cog6ToothIcon,
       subItems: [
         {
-          name: 'Account Setting',
-          href: '/setting/account-setting',
+          name: "Account Setting",
+          href: "/setting/account-setting",
           current: false,
         },
-        { name: 'Logout', href: '#', current: false },
+        { name: "Logout", href: "#", current: false },
       ],
     },
     // Add other items accessible to teachers
   ],
   student: [
-    { name: 'Dashboard', href: '/', icon: HomeIcon, current: true },
+    { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
     {
-      name: 'Class',
-      href: '#',
+      name: "Class",
+      href: "#",
       current: false,
       icon: BuildingLibraryIcon,
       subItems: [
-        { name: 'All Classes', href: '/class/all-class', current: false },
-        { name: 'New Class', href: '/class/new-class', current: false },
-        { name: 'Enrollment', href: '/class/enrollment', current: false },
+        { name: "All Classes", href: "/class/all-class", current: false },
+        { name: "New Class", href: "/class/new-class", current: false },
+        { name: "Enrollment", href: "/class/enrollment", current: false },
       ],
     },
     {
-      name: 'Setting',
-      href: '#',
+      name: "Setting",
+      href: "#",
       current: false,
       icon: Cog6ToothIcon,
       subItems: [
         {
-          name: 'Account Setting',
-          href: '/setting/account-setting',
+          name: "Account Setting",
+          href: "/setting/account-setting",
           current: false,
         },
-        { name: 'Logout', href: '#', current: false },
+        { name: "Logout", href: "#", current: false },
       ],
     },
   ],
 };
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(" ");
 }
 
 interface DashboardProps {
@@ -242,13 +254,13 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   };
 
   const handleClick = (name: string, subItemName?: string) => {
-    if (name === 'Setting' && subItemName === 'Logout') {
-      console.log('Logging out...');
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userInfo');
-      localStorage.removeItem('userId');
+    if (name === "Setting" && subItemName === "Logout") {
+      console.log("Logging out...");
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userInfo");
+      localStorage.removeItem("userId");
       localStorage.clear();
-      router.push('/login');
+      router.push("/login");
       return;
     }
     handleToggle(name);
@@ -256,32 +268,37 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
 
   useEffect(() => {
     // Retrieve user information from local storage or wherever you store it
-    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-  
+    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+
     // Get the user role from the user object; default to 'student' if not available
-    const userRole = userInfo.roles_name || 'student'; // Updated to use roles_name
-  
+    const userRole = userInfo.roles_name || "student"; // Updated to use roles_name
+    console.log("User Role : ", userRole);
+    console.log("Role for nav permission : ",roleNavigationMap[userRole])
     const updatedNavigation = roleNavigationMap[userRole] || [];
-  
+
     const currentPath = window.location.pathname;
-  
+
     updatedNavigation.forEach((item) => {
-      const isParentCurrent = !!(item.href && currentPath.startsWith(item.href));
+      const isParentCurrent = !!(
+        item.href && currentPath.startsWith(item.href)
+      );
       const subItemCurrent =
-        item.subItems?.some((subItem) => currentPath.startsWith(subItem.href)) ||
-        false;
-  
+        item.subItems?.some((subItem) =>
+          currentPath.startsWith(subItem.href)
+        ) || false;
+
       if (subItemCurrent) {
         setOpenMenu(item.name);
       }
-  
+
       item.current = isParentCurrent || subItemCurrent;
-      item.subItems = item.subItems?.map((subItem) => ({
-        ...subItem,
-        current: currentPath.startsWith(subItem.href),
-      })) || [];
+      item.subItems =
+        item.subItems?.map((subItem) => ({
+          ...subItem,
+          current: currentPath.startsWith(subItem.href),
+        })) || [];
     });
-  
+
     setNavigationData(updatedNavigation);
   }, []);
   return (
@@ -289,9 +306,9 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
       {/* Sidebar */}
       <div
         className={`transition-transform transform duration-300 ease-in-out ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } fixed inset-y-0 lg:top-[62px] top-[59px] w-[232px] bg-[#213458] z-40 lg:block overflow-y-auto`}
-        style={{ maxHeight: 'calc(100vh - 60px)', paddingBottom: '20px' }} // Ensure it's scrollable with enough bottom padding
+        style={{ maxHeight: "calc(100vh - 60px)", paddingBottom: "20px" }} // Ensure it's scrollable with enough bottom padding
       >
         <div className="flex flex-col gap-y-5 px-6 pb-4 mt-3">
           <nav className="flex flex-1 flex-col">
@@ -308,9 +325,9 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                         }}
                         className={classNames(
                           item.current
-                            ? 'text-white'
-                            : 'text-indigo-200 hover:text-white',
-                          'group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 cursor-pointer'
+                            ? "text-white"
+                            : "text-indigo-200 hover:text-white",
+                          "group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 cursor-pointer"
                         )}
                       >
                         {item.icon && (
@@ -318,14 +335,14 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                             aria-hidden="true"
                             className={classNames(
                               item.current
-                                ? 'text-white'
-                                : 'text-indigo-200 group-hover:text-white',
-                              'h-6 w-6 shrink-0'
+                                ? "text-white"
+                                : "text-indigo-200 group-hover:text-white",
+                              "h-6 w-6 shrink-0"
                             )}
                           />
                         )}
                         {item.name}
-                        {item.subItems && item.name !== 'Dashboard' && (
+                        {item.subItems && item.name !== "Dashboard" && (
                           <span className="ml-auto">
                             {openMenu === item.name ? (
                               <MinusIcon className="h-5 w-5 text-white" />
@@ -346,9 +363,9 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
                                 }
                                 className={classNames(
                                   subItem.current
-                                    ? 'text-white'
-                                    : 'text-indigo-200 hover:text-white',
-                                  'text-sm font-semibold leading-6'
+                                    ? "text-white"
+                                    : "text-indigo-200 hover:text-white",
+                                  "text-sm font-semibold leading-6"
                                 )}
                               >
                                 {subItem.name}
@@ -395,8 +412,8 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
           <div
             className={`transition-all duration-300 ease-in-out ${
               sidebarOpen
-                ? 'opacity-100 transform translate-x-0'
-                : 'opacity-1000 transform translate-x-[-10%]'
+                ? "opacity-100 transform translate-x-0"
+                : "opacity-1000 transform translate-x-[-10%]"
             }`}
           >
             {children}

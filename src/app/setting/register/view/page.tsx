@@ -81,16 +81,18 @@ const UsersTable: React.FC = () => {
         if (!response.ok) {
           throw new Error("Failed to delete user.");
         }
-        // Remove the user from the state to update the table
         setUsers(prevUsers => prevUsers.filter(user => user.id !== selectedUser.id));
-        setIsModalOpen(false); // Close the modal
-        setSelectedUser(null); // Clear selected user
+        setIsModalOpen(false); 
+        setSelectedUser(null); 
       })
       .catch(error => {
         console.error('Error deleting user:', error.message);
         setError("Failed to delete user. Please try again.");
       });
     }
+  };
+  const handleBack = () => {
+    router.back();
   };
 
   return (
@@ -100,6 +102,12 @@ const UsersTable: React.FC = () => {
         <p className="text-gray-700 mt-4 text-center text-lg font-semibold">
           All Users
         </p>
+        <button
+          onClick={handleBack}
+          className="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+        >
+          Back
+        </button>
         <table className="min-w-full divide-y divide-gray-200 mt-4">
           <thead className="bg-gray-50">
             <tr>
@@ -156,8 +164,6 @@ const UsersTable: React.FC = () => {
             )}
           </tbody>
         </table>
-
-        {/* Render the Modal for Delete Confirmation */}
         {isModalOpen && (
           <Modal
             onClose={() => setIsModalOpen(false)}

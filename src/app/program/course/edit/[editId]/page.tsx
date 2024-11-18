@@ -79,7 +79,7 @@ const Page = () => {
               },
             }
           );
-          setProgramName(programResponse.data.name || ""); // Set the actual program name
+          setProgramName(programResponse.data.id || ""); // Set the actual program name
         } else {
           setProgramName("Program not found");
         }

@@ -49,12 +49,7 @@ const Login = () => {
 
       const newToken = response.data.token;
       const userId = response.data.id;
-
-      // Store the new token in localStorage
       localStorage.setItem("authToken", newToken);
-      console.log("New authToken set:", newToken);
-
-      // Fetch user profile using the new token
       const profileResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
         {
@@ -67,10 +62,7 @@ const Login = () => {
       const newUser = profileResponse.data;
       localStorage.setItem("userInfo", JSON.stringify(newUser));
       localStorage.setItem("userId", newUser.id.toString());
-      console.log("New userInfo set:", newUser);
-      console.log("New userId set:", newUser.id);
 
-      // Redirect to home page after successful login
       router.push("/");
     } catch (error: any) {
       // Error handling for failed login
