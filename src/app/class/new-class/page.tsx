@@ -240,19 +240,6 @@ const Page = () => {
               </select>
             )}
           </div>
-
-          <div className="flex flex-col">
-            <label htmlFor="credit" className="text-sm font-medium text-gray-700">Credit</label>
-            <input
-              id="credit"
-              name="credit"
-              type="text"
-              placeholder="Enter Credit"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={handleChange}
-            />
-          </div>
-
           <div className="flex flex-col">
             <label htmlFor="start_date" className="text-sm font-medium text-gray-700">Start Date</label>
             <input
@@ -276,14 +263,14 @@ const Page = () => {
           </div>
         </div>
 
-        <div>
+        <div className="flex flex-col">
           <label className="text-sm font-medium text-gray-700">Students</label>
           {formData.students.map((student, index) => (
             <div key={index} className="flex items-center mt-2">
               <input
                 type="text"
                 placeholder="Enter Student ID"
-                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-[full] h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 value={student}
                 onChange={(e) => handleStudentChange(e, index)}
               />
@@ -300,20 +287,23 @@ const Page = () => {
           ))}
           <button
             type="button"
-            className="mt-2 px-4 py-2 text-blue-500"
+            className="mt-2 px-4 py-2 bg-[#213458] text-[#FFFFFF]"
             onClick={handleAddStudent}
           >
             Add Student
           </button>
         </div>
 
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          className="w-full mt-6 px-4 py-2 bg-blue-500 text-white rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Submit
-        </button>
+        <div className="flex justify-center mt-6">
+  <button
+    type="submit"
+    onClick={handleSubmit}
+    className="w-[184px] px-4 py-2 bg-[#213458] text-white rounded flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-[#214567]"
+  >
+    Submit
+  </button>
+</div>
+
       </div>
     </div>
   );

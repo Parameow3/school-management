@@ -38,7 +38,7 @@ type NavigationItem = {
 };
 
 const roleNavigationMap: Record<string, NavigationItem[]> = {
-  AdminOfficer: [
+  admin: [
     { name: "Dashboard", href: "/", icon: HomeIcon, current: true },
     {
       name: "School",

@@ -175,7 +175,7 @@ const Page = () => {
           <div className="w-[329px] h-full lg:m-2 shadow-sm rounded-lg">
             <Calender></Calender>
             {/* progressBar */}
-             <div className="mt-4 p-4 w-[326px] h-[200px] rounded-sm bg-white">
+             <div className="mt-4 p-4 w-[326px] h-[100px] rounded-sm bg-white">
              <p className="text-[15px] font-bold text-gray-900">
                 Today New Student
               </p>
