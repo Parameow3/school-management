@@ -96,7 +96,7 @@ const UsersTable: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen mt-10">
+    <div className="flex justify-center items-center lg:ml-[18%] ml-[11%] mt-20  flex-col min-h-screen ">
       <div className="bg-white shadow-2xl rounded-xl p-10 max-w-4xl w-full">
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
         <p className="text-gray-700 mt-4 text-center text-lg font-semibold">
@@ -104,7 +104,7 @@ const UsersTable: React.FC = () => {
         </p>
         <button
           onClick={handleBack}
-          className="mb-4 px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+          className="mb-4 px-4 py-2 bg-[#213458] text-gray-200 rounded hover:bg-gray-300 transition"
         >
           Back
         </button>
