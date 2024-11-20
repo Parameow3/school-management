@@ -36,6 +36,7 @@ interface Student {
   belt_level: string;
   phone: string;
   email: string;
+  image: File | string;
   branch: number | null;
 }
 
@@ -43,19 +44,12 @@ const Page = () => {
   const params = useParams();
   const router = useRouter();
   const id = parseInt(params.editId as string, 10);
-
-  // States
   const [classrooms, setClassrooms] = useState<Classroom[]>([]);
-  const [selectedClassroom, setSelectedClassroom] = useState<number | null>(
-    null
-  );
   const [formData, setFormData] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null); // Image preview
-
-  // Fetch token once
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -80,9 +74,10 @@ const Page = () => {
           }
         );
         const studentData = response.data;
+        console.log("image",studentData.image)
         setFormData(studentData);
-        if (studentData.profile_picture) {
-          setImagePreview(studentData.profile_picture); // Set initial image preview
+        if (studentData.image) {
+          setImagePreview(studentData.image); // Set initial image preview
         }
         setIsLoading(false);
       } catch (err) {
@@ -127,29 +122,37 @@ const Page = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]; // Get the selected file
+  
     if (file) {
-      setImagePreview(URL.createObjectURL(file)); // Preview image
-      setFormData((prevFormData) => ({
-        ...prevFormData!,
-        profile_picture: file.name,
-      }));
+      setFormData((prevData) => {
+        if (!prevData) return null; 
+        return {
+          ...prevData, 
+          image: file, 
+        };
+      });
+  
+      // Generate a preview URL for the uploaded image
+      setImagePreview(URL.createObjectURL(file));
     }
   };
-
+  
+  const handleBranchChange = (selectedBranchId: number) => {
+    setFormData({
+      ...formData,
+      branch: selectedBranchId,
+    });
+  };
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const formDataToSend = new FormData();
-
-      // Append all form data
       Object.keys(formData!).forEach((key) => {
         if (formData![key as keyof Student]) {
           formDataToSend.append(key, (formData as any)[key]);
         }
       });
-
-      // Append the file (profile picture) if present
       const fileInput =
         document.querySelector<HTMLInputElement>("#profile_picture");
       const file = fileInput?.files?.[0];
@@ -167,7 +170,7 @@ const Page = () => {
           },
         }
       );
-
+      router.push("/student/all-studen");
       alert("Student updated successfully");
     } catch (error) {
       console.error("Failed to update student", error);
@@ -219,57 +222,260 @@ const Page = () => {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Last Name
+              </label>
+              <input
+                type="text"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Age
+              </label>
+              <input
+                type="number"
+                name="age"
+                value={formData.age}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Admission Date
+              </label>
+              <input
+                type="date"
+                name="admission_date"
+                value={formData.admission_date}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
             {/* Add more input fields as necessary */}
           </div>
         </section>
 
         {/* Branch Dropdown */}
         <section>
-          <div>
-            <label
-              htmlFor="branch"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Branch:
-            </label>
-            <Dropdown
-              value={formData.branch || undefined}
-              onChange={(value: number) =>
-                setFormData((prev) => ({ ...prev!, branch: value }))
-              }
-            />
-          </div>
+        <h2 className="text-2xl font-bold mb-8 mt-4 border-b-2">
+            Other Information
+          </h2>
+          <div className="grid lg:grid-cols-3 flex-col gap-8">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Date of Birth
+              </label>
+              <input
+                type="date"
+                name="dob"
+                value={formData.dob}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div className="">
+              <label className="block text-sm font-medium text-gray-700">
+                Nationality
+              </label>
+              <input
+                type="text"
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Belt Level
+              </label>
+              <input
+                type="text"
+                name="belt_level"
+                value={formData.belt_level}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div className="">
+              <label className="block text-sm font-medium text-gray-700">
+                Place of Birth
+              </label>
+              <input
+                type="text"
+                name="pob"
+                value={formData.pob}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black placeholder-gray-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Student Passport
+              </label>
+              <input
+                type="text"
+                name="student_passport"
+                value={formData.student_passport}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Phone
+              </label>
+              <input
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+         </div>
         </section>
-
-        {/* Profile Picture Upload */}
         <section>
-          <div>
-            <label
-              htmlFor="profile_picture"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Profile Picture:
-            </label>
-            <input
-              type="file"
-              id="profile_picture"
-              name="profile_picture"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm"
-            />
-            {imagePreview && (
-              <div className="mt-4">
-                <Image
-                  src={imagePreview}
-                  alt="Profile Preview"
-                  width={192}
-                  height={192}
-                  className="rounded-full"
-                />
-              </div>
-            )}
+        <h2 className="text-xl font-semibold mb-4 border-b-2">
+            Contact Information
+          </h2>
+          <div className="grid lg:grid-cols-3 flex-col gap-8">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Father's Name
+              </label>
+              <input
+                type="text"
+                name="father_name"
+                value={formData.father_name}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                father's Occupation
+              </label>
+              <input
+                type="text"
+                name="father_occupation"
+                value={formData.father_occupation}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Mother's Name
+              </label>
+              <input
+                type="text"
+                name="mother_name"
+                value={formData.mother_name}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Mother's Occupation
+              </label>
+              <input
+                type="text"
+                name="mother_occupation"
+                value={formData.mother_occupation}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Address
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Parent Contact
+              </label>
+              <input
+                type="text"
+                name="parent_contact"
+                value={formData.parent_contact}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Branch
+              </label>
+              <Dropdown
+                value={formData.branch ?? undefined} // Use undefined if branch is null
+                onChange={handleBranchChange}
+              />
+            </div>
+            <div>
+  <label className="block text-sm font-medium text-gray-700">
+    Image
+  </label>
+  <input
+    type="file"
+    name="image"
+    onChange={handleFileChange}
+    className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+  />
+  <div className="mt-2">
+    {/* Display the image preview */}
+    {imagePreview && (
+      <img
+        src={imagePreview} // Show the current or fetched image
+        alt="Student"
+        className="mt-2 w-40 h-40 object-cover rounded-md border border-gray-300"
+      />
+    )}
+  </div>
+</div>
+
           </div>
         </section>
 

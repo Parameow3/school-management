@@ -8,12 +8,12 @@ interface ProfileCardProps {
   job: string;
   onViewClick: (viewPath: string) => void;
   onEditClick: (editPath: string) => void; 
-  onDeleteClick: () => void;
+  onDeleteClick?: () => void;
   editPath: string;
   viewPath: string; 
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ pic, first_name, job, editPath, viewPath, onViewClick, onEditClick, onDeleteClick }) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({ pic, first_name, job, editPath, viewPath, onViewClick, onEditClick,onDeleteClick}) => {
   const validPicSrc = pic ? pic : ''; // Fallback image if pic is undefined or null
 
   return (
@@ -67,6 +67,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ pic, first_name, job, editPat
             className="w-[25px] h-[25px]"
           />
         </button>
+      
       </CardFooter>
     </Card>
   );

@@ -14,7 +14,7 @@ interface Class {
   teacher_name: string;
   start_date: string;
   end_date: string;
-  students: Student[]; // Add a list of students for each class
+  students: Student[];
 }
 
 interface Student {
@@ -28,7 +28,8 @@ const Page = () => {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null); // Track student to delete
+  const [classToDelete, setClassToDelete] = useState<Class | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [classData, setClassData] = useState<Class[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,43 +62,45 @@ const Page = () => {
     }
   }, [token]);
 
-  const handleCardClick = (classId: number) => {
-    setSelectedClass(classId);
-  };
-
-  const handleDeleteClick = (student: Student) => {
-    setStudentToDelete(student); // Set the student to delete
-    setIsModalOpen(true); // Open the modal to confirm delete
-  };
-
   const closeModal = () => {
     setIsModalOpen(false);
+    setClassToDelete(null);
     setStudentToDelete(null);
   };
 
-  const handleDeleteStudent = async () => {
-    if (!studentToDelete || !selectedClass) return;
+  const handleDeleteClass = async () => {
+    if (!classToDelete) return; // Ensure a class is selected for deletion
+
     try {
-      await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${selectedClass}/students/${studentToDelete.id}`,
+      // Attempt to delete the classroom
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classToDelete.id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      // After successful deletion, we don't need to fetch students anymore.
-      closeModal(); // Close modal after delete
-    } catch (err: any) {
-      console.error("Error deleting student:", err);
-      setError("Failed to delete student.");
-      closeModal(); // Close modal in case of error as well
+      if (response.status === 200) {
+        setClassData((prevClassData) =>
+          prevClassData.filter(classInfo => classInfo.id !== classToDelete.id)
+        );
+
+        closeModal(); // Close modal after deletion
+      } else {
+        throw new Error('Failed to delete classroom.'); // Handle unexpected status
+      }
+    } catch (err) {
+      // Detailed error handling
+      if (axios.isAxiosError(err)) {
+        console.error("Error deleting class:", err.response); // Log the entire error response
+        const errorMessage = err.response?.data?.message || "Failed to delete classroom.";
+        setError(errorMessage); // Set user-friendly error message
+      } else {
+        console.error("Unexpected error:", err); // Log unexpected errors
+        setError("An unexpected error occurred.");
+      }
+      closeModal(); // Close modal in case of error
     }
   };
-
-  const countUniqueTeachers = () => {
-    const uniqueTeachers = new Set(classData.map((classInfo) => classInfo.teacher_name));
-    return uniqueTeachers.size;
-  };
-
   if (loading) {
     return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>;
   }
@@ -123,11 +126,11 @@ const Page = () => {
       <div className="relative mt-4">
         <Dropdown />
       </div>
+
       <div className="mt-4 grid grid-cols-1 lg:w-[1070px] w-[330px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {classData.map((classInfo) => (
           <div
             key={classInfo.id}
-            onClick={() => handleCardClick(classInfo.id)}
             className="p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between"
           >
             <div className="flex justify-between items-center">
@@ -157,17 +160,16 @@ const Page = () => {
                   src={"/delete.svg"}
                   width={20}
                   height={20}
-                  alt="Delete"
+                  alt="Delete Class"
                   onClick={(e) => {
                     e.stopPropagation();
-                    // Pass student to delete instead of class
-                    if (classInfo.students.length > 0) {
-                      handleDeleteClick(classInfo.students[0]); // Example: delete first student
-                    }
+                    setClassToDelete(classInfo); // Set the class to delete
+                    setIsModalOpen(true); // Open modal for class deletion
                   }}
                 />
               </div>
             </div>
+
             <p className="text-[14px] font-normal mt-2">
               {classInfo.start_date} - {classInfo.end_date}
             </p>
@@ -178,12 +180,11 @@ const Page = () => {
         ))}
       </div>
 
-      {/* Delete Confirmation Modal */}
-      {isModalOpen && studentToDelete && (
+      {isModalOpen && classToDelete && (
         <Modal
           onClose={closeModal}
-          onConfirm={handleDeleteStudent} // Confirm deletion when Yes button is clicked
-          message={`Are you sure you want to delete the student ${studentToDelete.first_name} ${studentToDelete.last_name}?`} // Custom message for student deletion
+          onConfirm={handleDeleteClass}
+          message={`Are you sure you want to delete the classroom ${classToDelete.name}?`}
         />
       )}
     </div>

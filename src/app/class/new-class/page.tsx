@@ -39,15 +39,18 @@ const Page = () => {
     if (isMounted) {
       const fetchTeachers = async () => {
         try {
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
           const teacherUsers = response.data.results.filter(
             (user: any) => user.roles_name === "teacher"
           );
-          
+
           setTeachers(teacherUsers);
         } catch (err: any) {
           const errorMessage = err.response?.data?.detail || err.message;
@@ -59,11 +62,14 @@ const Page = () => {
 
       const fetchCourses = async () => {
         try {
-          const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            },
-          });
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
           if (Array.isArray(response.data)) {
             setCourses(response.data);
           }
@@ -80,7 +86,9 @@ const Page = () => {
     }
   }, [isMounted]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
@@ -88,7 +96,10 @@ const Page = () => {
     });
   };
 
-  const handleStudentChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleStudentChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
     const newStudents = [...formData.students];
     newStudents[index] = e.target.value;
     setFormData({
@@ -114,62 +125,69 @@ const Page = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
-    if (!formData.className || !formData.course || !formData.teacher || !formData.start_date || !formData.end_date) {
+
+    if (
+      !formData.className ||
+      !formData.course ||
+      !formData.teacher ||
+      !formData.start_date ||
+      !formData.end_date
+    ) {
       alert("Please fill in all required fields.");
       return;
     }
-  
-    if (isNaN(parseInt(formData.credit))) {
-      alert("Credit must be a numeric value.");
-      return;
-    }
-  
+
+    // if (isNaN(parseInt(formData.credit))) {
+    //   alert("Credit must be a numeric value.");
+    //   return;
+    // }
+
     const startDate = new Date(formData.start_date);
     const endDate = new Date(formData.end_date);
-  
+
     if (startDate >= endDate) {
       alert("Start date must be earlier than end date.");
       return;
     }
-  
+
     const studentIDs = formData.students
       .map((student) => parseInt(student))
       .filter((id) => !isNaN(id));
-  
+
     const postData = {
       name: formData.className,
       courses: [parseInt(formData.course)],
       teacher: parseInt(formData.teacher),
-      credit: parseInt(formData.credit),
       start_date: formData.start_date,
       end_date: formData.end_date,
       student: studentIDs,
     };
-  
+
     console.log("Submitting data:", postData);
-  
+
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`, postData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-      console.log("Server Response:", response.data);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
+        postData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
       alert("Classroom created successfully!");
     } catch (error: any) {
-      // Enhanced logging for backend error
-      const errorMessage = error.response?.data?.detail || error.message || "An unknown error occurred.";
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.message ||
+        "An unknown error occurred.";
       const errorData = error.response?.data;
       console.error("Error submitting the form:", errorMessage);
       console.error("Full response data:", errorData);
-      
-      // Displaying specific error details
       alert(`Error: ${errorMessage}. Details: ${JSON.stringify(errorData)}`);
     }
   };
-  
 
   if (!isMounted) {
     return <div>Loading...</div>;
@@ -184,7 +202,12 @@ const Page = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="flex flex-col">
-            <label htmlFor="className" className="text-sm font-medium text-gray-700">Class Name</label>
+            <label
+              htmlFor="className"
+              className="text-sm font-medium text-gray-700"
+            >
+              Class Name
+            </label>
             <input
               id="className"
               name="className"
@@ -196,7 +219,12 @@ const Page = () => {
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="course" className="text-sm font-medium text-gray-700">Course</label>
+            <label
+              htmlFor="course"
+              className="text-sm font-medium text-gray-700"
+            >
+              Course
+            </label>
             <select
               id="course"
               name="course"
@@ -219,7 +247,12 @@ const Page = () => {
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="teacher" className="text-sm font-medium text-gray-700">Teacher</label>
+            <label
+              htmlFor="teacher"
+              className="text-sm font-medium text-gray-700"
+            >
+              Teacher
+            </label>
             {loadingTeachers ? (
               <span className="text-sm text-blue-500">Loading teachers...</span>
             ) : errorTeachers ? (
@@ -241,7 +274,12 @@ const Page = () => {
             )}
           </div>
           <div className="flex flex-col">
-            <label htmlFor="start_date" className="text-sm font-medium text-gray-700">Start Date</label>
+            <label
+              htmlFor="start_date"
+              className="text-sm font-medium text-gray-700"
+            >
+              Start Date
+            </label>
             <input
               id="start_date"
               name="start_date"
@@ -252,7 +290,12 @@ const Page = () => {
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="end_date" className="text-sm font-medium text-gray-700">End Date</label>
+            <label
+              htmlFor="end_date"
+              className="text-sm font-medium text-gray-700"
+            >
+              End Date
+            </label>
             <input
               id="end_date"
               name="end_date"
@@ -261,49 +304,48 @@ const Page = () => {
               onChange={handleChange}
             />
           </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700">
+              Students
+            </label>
+            {formData.students.map((student, index) => (
+              <div key={index} className="flex items-center mt-2">
+                <input
+                  type="text"
+                  placeholder="Enter Student ID"
+                  className="w-[full] h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={student}
+                  onChange={(e) => handleStudentChange(e, index)}
+                />
+                {index > 0 && (
+                  <button
+                    type="button"
+                    className="ml-2 text-red-500"
+                    onClick={() => handleRemoveStudent(index)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              className="mt-2 px-4 py-2 w-[132px] bg-[#213458] text-[#FFFFFF]"
+              onClick={handleAddStudent}
+            >
+              Add Student
+            </button>
+          </div>
         </div>
-
-        <div className="flex flex-col">
-          <label className="text-sm font-medium text-gray-700">Students</label>
-          {formData.students.map((student, index) => (
-            <div key={index} className="flex items-center mt-2">
-              <input
-                type="text"
-                placeholder="Enter Student ID"
-                className="w-[full] h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={student}
-                onChange={(e) => handleStudentChange(e, index)}
-              />
-              {index > 0 && (
-                <button
-                  type="button"
-                  className="ml-2 text-red-500"
-                  onClick={() => handleRemoveStudent(index)}
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+        <div className="flex justify-center mt-6">
           <button
-            type="button"
-            className="mt-2 px-4 py-2 bg-[#213458] text-[#FFFFFF]"
-            onClick={handleAddStudent}
+            type="submit"
+            onClick={handleSubmit}
+            className="w-[184px] px-4 py-2 bg-[#213458] text-white rounded flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-[#214567]"
           >
-            Add Student
+            Submit
           </button>
         </div>
-
-        <div className="flex justify-center mt-6">
-  <button
-    type="submit"
-    onClick={handleSubmit}
-    className="w-[184px] px-4 py-2 bg-[#213458] text-white rounded flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-[#214567]"
-  >
-    Submit
-  </button>
-</div>
-
       </div>
     </div>
   );

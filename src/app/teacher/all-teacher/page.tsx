@@ -35,9 +35,6 @@ const Page = () => {
   const [totalItems, setTotalItems] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);  // Add loading state
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
-  const pageSize = 10;
-
-  // Fetch token from localStorage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -64,8 +61,6 @@ const Page = () => {
               },
             }
           );
-
-          // Filter users by 'teacher' role (roles_name === 'teacher')
           const fetchedProfiles = profilesResponse.data.results
             .filter((user: any) => user.roles_name === "teacher") // Only keep users with role 'teacher'
             .map((teacher: any) => ({
@@ -78,11 +73,6 @@ const Page = () => {
               job: "Teacher",
               specialization: teacher.specialization || "General", // Fallback to "General" if not specified
             }));
-  
-          // Console log the teacher profiles for debugging
-          console.log("Teacher profiles:", fetchedProfiles);
-  
-          // Set profiles in the state
           setProfiles(fetchedProfiles);
           setTotalItems(fetchedProfiles.length);
   
@@ -114,7 +104,6 @@ const Page = () => {
     if (token && !loadingMore) {
       setLoadingMore(true);
       try {
-        // Fetch all remaining teacher profiles
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, // Fetch all users
           {
@@ -124,8 +113,6 @@ const Page = () => {
             },
           }
         );
-
-        // Filter by role 'teacher' on the frontend
         const allProfiles = response.data.results
           .filter((user: any) => user.roles_name === "teacher") // Only keep users with role 'teacher'
           .map((teacher: any) => ({
@@ -157,46 +144,44 @@ const Page = () => {
     router.push(`/teacher/all-teacher/edit/${id}`);
   };
 
-  const handleDeleteClick = (id: number) => {
-    setIsModalOpen(true);
-    setProfileToDelete(id);
-  };
+  // const handleDeleteClick = (id: number) => {
+  //   setIsModalOpen(true);
+  //   setProfileToDelete(id);
+  // };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setProfileToDelete(null);
-  };
+  // const handleCloseModal = () => {
+  //   setIsModalOpen(false);
+  //   setProfileToDelete(null);
+  // };
 
   // Handle specialization change from dropdown
   const handleSpecializationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedSpecialization(event.target.value);
   };
 
-  const handleConfirmDelete = async () => {
-    if (profileToDelete !== null) {
-      try {
-        await axios.delete(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${profileToDelete}/`, // Updated route for deletion
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setProfiles(profiles.filter((profile) => profile.id !== profileToDelete));
-        setIsModalOpen(false);
-      } catch (error) {
-        console.error("Error deleting profile:", error);
-      }
-    }
-  };
+  // const handleConfirmDelete = async () => {
+  //   if (profileToDelete !== null) {
+  //     try {
+  //       await axios.delete(
+  //         `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${profileToDelete}/`, // Updated route for deletion
+  //         {
+  //           headers: {
+  //             Authorization: `Bearer ${token}`,
+  //           },
+  //         }
+  //       );
+  //       setProfiles(profiles.filter((profile) => profile.id !== profileToDelete));
+  //       setIsModalOpen(false);
+  //     } catch (error) {
+  //       console.error("Error deleting profile:", error);
+  //     }
+  //   }
+  // };
 
-  // Handle search input
+  // // Handle search input
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
-
-  // Filter profiles based on search query or specialization
   const filteredProfiles = profiles.filter((profile) =>
     profile.user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -265,7 +250,7 @@ const Page = () => {
               job={profile.job}
               onViewClick={() => handleViewClick(profile.id)}
               onEditClick={() => handleEditClick(profile.id)}
-              onDeleteClick={() => handleDeleteClick(profile.id)}
+              // onDeleteClick={() => handleDeleteClick(profile.id)}
               editPath={`/teacher/all-teacher/edit/${profile.id}`}
               viewPath={`/teacher/all-teacher/view/${profile.id}`}
             />
@@ -285,13 +270,13 @@ const Page = () => {
         )}
       </div>
 
-      {isModalOpen && (
+      {/* {isModalOpen && (
         <Modal
           onClose={handleCloseModal}
-          onConfirm={handleConfirmDelete}
+          // onConfirm={handleConfirmDelete}
           message="Are you sure you want to delete this teacher?"
         />
-      )}
+      )} */}
     </div>
   );
 };
