@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation"; // Use 'useParams' and 'useRouter' for navigation
 
-interface School {
+interface Branch {
   id: number;
   name: string;
 }
@@ -15,9 +15,9 @@ const Page = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    school: "", // Initialize school as an empty string to handle no selection
+    branch: "", // Initialize school as an empty string to handle no selection
   });
-  const [schools, setSchools] = useState<School[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -30,23 +30,21 @@ const Page = () => {
       router.push("/login");
     }
   }, [router]);
-
-  // Fetch schools
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`, // Pass token if available
           },
         });
-        console.log("Fetched Schools:", response.data.results);
-        setSchools(response.data.results || []);
+        console.log("Fetched branches:", response.data.results);
+        setBranches(response.data.results || []);
         setLoading(false);
       } catch (err: any) {
-        console.error("Error fetching schools:", err.response?.data || err.message);
-        setError("Failed to load schools");
+        console.error("Error fetching branches:", err.response?.data || err.message);
+        setError("Failed to load branches");
         setLoading(false);
       }
     };
@@ -71,7 +69,7 @@ const Page = () => {
         setFormData({
           name: response.data.name,
           description: response.data.description,
-          school: response.data.school, // Assuming the school is returned by the API
+          branch: response.data.school, // Assuming the school is returned by the API
         });
       } catch (err: any) {
         console.error("Error fetching program data:", err.response?.data || err.message);
@@ -169,30 +167,26 @@ const Page = () => {
             />
           </div>
 
-          {/* School Dropdown */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              School
+              Branch
             </label>
             <select
-              name="school"
-              value={formData.school}
+              name="branch"
+              value={formData.branch}
               onChange={handleChange}
               className="block w-[316px] h-[44px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#213458] focus:border-indigo-500"
               required
             >
-              <option value="" disabled>Select a school</option>
-              {schools.length > 0 ? (
-                schools.map((school) => (
-                  <option key={school.id} value={school.id}>
-                    {school.name}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>No schools available</option>
-              )}
+              <option value="" disabled>Select a branch</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
             </select>
           </div>
+
 
           {/* Submit Button */}
           <button

@@ -9,13 +9,13 @@ interface Branch {
 }
 
 interface DropdownProps {
-  onChange?: (value: number) => void; // Callback to notify the parent of the selected value
-  value?: number; // Optionally allow a pre-selected value
+  onChange?: (value: number | null) => void; // Allow null for "All" selection
+  value?: number | null; // Optionally allow a pre-selected value, including "All" as null
 }
 
 const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {}, value }) => {
   const router = useRouter();
-  const [availableBranches, setAvailableBranches] = useState<Branch[]>([]); // Initialize as an empty array
+  const [availableBranches, setAvailableBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<number | null>(value || null);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -45,17 +45,13 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {}, value }) => {
             }
           );
           const branchesData = response.data.results.map((item: any) => ({
-            id: item.id, // Assuming `id` is the branch ID
-            name: item.name, // Assuming `name` is the branch name
+            id: item.id,
+            name: item.name,
           }));
 
-          if (branchesData.length > 0) {
-            setAvailableBranches(branchesData); // Set the branches array
-            setError(null); // Reset any previous errors
-          } else {
-            setAvailableBranches([]); // Set an empty array if no results
-            setError("No branches available.");
-          }
+          // Add "All" option to the branches list
+          setAvailableBranches([{ id: 0, name: "All" }, ...branchesData]);
+          setError(null); // Reset any previous errors
         } catch (error) {
           console.error("Error fetching branches:", error);
           setError("Failed to fetch branches.");
@@ -66,35 +62,27 @@ const Dropdown: React.FC<DropdownProps> = ({ onChange = () => {}, value }) => {
 
     fetchBranches();
   }, [token]);
+
   const handleBranchChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = Number(e.target.value);
-    setSelectedBranch(selectedValue); // Store the selected branch as a number
-    onChange(selectedValue); 
+    const selectedValue = e.target.value === "0" ? null : Number(e.target.value);
+    setSelectedBranch(selectedValue); // Store the selected branch (or "All" as null)
+    onChange(selectedValue);
   };
 
   return (
-    <div className="w-full lg:w-[300px]">
+    <div className="w-full lg:w-[200px]">
       <select
         id="branches"
         name="branches"
-        value={selectedBranch ?? ""} // Set the selected value, or default to an empty string
+        value={selectedBranch === null ? "0" : selectedBranch}
         onChange={handleBranchChange}
         className="mt-1 block w-full h-[40px] pl-3 pr-10 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
-        <option value="" disabled>
-          Select a Branch
-        </option>
-        {availableBranches.length > 0 ? (
-          availableBranches.map((branch) => (
-            <option key={branch.id} value={branch.id}>
-              {branch.name} {/* Show branch name here */}
-            </option>
-          ))
-        ) : (
-          <option value="" disabled>
-            No branch available
+        {availableBranches.map((branch) => (
+          <option key={branch.id} value={branch.id}>
+            {branch.name}
           </option>
-        )}
+        ))}
       </select>
       {error && <p className="text-red-500 mt-2">{error}</p>}
     </div>

@@ -56,10 +56,17 @@ const Page = () => {
     fetchProfiles(); // Initial fetch when component loads
   }, [token]);
 
-  const handleBranchChange = (branchId: number) => {
-    setSelectedBranch(branchId);
+  const handleBranchChange = (branchId: number | null) => {
+    if (branchId === null) {
+      // Handle "All branches" or null case if applicable
+      console.log("All branches selected");
+      setSelectedBranch(null); // Set `null` for "All"
+    } else {
+      console.log("Selected branch ID:", branchId);
+      setSelectedBranch(branchId); // Update to the selected branch
+    }
   };
-
+  
   const handleViewClick = (id: number) => {
     router.push(`/student/all-student/view/${id}`);
   };

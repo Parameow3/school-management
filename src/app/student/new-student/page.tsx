@@ -75,13 +75,13 @@ const Page= ()=> {
     });
   };
 
-  const handleBranchChange = (selectedBranchId: number) => {
+  const handleBranchChange = (selectedBranchId: number | null) => {
     setFormData({
       ...formData,
-      branch: selectedBranchId,
+      branch: selectedBranchId, // Allow null for "All branches"
     });
   };
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

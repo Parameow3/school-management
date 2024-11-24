@@ -138,12 +138,26 @@ const Page = () => {
     }
   };
   
-  const handleBranchChange = (selectedBranchId: number) => {
-    setFormData({
-      ...formData,
-      branch: selectedBranchId,
+  const handleBranchChange = (selectedBranchId: number | null) => {
+    // Handle the "All" option (null case)
+    if (selectedBranchId === null) {
+      console.log("All branches selected");
+    } else {
+      console.log("Selected branch ID:", selectedBranchId);
+    }
+  
+    // Safely update form data
+    setFormData((prevData) => {
+      if (!prevData) return null; // Ensure `prevData` exists
+      return {
+        ...prevData,
+        branch: selectedBranchId, // Allow null for "All"
+      };
     });
   };
+  
+  
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
