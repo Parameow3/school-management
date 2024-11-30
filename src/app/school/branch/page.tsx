@@ -22,7 +22,8 @@ interface Branch {
   phone_number: string | null;
   email: string | null;
   location: string;
-  user_id: number;
+  school_name:string;
+  user_name: number;
 }
 
 const Page: React.FC = () => {
@@ -47,6 +48,10 @@ const Page: React.FC = () => {
     router.push(`/school/branch/add/`);
   };
 
+  const handleEdit = (id: number) => {
+    router.push(`/school/school/edit/${id}`);
+  };
+
   useEffect(() => {
     if (!token) return;
 
@@ -58,7 +63,7 @@ const Page: React.FC = () => {
           },
         });
 
-        console.log("Token branch:", token);
+        console.log(" branch:", response.data);
         setBranches(response.data.results);
         setLoading(false);
       } catch (err) {
@@ -91,10 +96,10 @@ const Page: React.FC = () => {
               <th className="w-24 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">Branch Name</th>
               <th className="w-24 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">Branch Address</th>
               <th className="w-24 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">Branch Location</th>
-              <th className="w-36 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">School Name</th>
-              <th className="w-36 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">School Address</th>
-              <th className="w-36 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">School Email</th>
-              <th className="w-24 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">School Established</th>
+              <th className="w-36 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">email</th>
+              <th className="w-36 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">Branch Phone</th>
+              <th className="w-36 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">school name</th>
+              <th className="w-36 px-2 py-3 text-left text-[10px] font-medium uppercase tracking-wider">action</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -104,10 +109,17 @@ const Page: React.FC = () => {
                 <td className="px-2 py-2 whitespace-nowrap">{branch.name}</td>
                 <td className="px-2 py-2 whitespace-nowrap">{branch.address}</td>
                 <td className="px-2 py-2 whitespace-nowrap">{branch.location}</td>
-                <td className="px-2 py-2 whitespace-nowrap">{branch.school.name}</td>
-                <td className="px-2 py-2 whitespace-nowrap">{branch.school.address}</td>
-                <td className="px-2 py-2 whitespace-nowrap">{branch.school.email || 'N/A'}</td>
-                <td className="px-2 py-2 whitespace-nowrap">{branch.school.established_date}</td>
+                <td className="px-2 py-2 whitespace-nowrap">{branch.email}</td>
+                <td className="px-2 py-2 whitespace-nowrap">{branch.phone_number}</td>
+                <td className="px-2 py-2 whitespace-nowrap">{branch.school_name}</td>
+                <td className="px-6 py-4 text-center flex justify-center space-x-4">
+                  <button onClick={() => handleEdit(school.id)} className="text-blue-600 hover:underline">
+                    Edit
+                  </button>
+                  <button onClick={() => openDeleteModal(school.id)} className="text-red-600 hover:underline">
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

@@ -69,6 +69,8 @@ const Login = ({  }) => {
   
       // Store user information in localStorage
       const newUser = profileResponse.data; // Modify this based on your response structure
+      console.log("profile" , newUser)
+
       localStorage.setItem("userInfo", JSON.stringify(newUser)); // Store full user info
       localStorage.setItem("userId", newUser.id); // Assuming you have the user ID
   

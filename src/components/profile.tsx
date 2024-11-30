@@ -16,8 +16,7 @@ const Profile = () => {
     const tokenFromLocalStorage = localStorage.getItem("authToken"); // Correct token key
     const userInfo = localStorage.getItem("userInfo");
     const userId = localStorage.getItem("userId");
-    console.log("user info" , userInfo)
-    console.log("user info" , userId)
+   
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage); // Set token in state
     } else {
@@ -29,6 +28,7 @@ const Profile = () => {
   useEffect(() => {
     const userInfo = localStorage.getItem("userInfo");
     const userId = localStorage.getItem("userId");
+    console.log("hello", userId)
     const fetchUserProfile = async () => {
       if (!token) return; // Ensure token is present before making the request
       try {
