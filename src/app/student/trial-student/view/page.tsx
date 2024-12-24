@@ -83,7 +83,7 @@ const Page: React.FC = () => {
     const fetchStudentAndProgramData = async () => {
       try {
         const studentResponse = await axios.get(
-          `NEXT_PUBLIC_BASE_URL/api/academics/student_trail/`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -100,7 +100,7 @@ const Page: React.FC = () => {
 
         // Fetch user data (for assign_by and handle_by)
         const userResponse = await axios.get(
-          `NEXT_PUBLIC_BASE_URL/api/auth/user`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
