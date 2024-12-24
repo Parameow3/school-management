@@ -25,6 +25,7 @@ const Page = () => {
       router.push("/login"); // Redirect to login
     }
   }, [router]);
+
   const isToday = (dateString: string) => {
     const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
     const recordDate = new Date(dateString).toISOString().split("T")[0]; // Record's date in YYYY-MM-DD format
@@ -34,70 +35,39 @@ const Page = () => {
     const fetchData = async () => {
       try {
         if (!token) return;
-        const studentsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-  
+    
+        // Fetch Students
+        const studentsResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+    
         if (!studentsResponse.ok) {
-          throw new Error(`Error: ${studentsResponse.status} ${studentsResponse.statusText}`);
+          throw new Error(`Error: ${studentsResponse.status}`);
         }
-  
+    
         const studentsData = await studentsResponse.json();
         if (studentsData && Array.isArray(studentsData.results)) {
           setStudentCount(studentsData.results.length);
-          setTodayStudentCount(studentsData.results.filter((student: { created_at: string }) => isToday(student.created_at)).length);
-        } else {
-          console.error('Error: `results` is not an array or does not exist in students response');
+    
+          // Count today's students
+          const todayCount = studentsData.results.filter((student: { admission_date: string }) =>
+            isToday(student.admission_date)
+          ).length;
+
+          setTodayStudentCount(todayCount);
         }
-  
-        // Fetch Classrooms
-        const classroomsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-  
-        if (!classroomsResponse.ok) {
-          throw new Error(`Error: ${classroomsResponse.status} ${classroomsResponse.statusText}`);
-        }
-  
-        const classroomsData = await classroomsResponse.json();
-        if (classroomsData && Array.isArray(classroomsData.results)) {
-          setClassCount(classroomsData.results.length);
-        } else {
-          console.error('Error: `results` is not an array or does not exist in classrooms response');
-        }
-  
-        // Fetch Student Trails
-        const trailsResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        });
-  
-        if (!trailsResponse.ok) {
-          throw new Error(`Error: ${trailsResponse.status} ${trailsResponse.statusText}`);
-        }
-  
-        const trailsData = await trailsResponse.json();
-        if (Array.isArray(trailsData)) {
-          setTrailCount(trailsData.length);
-        } else {
-          console.error('Error: Trails data is not an array');
-        }
-  
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error("Failed to fetch students data:", error);
       }
     };
+    
   
     fetchData();
   }, [token]);
@@ -105,9 +75,30 @@ const Page = () => {
     const fetchData = async () => {
       try {
         if (!token) return;
-  
-        // Fetch Teachers
-        const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
+  // Fetch Classrooms
+  const classroomsResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!classroomsResponse.ok) {
+    throw new Error(`Error: ${classroomsResponse.status}`);
+  }
+
+  const classroomsData = await classroomsResponse.json();
+  if (classroomsData && Array.isArray(classroomsData.results)) {
+    setClassCount(classroomsData.results.length);
+  } else {
+    console.error("Invalid classroom data");
+    setClassCount(0);
+  }
+  const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -175,23 +166,28 @@ const Page = () => {
           <div className="w-[329px] h-full lg:m-2 shadow-sm rounded-lg">
             <Calender></Calender>
             {/* progressBar */}
-             <div className="mt-4 p-4 w-[326px] h-[100px] rounded-sm bg-white">
-             <p className="text-[15px] font-bold text-gray-900">
-                Today New Student
-              </p>
-              <div aria-hidden="true" className="mt-2 flex items-center">
-                <div className="flex-grow overflow-hidden rounded-full bg-gray-200">
-                  <div
-                    style={{ width: `${(todayStudentCount / studentCount) * 100}%` }}
-                    className="h-2 rounded-full bg-indigo-600"
-                  />
-                </div>
-                <span className="ml-2 text-sm font-medium text-gray-900">
-                  {todayStudentCount}
-                </span>
-              </div>
-
-            </div>
+            <div className="mt-4 p-4 w-[326px] h-[100px] rounded-sm bg-white">
+  <p className="text-[15px] font-bold text-gray-900">
+    Today New Students
+  </p>
+  <div aria-hidden="true" className="mt-2 flex items-center">
+    <div className="flex-grow overflow-hidden rounded-full bg-gray-200">
+      <div
+        style={{
+          width:
+            studentCount > 0
+              ? `${Math.min((todayStudentCount / studentCount) * 100, 100)}%`
+              : "0%",
+          backgroundColor: "#3B82F6", // Blue color for the progress bar
+        }}
+        className="h-2 rounded-full"
+      />
+    </div>
+    <span className="ml-2 text-sm font-medium text-gray-900">
+      {todayStudentCount}/{studentCount}
+    </span>
+  </div>
+</div>
 
             <div className="mt-4">
               <FacebookCard></FacebookCard>

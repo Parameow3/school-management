@@ -97,8 +97,7 @@ const roleNavigationMap: Record<string, NavigationItem[]> = {
       current: false,
       icon: BookOpenIcon,
       subItems: [
-        { name: "All Teachers", href: "/teacher/all-teacher", current: false },
-        { name: "New Teachers", href: "/teacher/new-teacher", current: false },
+        { name: "All Teachers", href: "/teacher/all-teacher", current: false }
       ],
     },
     {
@@ -280,18 +279,10 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
     } catch (error) {
       console.error('Error parsing userInfo from localStorage:', error);
     }
-  
-    // Determine user role; default to 'student' if not available
-    const userRole = userInfo?.roles_name || 'student';
 
-  
-    // Retrieve navigation items based on user role
+    const userRole = userInfo?.roles_name || 'student';
     const updatedNavigation = roleNavigationMap[userRole] || [];
-  
-    // Get the current path
     const currentPath = window.location.pathname;
-  
-    // Update navigation items to reflect the current path
     const newNavigationData = updatedNavigation.map((item) => {
       const isParentCurrent = item.href ? currentPath.startsWith(item.href) : false;
   
@@ -312,8 +303,7 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
         subItems,
       };
     });
-  
-    // Update the navigation state
+
     setNavigationData((prevData) => newNavigationData);
   }, [roleNavigationMap, setOpenMenu, setNavigationData]);
   

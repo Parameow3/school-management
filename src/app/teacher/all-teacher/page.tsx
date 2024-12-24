@@ -1,14 +1,11 @@
 "use client";
 import axios from "axios";
-import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import ProfileCard from "@/components/ProfileCard";
-import Modal from "@/components/Modal";
+
 interface TeacherProfile {
   id: number;
-  pic: string;
   user: {
     username: string;
     email: string;
@@ -25,16 +22,13 @@ interface Specialization {
 const Page = () => {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedSpecialization, setSelectedSpecialization] = useState<string | null>(null);
-  const [specializations, setSpecializations] = useState<Specialization[]>([]); // Store specializations
-  const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]);
   const [profiles, setProfiles] = useState<TeacherProfile[]>([]);
-  const [searchQuery, setSearchQuery] = useState<string>(""); // New state for search query
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
-  const [totalItems, setTotalItems] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);  // Add loading state
-  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -44,16 +38,14 @@ const Page = () => {
     }
   }, [router]);
 
-  // Fetch teacher profiles and specializations
   useEffect(() => {
     const fetchData = async () => {
       if (token) {
         try {
-          setLoading(true); 
-          
-          // Fetch all users and filter by teacher role on the frontend
+          setLoading(true);
+
           const profilesResponse = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, // Fetch all users
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
             {
               headers: {
                 "Content-Type": "application/json",
@@ -62,79 +54,39 @@ const Page = () => {
             }
           );
           const fetchedProfiles = profilesResponse.data.results
-            .filter((user: any) => user.roles_name === "teacher") // Only keep users with role 'teacher'
+            .filter((user: any) => user.roles_name === "teacher")
             .map((teacher: any) => ({
               id: teacher.id,
-              pic: teacher.image || "/default-pic.jpg", // Use default image if not available
               user: {
                 username: teacher.username,
                 email: teacher.email,
               },
               job: "Teacher",
-              specialization: teacher.specialization || "General", // Fallback to "General" if not specified
+              specialization: teacher.specialization || "General",
             }));
           setProfiles(fetchedProfiles);
-          setTotalItems(fetchedProfiles.length);
-  
-          // Fetch specializations
+
           const specializationsResponse = await axios.get(
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
             {
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
               },
             }
           );
-          
           setSpecializations(specializationsResponse.data.results || []);
         } catch (error: any) {
           console.error("Error fetching data:", error);
           setError("An error occurred while fetching data.");
         } finally {
-          setLoading(false);  // Stop loading
+          setLoading(false);
         }
       }
     };
-  
+
     fetchData();
   }, [token]);
-
-  const handleShowMore = async () => {
-    if (token && !loadingMore) {
-      setLoadingMore(true);
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, // Fetch all users
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const allProfiles = response.data.results
-          .filter((user: any) => user.roles_name === "teacher") // Only keep users with role 'teacher'
-          .map((teacher: any) => ({
-            id: teacher.id,
-            pic: teacher.image || "/default-pic.jpg",
-            user: {
-              username: teacher.username,
-              email: teacher.email,
-            },
-            job: "Teacher",
-            specialization: teacher.specialization || "General",
-          }));
-
-        // Set all profiles to the state (replace the old profiles with new ones)
-        setProfiles(allProfiles);
-      } catch (error: any) {
-        console.error("Error fetching all profiles:", error);
-      } finally {
-        setLoadingMore(false);
-      }
-    }
-  };
 
   const handleViewClick = (id: number) => {
     router.push(`/teacher/all-teacher/view/${id}`);
@@ -144,44 +96,29 @@ const Page = () => {
     router.push(`/teacher/all-teacher/edit/${id}`);
   };
 
-  // const handleDeleteClick = (id: number) => {
-  //   setIsModalOpen(true);
-  //   setProfileToDelete(id);
-  // };
+  const handleDeleteClick = async (id: number) => {
+    if (!token) return;
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      // Remove the deleted profile from the state
+      setProfiles(profiles.filter((profile) => profile.id !== id));
+    } catch (error) {
+      console.error("Error deleting teacher:", error);
+    }
+  };
 
-  // const handleCloseModal = () => {
-  //   setIsModalOpen(false);
-  //   setProfileToDelete(null);
-  // };
-
-  // Handle specialization change from dropdown
   const handleSpecializationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedSpecialization(event.target.value);
   };
 
-  // const handleConfirmDelete = async () => {
-  //   if (profileToDelete !== null) {
-  //     try {
-  //       await axios.delete(
-  //         `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${profileToDelete}/`, // Updated route for deletion
-  //         {
-  //           headers: {
-  //             Authorization: `Bearer ${token}`,
-  //           },
-  //         }
-  //       );
-  //       setProfiles(profiles.filter((profile) => profile.id !== profileToDelete));
-  //       setIsModalOpen(false);
-  //     } catch (error) {
-  //       console.error("Error deleting profile:", error);
-  //     }
-  //   }
-  // };
-
-  // // Handle search input
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
+
   const filteredProfiles = profiles.filter((profile) =>
     profile.user.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -190,24 +127,15 @@ const Page = () => {
     ? filteredProfiles.filter((profile) => profile.specialization === selectedSpecialization)
     : filteredProfiles;
 
-
   return (
     <div className="lg:ml-[16%] ml-[45px] mt-20 flex flex-col">
-      {/* Header section */}
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-4 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
-          Teacher |
-          <Image src={"/home.svg"} width={15} height={15} alt="public" />- All
-          teachers
+          Teacher | All teachers
         </span>
-        <Link href={"/#"} passHref>
-          <div className="h-[23px] w-[57px] bg-[#1c2b47] flex items-center justify-center rounded-md">
-            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
-          </div>
-        </Link>
       </div>
 
-      {error && <div className="text-red-500">{error}</div>} {/* Display error */}
+      {error && <div className="text-red-500">{error}</div>}
 
       <div className="relative mt-2 flex flex-row justify-between">
         <select
@@ -217,18 +145,14 @@ const Page = () => {
           onChange={handleSpecializationChange}
           className="mt-1 block lg:w-[272px] w-[329px] h-[40px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
         >
-          <option value="" disabled>
-            Select a program
-          </option>
-          {Array.isArray(specializations) &&
-            specializations.map((spec) => (
-              <option key={spec.id} value={spec.name}>
-                {spec.name}
-              </option>
-            ))}
+          <option value="">Select a specialization</option>
+          {specializations.map((spec) => (
+            <option key={spec.id} value={spec.name}>
+              {spec.name}
+            </option>
+          ))}
         </select>
 
-        {/* Search input */}
         <input
           type="text"
           placeholder="Search by username or email"
@@ -241,42 +165,41 @@ const Page = () => {
       {loading ? (
         <div>Loading...</div>
       ) : (
-        <div className="mt-5 grid lg:grid-cols-4 grid-cols-2 lg:gap-4 gap-2">
-          {finalProfiles.map((profile) => (
-            <ProfileCard
-              key={profile.id}
-              pic={profile.pic}
-              first_name={profile.user.username}
-              job={profile.job}
-              onViewClick={() => handleViewClick(profile.id)}
-              onEditClick={() => handleEditClick(profile.id)}
-              // onDeleteClick={() => handleDeleteClick(profile.id)}
-              editPath={`/teacher/all-teacher/edit/${profile.id}`}
-              viewPath={`/teacher/all-teacher/view/${profile.id}`}
-            />
-          ))}
+        <div className="mt-5">
+          <table className="min-w-full bg-white border border-gray-200 rounded-md shadow-md">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 text-left text-gray-600 border-b">Name</th>
+                <th className="px-4 py-2 text-left text-gray-600 border-b">Email</th>
+                <th className="px-4 py-2 text-left text-gray-600 border-b">Job</th>
+                <th className="px-4 py-2 text-left text-gray-600 border-b">Specialization</th>
+                <th className="px-4 py-2 text-left text-gray-600 border-b">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {finalProfiles.map((profile) => (
+                <tr key={profile.id} className="hover:bg-gray-100">
+                  <td className="px-4 py-2 border-b">{profile.user.username}</td>
+                  <td className="px-4 py-2 border-b">{profile.user.email}</td>
+                  <td className="px-4 py-2 border-b">{profile.job}</td>
+                  <td className="px-4 py-2 border-b">{profile.specialization}</td>
+                  <td className="px-4 py-2 border-b flex gap-2 items-center ml-6">
+                   
+                    <Image
+                      src="/delete.svg"
+                      width={20}
+                      height={20}
+                      alt="delete"
+                      onClick={() => handleDeleteClick(profile.id)}
+                      className="cursor-pointer"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
-
-      <div className="flex justify-center mt-6">
-        {profiles.length < totalItems && ( // Show the button only if more profiles are available
-          <button
-            onClick={handleShowMore}
-            disabled={loadingMore}
-            className="bg-[#213458] text-white py-2 px-6 rounded-lg shadow-lg hover:bg-[#213498] transition-all duration-300 ease-in-out"
-          >
-            {loadingMore ? "Loading..." : "Show More"}
-          </button>
-        )}
-      </div>
-
-      {/* {isModalOpen && (
-        <Modal
-          onClose={handleCloseModal}
-          // onConfirm={handleConfirmDelete}
-          message="Are you sure you want to delete this teacher?"
-        />
-      )} */}
     </div>
   );
 };

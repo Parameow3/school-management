@@ -81,7 +81,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex justify-center items-center min-h-screen">
       <div className="bg-white shadow-xl rounded-lg p-10 max-w-lg w-full">
         {/* Logo and Welcome Message */}
         <div className="flex flex-col items-center mb-6">
