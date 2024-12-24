@@ -128,6 +128,7 @@ const Page = () => {
         const errorData = await response.json();
         alert(`Failed to submit trial information: ${errorData.detail || errorData.message}`);
       }
+      router.push("/student/trial-student/view"); 
     } catch (error) {
       console.error("Error submitting the form:", error);
       alert("Error submitting the form.");

@@ -16,7 +16,7 @@ const Profile = () => {
       setToken(tokenFromLocalStorage);
       setUserId(userIdFromLocalStorage);
     } else {
-      console.log("Token or userId missing, redirecting to login...");
+
       router.push("/login");
     }
   }, [router]);
@@ -24,7 +24,7 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!token || !userId) {
-        console.log("Token or userId is missing.");
+  
         return;
       }
 

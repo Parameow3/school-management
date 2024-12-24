@@ -47,7 +47,7 @@ const roleNavigationMap: Record<string, NavigationItem[]> = {
       icon: LightBulbIcon,
       subItems: [
         { name: "School", href: "/school/school", current: false },
-        { name: "Branch", href: "/school/branch", current: false },
+        // { name: "Branch", href: "/school/branch", current: false },
       ],
     },
     {
@@ -267,40 +267,56 @@ const Dashboard: React.FC<DashboardProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    // Retrieve user information from local storage or wherever you store it
-    const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    // Ensure the code runs only on the client side
+    if (typeof window === 'undefined') return;
+  
+    // Retrieve and parse user information from localStorage
+    let userInfo = null;
+    try {
+      const storedUserInfo = localStorage.getItem('userInfo');
+      if (storedUserInfo) {
+        userInfo = JSON.parse(storedUserInfo);
+      }
+    } catch (error) {
+      console.error('Error parsing userInfo from localStorage:', error);
+    }
+  
+    // Determine user role; default to 'student' if not available
+    const userRole = userInfo?.roles_name || 'student';
 
-    // Get the user role from the user object; default to 'student' if not available
-    const userRole = userInfo.roles_name || "student"; // Updated to use roles_name
-    console.log("User Role : ", userRole);
-    console.log("Role for nav permission : ",roleNavigationMap[userRole])
+  
+    // Retrieve navigation items based on user role
     const updatedNavigation = roleNavigationMap[userRole] || [];
-
+  
+    // Get the current path
     const currentPath = window.location.pathname;
-
-    updatedNavigation.forEach((item) => {
-      const isParentCurrent = !!(
-        item.href && currentPath.startsWith(item.href)
-      );
-      const subItemCurrent =
-        item.subItems?.some((subItem) =>
-          currentPath.startsWith(subItem.href)
-        ) || false;
-
+  
+    // Update navigation items to reflect the current path
+    const newNavigationData = updatedNavigation.map((item) => {
+      const isParentCurrent = item.href ? currentPath.startsWith(item.href) : false;
+  
+      const subItems = item.subItems?.map((subItem) => ({
+        ...subItem,
+        current: currentPath.startsWith(subItem.href),
+      })) || [];
+  
+      const subItemCurrent = subItems.some((subItem) => subItem.current);
+  
       if (subItemCurrent) {
         setOpenMenu(item.name);
       }
-
-      item.current = isParentCurrent || subItemCurrent;
-      item.subItems =
-        item.subItems?.map((subItem) => ({
-          ...subItem,
-          current: currentPath.startsWith(subItem.href),
-        })) || [];
+  
+      return {
+        ...item,
+        current: isParentCurrent || subItemCurrent,
+        subItems,
+      };
     });
-
-    setNavigationData(updatedNavigation);
-  }, []);
+  
+    // Update the navigation state
+    setNavigationData((prevData) => newNavigationData);
+  }, [roleNavigationMap, setOpenMenu, setNavigationData]);
+  
   return (
     <div className="flex overflow-hidden">
       {/* Sidebar */}

@@ -76,39 +76,45 @@ const Page = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
     if (!selectedSchool || !courseName || !courseCode || !credits) {
       setError("All fields are required.");
       return;
     }
-
+  
+    // Log the payload before sending
+    const payload = {
+      name: courseName,
+      code: courseCode,
+      description,
+      credits,
+      program: programId, // Automatically use the program ID from the URL
+      school: selectedSchool,
+    };
+  
+    console.log("Submitting the following data:", payload);
+  
     try {
       setError(null);
-
-      // Create course API call
+  
       await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
-        {
-          name: courseName,
-          code: courseCode,
-          description,
-          credits,
-          program: programId, // Automatically use the program ID from the URL
-          school: selectedSchool,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
-      // Redirect after successful course creation
+  
+      console.log("Course created successfully!");
       router.push("/program/all-program");
-    } catch (err) {
-      setError("Failed to create course.");
+    } catch (err: any) {
+      console.error("Error creating course:", err.response?.data || err.message);
+      setError(err.response?.data?.detail || "Failed to create course.");
     }
   };
+  
 
   return (
     <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">

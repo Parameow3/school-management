@@ -69,38 +69,46 @@ const Page = () => {
   };
 
   const handleDeleteClass = async () => {
-    if (!classToDelete) return; // Ensure a class is selected for deletion
-
+    if (!classToDelete) {
+      setError("No class selected for deletion.");
+      return; // Ensure a class is selected for deletion
+    }
+  
     try {
-      // Attempt to delete the classroom
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classToDelete.id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classToDelete.id}/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (response.status === 200) {
+  
+      if (response.status === 204) { // 204 is the typical status code for successful DELETE
+        console.log(`Class with ID ${classToDelete.id} deleted successfully.`);
+        
+        // Update the state to remove the deleted class
         setClassData((prevClassData) =>
-          prevClassData.filter(classInfo => classInfo.id !== classToDelete.id)
+          prevClassData.filter((classInfo) => classInfo.id !== classToDelete.id)
         );
-
-        closeModal(); // Close modal after deletion
+  
+        closeModal(); // Close the modal after successful deletion
       } else {
-        throw new Error('Failed to delete classroom.'); // Handle unexpected status
+        throw new Error("Failed to delete classroom."); // Handle unexpected status
       }
     } catch (err) {
       // Detailed error handling
       if (axios.isAxiosError(err)) {
-        console.error("Error deleting class:", err.response); // Log the entire error response
+        console.error("Error deleting class:", err.response); 
         const errorMessage = err.response?.data?.message || "Failed to delete classroom.";
-        setError(errorMessage); // Set user-friendly error message
+        setError(errorMessage); 
       } else {
         console.error("Unexpected error:", err); // Log unexpected errors
         setError("An unexpected error occurred.");
       }
-      closeModal(); // Close modal in case of error
+    } finally {
+      closeModal(); // Close the modal regardless of success or error
     }
   };
+  
   if (loading) {
     return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>;
   }

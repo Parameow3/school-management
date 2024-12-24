@@ -19,13 +19,13 @@ interface Student {
   id: number;
   first_name: string;
   last_name: string;
-  course_names: string[];  // List of course names the student is enrolled in
+  course_names: string[];
 }
 
 interface Program {
   id: string;
   name: string;
-  course_list: string[]; // Names of courses in this program
+  course_list: string[];
 }
 
 const Page: React.FC = () => {
@@ -74,7 +74,7 @@ const Page: React.FC = () => {
   useEffect(() => {
     if (!token) return;
 
-    const fetchCoursesWithStudents = async () => {
+    const fetchCourses = async () => {
       setLoading(true);
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course`, {
@@ -88,39 +88,7 @@ const Page: React.FC = () => {
         const coursesData = await response.json();
         const courses = Array.isArray(coursesData) ? coursesData : [];
 
-        // Fetch enrolled students for each course
-        const coursesWithStudents = await Promise.all(
-          courses.map(async (course) => {
-            try {
-              const enrollmentResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/?course_id=${course.id}`,
-                {
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                  },
-                }
-              );
-
-              if (!enrollmentResponse.ok) {
-                throw new Error(`Failed to fetch students for course ${course.id}`);
-              }
-
-              const enrollmentData = await enrollmentResponse.json();
-              // Match students based on course names
-              const studentsEnrolledInCourse = enrollmentData.students.filter((student: Student) =>
-                student.course_names.includes(course.name)
-              );
-
-              return { ...course, enrolled_students: studentsEnrolledInCourse || [] };
-            } catch (error) {
-              console.error('Error fetching enrollment data:', error);
-              return { ...course, enrolled_students: [] };  // Fallback to an empty array
-            }
-          })
-        );
-
-        setCourses(coursesWithStudents);
+        setCourses(courses);
       } catch (error) {
         console.error('Error fetching course data:', error);
         setError('Failed to load courses. Please try again later.');
@@ -129,11 +97,13 @@ const Page: React.FC = () => {
       }
     };
 
-    fetchCoursesWithStudents();
+    fetchCourses();
   }, [token]);
 
   const getProgramNameForCourse = (courseName: string) => {
-    const program = programs.find((p) => p.course_list.includes(courseName));
+    const program = programs.find((p) =>
+      p.course_list.some((name) => name.toLowerCase() === courseName.toLowerCase())
+    );
     return program ? program.name : 'Unknown Program';
   };
 
@@ -146,11 +116,28 @@ const Page: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
-    if (selectedCourse) {
+  const handleDeleteConfirm = async () => {
+    if (!selectedCourse || !token) return;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/${selectedCourse.id}/`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete the course');
+      }
+
       setCourses(courses.filter((course) => course.id !== selectedCourse.id));
       setIsModalOpen(false);
       setSelectedCourse(null);
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      setError('Failed to delete the course. Please try again later.');
     }
   };
 
@@ -176,7 +163,6 @@ const Page: React.FC = () => {
                 <th className="border px-4 py-2">Course Name</th>
                 <th className="border px-4 py-2">Description</th>
                 <th className="border px-4 py-2">Credits</th>
-                {/* <th className="border px-4 py-2">Enrolled Students</th> */}
                 <th className="border px-4 py-2">Action</th>
               </tr>
             </thead>
@@ -187,17 +173,6 @@ const Page: React.FC = () => {
                   <td className="border px-4 py-2">{course.name}</td>
                   <td className="border px-4 py-2">{course.description}</td>
                   <td className="border px-4 py-2">{course.credits}</td>
-                  {/* <td className="border px-4 py-2">
-                    {course.enrolled_students && course.enrolled_students.length > 0 ? (
-                      course.enrolled_students.map((student) => (
-                        <div key={student.id}>
-                          {student.first_name} {student.last_name}
-                        </div>
-                      ))
-                    ) : (
-                      <span>No students enrolled</span>
-                    )}
-                  </td> */}
                   <td className="border px-4 py-2">
                     <div className="flex gap-2">
                       <Image

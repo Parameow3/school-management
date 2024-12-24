@@ -136,6 +136,7 @@ const Page= ()=> {
           `Failed to save student data: ${errorData.message || "Unknown error"}`
         );
       }
+      router.push("/student/all-student");
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     }

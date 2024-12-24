@@ -55,7 +55,6 @@ const Page: React.FC = () => {
     return userNames.length > 0 ? userNames.join(", ") : "No valid users";
   };
 
-  // Get the program names based on the provided programIds
   const getProgramNames = (programIds: number[]) => {
     const programNames = programIds
       .map((id) => {
@@ -83,16 +82,13 @@ const Page: React.FC = () => {
 
     const fetchStudentAndProgramData = async () => {
       try {
-        // Fetch students data
         const studentResponse = await axios.get(
-          "http://127.0.0.1:8000/api/academics/student_trail/",
+          `NEXT_PUBLIC_BASE_URL/api/academics/student_trail/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         setStudents(studentResponse.data);
-
-        // Fetch programs data
         const programResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
           {
@@ -104,7 +100,7 @@ const Page: React.FC = () => {
 
         // Fetch user data (for assign_by and handle_by)
         const userResponse = await axios.get(
-          "http://127.0.0.1:8000/api/auth/user",
+          `NEXT_PUBLIC_BASE_URL/api/auth/user`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -145,7 +141,6 @@ const Page: React.FC = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        alert("Student deleted successfully!");
         setStudents((prev) =>
           prev.filter((student) => student.id !== selectedStudentId)
         );

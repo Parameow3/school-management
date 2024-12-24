@@ -71,7 +71,7 @@ const Page: React.FC = () => {
           formData,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Attach token in the Authorization header
+              Authorization: `Bearer ${token}`, 
             },
           }
         );
@@ -89,9 +89,21 @@ const Page: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6 mt-24">
+    <div className='lg:ml-[16%] ml-[11%] mt-20 flex flex-col'>
+    <div>
+            <button
+            type="button"
+            onClick={() => router.back()}
+            className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+          >
+            Back
+          </button>
+      </div>
+    <div className=" w-[455px] ml-[234px] bg-white shadow-lg rounded-lg p-6 ">
+      
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Add New School</h2>
       {error && <div className="text-red-500 mb-4">{error}</div>}
+      <div>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
@@ -175,11 +187,13 @@ const Page: React.FC = () => {
 
         <button
           type="submit"
-          className=" bg-[#213458] hover:bg-[#213498] text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          className=" bg-[#213458] hover:bg-[#213498] ml-[163px] text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
           Submit
         </button>
       </form>
+    </div>
+    </div>
     </div>
   );
 };

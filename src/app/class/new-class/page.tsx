@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-
+import { useRouter } from "next/navigation";
 interface Course {
   id: number;
   name: string;
@@ -13,6 +13,7 @@ interface Teacher {
 }
 
 const Page = () => {
+   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [formData, setFormData] = useState({
     className: "",
@@ -137,11 +138,6 @@ const Page = () => {
       return;
     }
 
-    // if (isNaN(parseInt(formData.credit))) {
-    //   alert("Credit must be a numeric value.");
-    //   return;
-    // }
-
     const startDate = new Date(formData.start_date);
     const endDate = new Date(formData.end_date);
 
@@ -163,8 +159,6 @@ const Page = () => {
       student: studentIDs,
     };
 
-    console.log("Submitting data:", postData);
-
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
@@ -177,6 +171,7 @@ const Page = () => {
         }
       );
       alert("Classroom created successfully!");
+      router.push("/class/all-class");
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.detail ||

@@ -115,7 +115,7 @@ const Page: React.FC = () => {
           Authorization: `Bearer ${token}`, // Ensure the token is included in the request
         },
       });
-      router.push("/school/branch");
+      router.push("/school/school");
     } catch (err) {
       setError("Failed to add branch. Please check the form and try again.");
       console.error("Submission error:", err);

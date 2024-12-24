@@ -12,11 +12,21 @@ interface SchoolData {
   website?: string;
 }
 
+interface BranchData {
+  school: { id: number };
+  id: number;
+  name: string;
+  address: string;
+  phone_number: string;
+  email: string;
+  location: string;
+  established_date?: string;
+}
+
 const Page: React.FC = () => {
   const router = useRouter();
   const params = useParams();
   const schoolId = parseInt(params.editId as string, 10);
-  console.log("SchoolId:", schoolId);
 
   const [formData, setFormData] = useState<SchoolData>({
     name: '',
@@ -24,10 +34,18 @@ const Page: React.FC = () => {
     phone_number: '',
     email: '',
     established_date: '',
-    website: ''
+    website: '',
   });
 
-  const [loading, setLoading] = useState<boolean>(true); // Loading state for the data fetching
+  const [branches, setBranches] = useState<BranchData[]>([]);
+  const [branchName, setBranchName] = useState<string>(''); // State for branch name
+  const [branchAddress, setBranchAddress] = useState<string>('');
+  const [branchPhoneNumber, setBranchPhoneNumber] = useState<string>('');
+  const [branchEmail, setBranchEmail] = useState<string>('');
+  const [branchLocation, setBranchLocation] = useState<string>('');
+  const [editingBranch, setEditingBranch] = useState<BranchData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isSavingBranch, setIsSavingBranch] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [token, setToken] = useState<string | null>(null);
 
@@ -41,53 +59,103 @@ const Page: React.FC = () => {
     }
   }, [router]);
 
-  // Fetch the school data when the component mounts
+  // Fetch school data and associated branches
   useEffect(() => {
     if (schoolId && token) {
-      const fetchSchool = async () => {
+      const fetchSchoolAndBranches = async () => {
         try {
-          const response = await axios.get(
+          // Fetch school details
+          const schoolResponse = await axios.get(
             `${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/${schoolId}/`,
             {
               headers: {
-                Authorization: `Bearer ${token}`, // Attach token in the Authorization header
+                Authorization: `Bearer ${token}`,
               },
             }
           );
-          setFormData(response.data);
-          setLoading(false); // Stop loading once data is fetched
+          setFormData(schoolResponse.data);
+
+          // Fetch branches for the school
+          const branchResponse = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const schoolBranches = branchResponse.data.results.filter(
+            (branch: BranchData) => branch.school.id === schoolId
+          );
+          setBranches(schoolBranches);
+
+          setLoading(false);
         } catch (err) {
-          setError('Failed to fetch school data.');
-          setLoading(false); // Stop loading in case of error
+          setError('Failed to fetch data.');
+          setLoading(false);
         }
       };
-      fetchSchool();
+      fetchSchoolAndBranches();
     }
   }, [schoolId, token]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const validateForm = (): boolean => {
-    if (!formData.name || formData.name.length < 1 || formData.name.length > 255) {
-      setError('Name is required and must be between 1 and 255 characters.');
-      return false;
+  const handleEditBranch = (branch: BranchData) => {
+    setEditingBranch(branch);
+    setBranchName(branch.name); // Set branch name
+    setBranchAddress(branch.address);
+    setBranchPhoneNumber(branch.phone_number);
+    setBranchEmail(branch.email);
+    setBranchLocation(branch.location);
+  };
+
+  const handleSaveBranch = async () => {
+    if (token && editingBranch) {
+      setIsSavingBranch(true);
+      try {
+        const response = await axios.patch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/${editingBranch.id}/`,
+          {
+            school_id: editingBranch.school.id,
+            name: branchName, // Save branch name
+            address: branchAddress,
+            phone_number: branchPhoneNumber,
+            email: branchEmail,
+            location: branchLocation,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        // Update the branches list
+        setBranches((prevBranches) =>
+          prevBranches.map((branch) =>
+            branch.id === editingBranch.id ? response.data : branch
+          )
+        );
+
+        setEditingBranch(null); // Close the edit form
+        alert('Branch updated successfully!');
+      } catch (err) {
+        setError('Failed to update branch.');
+        console.error(err);
+      } finally {
+        setIsSavingBranch(false);
+      }
     }
-    if (!formData.address || formData.address.length < 1) {
-      setError('Address is required.');
-      return false;
-    }
-    return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
     if (token) {
       try {
         await axios.put(
@@ -95,16 +163,14 @@ const Page: React.FC = () => {
           formData,
           {
             headers: {
-              Authorization: `Bearer ${token}`, // Attach token in the Authorization header
+              Authorization: `Bearer ${token}`,
             },
           }
         );
         router.push('/school/school');
         alert('School updated successfully!');
-        setError('');
       } catch (err: any) {
-        setError('Failed to update data. Please check the server and data.');
-        console.error(err.response ? err.response.data : err.message); // Log the actual error from server
+        setError('Failed to update school data.');
       }
     } else {
       setError('No token found, please log in.');
@@ -112,103 +178,152 @@ const Page: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6 mt-24">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit School</h2>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-                Name:
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+    <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
+      <div>
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+        >
+          Back
+        </button>
+      </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="address">
-                Address:
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+      <div className="max-w-md ml-[234px] bg-white shadow-lg rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit School</h2>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            {error && <div className="text-red-500 mb-4">{error}</div>}
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">School Name:</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                />
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone_number">
-                Phone Number:
-              </label>
-              <input
-                type="text"
-                name="phone_number"
-                value={formData.phone_number}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2">Address:</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
+                />
+              </div>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                Email:
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+              <button
+                type="submit"
+                className="bg-[#213458] text-white py-2 px-4 rounded-md"
+              >
+                Save Changes
+              </button>
+            </form>
 
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="established_date">
-                Established Date:
-              </label>
-              <input
-                type="date"
-                name="established_date"
-                value={formData.established_date}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            <h3 className="text-xl font-bold text-gray-800 mt-8">Branches</h3>
+            {branches.length > 0 ? (
+              branches.map((branch) => (
+                <div key={branch.id} className="flex justify-between items-center mt-4">
+                  <div>
+                    <strong>{branch.name}</strong> - {branch.address} ({branch.phone_number})
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => handleEditBranch(branch)}
+                      className="text-blue-600 hover:underline mr-4"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="mt-4 text-gray-600">No branches available for this school.</p>
+            )}
 
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="website">
-                Website:
-              </label>
-              <input
-                type="url"
-                name="website"
-                value={formData.website}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+            {/* Edit Branch Form */}
+            {editingBranch && (
+              <div className="mt-8">
+                <h4 className="text-lg font-bold text-gray-800">Edit Branch</h4>
+                <div className="mb-6">
+                  <label className="block text-gray-600 text-sm font-semibold mb-2">Branch Name</label>
+                  <input
+                    className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    value={branchName}
+                    onChange={(e) => setBranchName(e.target.value)}
+                    placeholder="Enter branch name"
+                    required
+                  />
+                </div>
 
-            <button
-              type="submit"
-              className="bg-[#213458] hover:bg-[#213498] text-white font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-            >
-              Submit
-            </button>
-          </form>
-        </>
-      )}
+                <div className="mb-6">
+                  <label className="block text-gray-600 text-sm font-semibold mb-2">Branch Address</label>
+                  <input
+                    className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    value={branchAddress}
+                    onChange={(e) => setBranchAddress(e.target.value)}
+                    placeholder="Enter branch address"
+                    required
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-gray-600 text-sm font-semibold mb-2">Branch Phone Number</label>
+                  <input
+                    className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    value={branchPhoneNumber}
+                    onChange={(e) => setBranchPhoneNumber(e.target.value)}
+                    placeholder="Enter branch phone number"
+                    required
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-gray-600 text-sm font-semibold mb-2">Branch Email</label>
+                  <input
+                    className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="email"
+                    value={branchEmail}
+                    onChange={(e) => setBranchEmail(e.target.value)}
+                    placeholder="Enter branch email"
+                    required
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-gray-600 text-sm font-semibold mb-2">Branch Location</label>
+                  <input
+                    className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="text"
+                    value={branchLocation}
+                    onChange={(e) => setBranchLocation(e.target.value)}
+                    placeholder="Enter branch location"
+                    required
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveBranch}
+                  className="bg-[#213458] text-white py-2 px-4 rounded-md"
+                  disabled={isSavingBranch}
+                >
+                  {isSavingBranch ? 'Saving...' : 'Save Branch'}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 };
