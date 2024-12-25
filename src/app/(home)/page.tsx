@@ -122,6 +122,40 @@ const Page = () => {
   
     fetchData();
   }, [token]);
+  useEffect(() => {
+    const fetchTrailCount = async () => {
+      try {
+        if (!token) return;
+  
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+  
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status} ${response.statusText}`);
+        }
+  
+        const data = await response.json();
+       
+        if (Array.isArray(data)) {
+          setTrailCount(data.length);
+        } else if (data.results && Array.isArray(data.results)) {
+          setTrailCount(data.results.length);
+        } else {
+          console.error("Unexpected trail data format");
+          setTrailCount(0); // Default to 0 in case of unexpected data
+        }
+      } catch (error) {
+        console.error('Error fetching trail data:', error);
+      }
+    };
+  
+    fetchTrailCount();
+  }, [token]);
   
   return (
     <>
@@ -159,7 +193,6 @@ const Page = () => {
                 <Card title={"Classes"} value={classCount} color={"#3A6EA5"} />
               </div>
             </div>
-
             <Report></Report>
             <Report></Report>
           </div>
