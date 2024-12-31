@@ -194,7 +194,6 @@ const Page = () => {
               </div>
             </div>
             <Report></Report>
-            <Report></Report>
           </div>
           <div className="w-[329px] h-full lg:m-2 shadow-sm rounded-lg">
             <Calender></Calender>

@@ -141,7 +141,7 @@ const Page = () => {
         <button
           type="button"
           onClick={() => router.back()}
-          className="flex-1 bg-[#213458] text-white font-bold py-2 px-2 rounded-lg hover:bg-gray-600 transition-colors"
+          className=" w-[64px] bg-gray-300 text-black font-bold py-2 px-2 rounded-lg hover:bg-gray-600 transition-colors"
         >
           Back
         </button>

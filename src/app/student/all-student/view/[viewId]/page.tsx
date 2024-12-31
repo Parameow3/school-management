@@ -130,7 +130,18 @@ const Page = () => {
   }
 
   return (
-    <div className="lg:ml-[219px] mt-20 flex flex-col">
+    <>
+    <div className='lg:ml-[16%] ml-[11%] mt-20'>
+            <button
+            type="button"
+            onClick={() => router.back()}
+            className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+          >
+            Back
+          </button>
+      </div>
+
+    <div className="lg:ml-[219px] mt-4 flex flex-col">
       <div className="bg-white p-6 rounded-lg lg:gap-12 gap-4 flex lg:flex-row flex-col shadow-lg w-[345px] lg:w-[854px] max-w-2xl mx-auto">
         <div className="flex lg:items-start items-center flex-col mb-4 ml-4">
           <Image
@@ -186,6 +197,7 @@ const Page = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 

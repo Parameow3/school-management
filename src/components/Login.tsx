@@ -29,11 +29,45 @@ const Login = () => {
     setPasswordVisible(!passwordVisible);
   };
 
+  // Refresh token function
+  const refreshToken = async () => {
+    try {
+      const refreshResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/refresh-token`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+
+      const newToken = refreshResponse.data.token;
+      localStorage.setItem("authToken", newToken);
+      return newToken;
+    } catch (error) {
+      console.error("Failed to refresh token:", error);
+      // Redirect to login page if refreshing token fails
+      router.push("/login");
+      return null;
+    }
+  };
+
+  // Retry request with refreshed token
+  const retryRequestWithRefreshedToken = async (originalRequest: any) => {
+    const newToken = await refreshToken();
+    if (!newToken) return null; // If refreshing token fails, stop retrying
+
+    // Retry original request with the new token
+    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+    return axios(originalRequest);
+  };
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrorMessage("");  // Clear any previous error message
+    setErrorMessage(""); // Clear any previous error message
 
     try {
       // Clear any old token and user data
@@ -50,6 +84,7 @@ const Login = () => {
       const newToken = response.data.token;
       const userId = response.data.id;
       localStorage.setItem("authToken", newToken);
+
       const profileResponse = await axios.get(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
         {
@@ -65,9 +100,16 @@ const Login = () => {
 
       router.push("/");
     } catch (error: any) {
-      // Error handling for failed login
-      if (axios.isAxiosError(error) && error.response) {
-        if (error.response.status === 400) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          // If token is invalid, try refreshing and retrying
+          const originalRequest = error.config;
+          const retryResponse = await retryRequestWithRefreshedToken(originalRequest);
+
+          if (!retryResponse) {
+            setErrorMessage("Your session has expired. Please log in again.");
+          }
+        } else if (error.response?.status === 400) {
           setErrorMessage("Invalid email or password.");
         } else {
           setErrorMessage("Login failed. Please try again.");

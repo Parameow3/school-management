@@ -193,7 +193,17 @@ const Page = () => {
   };
 
   return (
-    <div className="lg:ml-[219px] mt-20 flex flex-col">
+    <>
+    <div className='lg:ml-[16%] ml-[11%] mt-20'>
+            <button
+            type="button"
+            onClick={() => router.back()}
+            className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+          >
+            Back
+          </button>
+      </div>
+    <div className="lg:ml-[219px] mt-4 flex flex-col">
       <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[16px]">
           Student |{" "}
@@ -502,6 +512,7 @@ const Page = () => {
         </div>
       </form>
     </div>
+    </>
   );
 };
 

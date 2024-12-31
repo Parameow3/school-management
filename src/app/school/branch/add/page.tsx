@@ -125,7 +125,17 @@ const Page: React.FC = () => {
   };
 
   return (
-    <div className="lg:ml-[18%] ml-[11%] mt-24 flex flex-col">
+    <>
+<div className="lg:ml-[18%] ml-[11%] w-[87px] mt-24 flex flex-col">
+            <button
+            type="button"
+            onClick={() => router.back()}
+            className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+          >
+            Back
+          </button>
+      </div>
+    <div className="lg:ml-[10%] ml-[11%] mt-3 flex flex-col">
       <form
         onSubmit={handleSubmit}
         className="w-[540px] max-w-2xl mx-auto bg-white shadow-lg p-8 rounded-lg"
@@ -256,6 +266,7 @@ const Page: React.FC = () => {
         </Button>
       </form>
     </div>
+    </>
   );
 };
 

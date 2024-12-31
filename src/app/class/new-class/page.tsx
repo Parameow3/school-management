@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+
 interface Course {
   id: number;
   name: string;
@@ -12,9 +13,15 @@ interface Teacher {
   id: number;
 }
 
-const Page = () => {
-   const router = useRouter();
+interface Student {
+  id: number;
+  first_name: string;
+}
+
+const Page: React.FC = () => {
+  const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+
   const [formData, setFormData] = useState({
     className: "",
     course: "",
@@ -24,13 +31,18 @@ const Page = () => {
     end_date: "",
     students: [""], // Initializing with an empty student input
   });
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
-
+  const [students, setStudents] = useState<Student[]>([]);
+ const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [loadingStudents, setLoadingStudents] = useState(true);
+
   const [errorCourses, setErrorCourses] = useState<string | null>(null);
   const [errorTeachers, setErrorTeachers] = useState<string | null>(null);
+  const [errorStudents, setErrorStudents] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -51,7 +63,6 @@ const Page = () => {
           const teacherUsers = response.data.results.filter(
             (user: any) => user.roles_name === "teacher"
           );
-
           setTeachers(teacherUsers);
         } catch (err: any) {
           const errorMessage = err.response?.data?.detail || err.message;
@@ -82,8 +93,33 @@ const Page = () => {
         }
       };
 
+      const fetchStudents = async () => {
+        try {
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }
+          );
+          if (response.data && Array.isArray(response.data.results)) {
+            setStudents(response.data.results);
+          } else {
+            throw new Error("Invalid student data format");
+          }
+        } catch (err: any) {
+          const errorMessage = err.response?.data?.detail || err.message;
+          setErrorStudents(`Error loading students: ${errorMessage}`);
+        } finally {
+          setLoadingStudents(false);
+        }
+      };
+      
+
       fetchTeachers();
       fetchCourses();
+      fetchStudents();
     }
   }, [isMounted]);
 
@@ -98,7 +134,7 @@ const Page = () => {
   };
 
   const handleStudentChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
+    e: React.ChangeEvent<HTMLSelectElement>,
     index: number
   ) => {
     const newStudents = [...formData.students];
@@ -156,11 +192,11 @@ const Page = () => {
       teacher: parseInt(formData.teacher),
       start_date: formData.start_date,
       end_date: formData.end_date,
-      student: studentIDs,
+      students: studentIDs,
     };
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
         postData,
         {
@@ -177,10 +213,7 @@ const Page = () => {
         error.response?.data?.detail ||
         error.message ||
         "An unknown error occurred.";
-      const errorData = error.response?.data;
-      console.error("Error submitting the form:", errorMessage);
-      console.error("Full response data:", errorData);
-      alert(`Error: ${errorMessage}. Details: ${JSON.stringify(errorData)}`);
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -197,10 +230,7 @@ const Page = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="flex flex-col">
-            <label
-              htmlFor="className"
-              className="text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="className" className="text-sm font-medium text-gray-700">
               Class Name
             </label>
             <input
@@ -214,10 +244,7 @@ const Page = () => {
           </div>
 
           <div className="flex flex-col">
-            <label
-              htmlFor="course"
-              className="text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="course" className="text-sm font-medium text-gray-700">
               Course
             </label>
             <select
@@ -242,37 +269,32 @@ const Page = () => {
           </div>
 
           <div className="flex flex-col">
-            <label
-              htmlFor="teacher"
-              className="text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="teacher" className="text-sm font-medium text-gray-700">
               Teacher
             </label>
-            {loadingTeachers ? (
-              <span className="text-sm text-blue-500">Loading teachers...</span>
-            ) : errorTeachers ? (
-              <span className="text-sm text-red-500">{errorTeachers}</span>
-            ) : (
-              <select
-                id="teacher"
-                name="teacher"
-                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onChange={handleChange}
-              >
-                <option value="">Select a teacher</option>
-                {teachers.map((teacher) => (
+            <select
+              id="teacher"
+              name="teacher"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            >
+              <option value="">Select a teacher</option>
+              {loadingTeachers ? (
+                <option>Loading teachers...</option>
+              ) : errorTeachers ? (
+                <option>{errorTeachers}</option>
+              ) : (
+                teachers.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>
                     {teacher.username}
                   </option>
-                ))}
-              </select>
-            )}
+                ))
+              )}
+            </select>
           </div>
+
           <div className="flex flex-col">
-            <label
-              htmlFor="start_date"
-              className="text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="start_date" className="text-sm font-medium text-gray-700">
               Start Date
             </label>
             <input
@@ -285,10 +307,7 @@ const Page = () => {
           </div>
 
           <div className="flex flex-col">
-            <label
-              htmlFor="end_date"
-              className="text-sm font-medium text-gray-700"
-            >
+            <label htmlFor="end_date" className="text-sm font-medium text-gray-700">
               End Date
             </label>
             <input
@@ -299,38 +318,51 @@ const Page = () => {
               onChange={handleChange}
             />
           </div>
+
           <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700">
-              Students
-            </label>
-            {formData.students.map((student, index) => (
-              <div key={index} className="flex items-center mt-2">
-                <input
-                  type="text"
-                  placeholder="Enter Student ID"
-                  className="w-[full] h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={student}
-                  onChange={(e) => handleStudentChange(e, index)}
-                />
-                {index > 0 && (
-                  <button
-                    type="button"
-                    className="ml-2 text-red-500"
-                    onClick={() => handleRemoveStudent(index)}
-                  >
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-            <button
-              type="button"
-              className="mt-2 px-4 py-2 w-[132px] bg-[#213458] text-[#FFFFFF]"
-              onClick={handleAddStudent}
-            >
-              Add Student
-            </button>
-          </div>
+  <label className="text-sm font-medium text-gray-700">Students</label>
+  {loadingStudents ? (
+    <span>Loading students...</span>
+  ) : errorStudents ? (
+    <span className="text-red-500">{errorStudents}</span>
+  ) : students.length > 0 ? (
+    formData.students.map((studentId, index) => (
+      <div key={index} className="flex items-center mt-2">
+        <select
+          value={studentId}
+          onChange={(e) => handleStudentChange(e, index)}
+          className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Select a student</option>
+          {students.map((student) => (
+            <option key={student.id} value={student.id}>
+              {student.first_name}
+            </option>
+          ))}
+        </select>
+        {index > 0 && (
+          <button
+            type="button"
+            className="ml-2 text-red-500"
+            onClick={() => handleRemoveStudent(index)}
+          >
+            Remove
+          </button>
+        )}
+      </div>
+    ))
+  ) : (
+    <span>No students available</span>
+  )}
+  <button
+    type="button"
+    className="mt-2 px-4 py-2 w-[132px] bg-[#213458] text-[#FFFFFF]"
+    onClick={handleAddStudent}
+  >
+    Add Student
+  </button>
+</div>
+
         </div>
         <div className="flex justify-center mt-6">
           <button

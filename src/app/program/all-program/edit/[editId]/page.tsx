@@ -128,7 +128,16 @@ const Page = () => {
   }
 
   return (
-    <div className="flex justify-center items-center lg:mt-8 min-h-screen bg-gray-100 py-8">
+    <><div className="lg:ml-[18%] ml-[11%] w-[87px] mt-24 flex flex-col">
+        <button
+        type="button"
+        onClick={() => router.back()}
+        className=" bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50"
+      >
+        Back
+      </button>
+    </div>
+    <div className="mt-2 flex justify-center">
       <div className="bg-white p-8 rounded-lg lg:ml-[16%] ml-[5%] shadow-lg w-full max-w-md">
         <h2 className="text-center text-2xl font-bold text-[#213458] mb-6">
           Edit Program
@@ -198,6 +207,7 @@ const Page = () => {
         </form>
       </div>
     </div>
+    </>
   );
 };
 

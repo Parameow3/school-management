@@ -169,7 +169,9 @@ const Page = () => {
   };
 
   return (
+    <>
     <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
+      
       {/* Page Header */}
       <div className="lg:w-[1068px] w-[330px] h-[42px] p-2 bg-white rounded-md flex items-center justify-between">
         <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px]">
@@ -315,6 +317,7 @@ const Page = () => {
         />
       )}
     </div>
+    </>
   );
 };
 
