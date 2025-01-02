@@ -35,7 +35,6 @@ const Page: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
- const [selectedStudent, setSelectedStudent] = useState<number | null>(null);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingTeachers, setLoadingTeachers] = useState(true);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -115,7 +114,6 @@ const Page: React.FC = () => {
           setLoadingStudents(false);
         }
       };
-      
 
       fetchTeachers();
       fetchCourses();
@@ -192,8 +190,17 @@ const Page: React.FC = () => {
       teacher: parseInt(formData.teacher),
       start_date: formData.start_date,
       end_date: formData.end_date,
-      students: studentIDs,
+      student: studentIDs, // Adjusted field name to match API requirement
     };
+
+    // Debugging logs
+    console.log("Form Data:", formData);
+    console.log("Post Data:", postData);
+    console.log("Auth Token:", localStorage.getItem("authToken"));
+    console.log(
+      "API URL:",
+      `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`
+    );
 
     try {
       await axios.post(
@@ -206,6 +213,7 @@ const Page: React.FC = () => {
           },
         }
       );
+
       alert("Classroom created successfully!");
       router.push("/class/all-class");
     } catch (error: any) {
@@ -229,6 +237,7 @@ const Page: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Class Name */}
           <div className="flex flex-col">
             <label htmlFor="className" className="text-sm font-medium text-gray-700">
               Class Name
@@ -243,6 +252,7 @@ const Page: React.FC = () => {
             />
           </div>
 
+          {/* Course Selection */}
           <div className="flex flex-col">
             <label htmlFor="course" className="text-sm font-medium text-gray-700">
               Course
@@ -268,6 +278,7 @@ const Page: React.FC = () => {
             </select>
           </div>
 
+          {/* Teacher Selection */}
           <div className="flex flex-col">
             <label htmlFor="teacher" className="text-sm font-medium text-gray-700">
               Teacher
@@ -293,6 +304,7 @@ const Page: React.FC = () => {
             </select>
           </div>
 
+          {/* Start Date */}
           <div className="flex flex-col">
             <label htmlFor="start_date" className="text-sm font-medium text-gray-700">
               Start Date
@@ -306,6 +318,7 @@ const Page: React.FC = () => {
             />
           </div>
 
+          {/* End Date */}
           <div className="flex flex-col">
             <label htmlFor="end_date" className="text-sm font-medium text-gray-700">
               End Date
@@ -319,51 +332,52 @@ const Page: React.FC = () => {
             />
           </div>
 
+          {/* Students */}
           <div className="flex flex-col">
-  <label className="text-sm font-medium text-gray-700">Students</label>
-  {loadingStudents ? (
-    <span>Loading students...</span>
-  ) : errorStudents ? (
-    <span className="text-red-500">{errorStudents}</span>
-  ) : students.length > 0 ? (
-    formData.students.map((studentId, index) => (
-      <div key={index} className="flex items-center mt-2">
-        <select
-          value={studentId}
-          onChange={(e) => handleStudentChange(e, index)}
-          className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Select a student</option>
-          {students.map((student) => (
-            <option key={student.id} value={student.id}>
-              {student.first_name}
-            </option>
-          ))}
-        </select>
-        {index > 0 && (
-          <button
-            type="button"
-            className="ml-2 text-red-500"
-            onClick={() => handleRemoveStudent(index)}
-          >
-            Remove
-          </button>
-        )}
-      </div>
-    ))
-  ) : (
-    <span>No students available</span>
-  )}
-  <button
-    type="button"
-    className="mt-2 px-4 py-2 w-[132px] bg-[#213458] text-[#FFFFFF]"
-    onClick={handleAddStudent}
-  >
-    Add Student
-  </button>
-</div>
-
+            <label className="text-sm font-medium text-gray-700">Students</label>
+            {loadingStudents ? (
+              <span>Loading students...</span>
+            ) : errorStudents ? (
+              <span className="text-red-500">{errorStudents}</span>
+            ) : students.length > 0 ? (
+              formData.students.map((studentId, index) => (
+                <div key={index} className="flex items-center mt-2">
+                  <select
+                    value={studentId}
+                    onChange={(e) => handleStudentChange(e, index)}
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a student</option>
+                    {students.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.first_name}
+                      </option>
+                    ))}
+                  </select>
+                  {index > 0 && (
+                    <button
+                      type="button"
+                      className="ml-2 text-red-500"
+                      onClick={() => handleRemoveStudent(index)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <span>No students available</span>
+            )}
+            <button
+              type="button"
+              className="mt-2 px-4 py-2 w-[132px] bg-[#213458] text-[#FFFFFF]"
+              onClick={handleAddStudent}
+            >
+              Add Student
+            </button>
+          </div>
         </div>
+
         <div className="flex justify-center mt-6">
           <button
             type="submit"
