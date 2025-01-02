@@ -123,7 +123,7 @@ const Page = () => {
     <>
       <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
         {/* Header Section */}
-        <div className="lg:w-[1068px] bg-white w-[330px] h-[42px] ml-4 p-4 rounded-md flex items-center justify-between shadow-sm">
+        <div className="lg:w-full bg-white w-[330px] h-[42px] ml-4 p-4 rounded-md flex items-center justify-between shadow-sm">
           <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px] items-center">
             Student |
             <Image

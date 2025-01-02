@@ -138,7 +138,7 @@ const Page = () => {
   return (
     <div className="lg:ml-[219px] mt-20 ml-[25px] flex flex-col">
       {/* Header Section */}
-      <div className="lg:w-[1060px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
+      <div className="lg:w-full w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
           Student |{" "}
           <Image src="/home.svg" width={15} height={15} alt="public" />{" "}

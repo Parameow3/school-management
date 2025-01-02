@@ -172,7 +172,7 @@ const Page: React.FC = () => {
 
   return (
     <div className="lg:ml-[219px] mt-20 ml-[25px] flex flex-col">
-      <div className="lg:w-[1040px] w-[330px] mb-4 h-[40px] p-2 bg-white flex items-center rounded-md justify-between">
+      <div className="lg:w-full w-[330px] mb-4 h-[40px] p-2 bg-white flex items-center rounded-md justify-between">
         <span className="flex flex-row gap-2 text-[14px] lg:text-[15px]">
           Student |{" "}
           <Image src="/home.svg" width={15} height={15} alt="public" /> Student
