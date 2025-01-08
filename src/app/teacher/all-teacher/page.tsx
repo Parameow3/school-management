@@ -173,7 +173,6 @@ const Page = () => {
                 <th className="px-4 py-2 text-left text-gray-600 border-b">Email</th>
                 <th className="px-4 py-2 text-left text-gray-600 border-b">Job</th>
                 <th className="px-4 py-2 text-left text-gray-600 border-b">Specialization</th>
-                <th className="px-4 py-2 text-left text-gray-600 border-b">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -183,17 +182,6 @@ const Page = () => {
                   <td className="px-4 py-2 border-b">{profile.user.email}</td>
                   <td className="px-4 py-2 border-b">{profile.job}</td>
                   <td className="px-4 py-2 border-b">{profile.specialization}</td>
-                  <td className="px-4 py-2 border-b flex gap-2 items-center ml-6">
-                   
-                    <Image
-                      src="/delete.svg"
-                      width={20}
-                      height={20}
-                      alt="delete"
-                      onClick={() => handleDeleteClick(profile.id)}
-                      className="cursor-pointer"
-                    />
-                  </td>
                 </tr>
               ))}
             </tbody>

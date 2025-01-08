@@ -149,22 +149,6 @@ const Page = () => {
 
         {/* Search Input */}
         <div className="mb-4 relative ml-4 mt-4">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M8 4a6 6 0 100 12 6 6 0 000-12zm8 8l4 4"
-              />
-            </svg>
-          </span>
           <input
             type="text"
             className="border border-gray-300 rounded-full pl-10 py-2 pr-5 lg:py-3 w-[280px] lg:w-[380px] focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm placeholder-gray-400 text-sm"
