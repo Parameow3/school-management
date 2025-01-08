@@ -26,6 +26,7 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Profile from "./profile";
+import { Button } from "@headlessui/react";
 
 type NavigationItem = {
   name: string;
@@ -121,11 +122,6 @@ const roleNavigationMap: Record<string, NavigationItem[]> = {
           href: "/attendance/student",
           current: false,
         },
-        {
-          name: "Teacher Attendance",
-          href: "/attendance/teacher",
-          current: false,
-        },
       ],
     },
     {
@@ -177,11 +173,7 @@ const roleNavigationMap: Record<string, NavigationItem[]> = {
           href: "/attendance/student",
           current: false,
         },
-        {
-          name: "Teacher Attendance",
-          href: "/attendance/teacher",
-          current: false,
-        },
+        
       ],
     },
     {
