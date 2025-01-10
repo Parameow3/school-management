@@ -3,42 +3,39 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 
-interface ProgramDropdownProps {
+type ProgramDropdownProps = {
   onSelect: (selectedPrograms: number[]) => void;
-}
+  selectedPrograms: number[];
+};
 
-const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect }) => {
+const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect, selectedPrograms }) => {
   const router = useRouter();
   const [availablePrograms, setAvailablePrograms] = useState<any[]>([]);
-  const [selectedProgram, setSelectedProgram] = useState<number | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch the token from localStorage when the component mounts
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
     } else {
-      // Redirect to login if no token
       router.push("/login");
     }
   }, [router]);
 
-  // Fetch programs once the token is available
   useEffect(() => {
     const fetchPrograms = async () => {
       if (token) {
         try {
           const response = await axios.get(
-            "http://127.0.0.1:8000/api/academics/program/",
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
             {
               headers: {
-                Authorization: `Bearer ${token}`, // Add the token in headers
+                Authorization: `Bearer ${token}`,
               },
             }
           );
-          setAvailablePrograms(response.data.results); // Assuming programs are in the `results` array
+          setAvailablePrograms(response.data.results);
         } catch (error) {
           console.error("Error fetching programs:", error);
           setError("Failed to fetch programs.");
@@ -47,39 +44,34 @@ const ProgramDropdown: React.FC<ProgramDropdownProps> = ({ onSelect }) => {
     };
 
     fetchPrograms();
-  }, [token]); // Trigger when the token is available
+  }, [token]);
 
-  const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedValue = Number(e.target.value);
-    setSelectedProgram(selectedValue); // Store the selected program as a number
-    onSelect([selectedValue]); // Send the selected program ID to the parent as an array
+  const handleProgramChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedOptions = Array.from(event.target.selectedOptions, option => parseInt(option.value, 10));
+    onSelect(selectedOptions);
   };
 
   return (
-    <div className="w-full lg:w-[300px]">
-      {error && <p className="text-red-500">{error}</p>}
+    <div>
       <select
-        id="programs"
-        name="programs"
-        value={selectedProgram ?? ""} // Set the selected value, or default to an empty string
+        id="program"
+        name="program"
+        value={selectedPrograms.map(String)}
         onChange={handleProgramChange}
-        className="mt-1 block w-full h-[40px] pl-3 pr-10 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+        required
+        multiple
       >
         <option value="" disabled>
           Select a program
         </option>
-        {availablePrograms.length > 0 ? (
-          availablePrograms.map((program) => (
-            <option key={program.id} value={program.id}>
-              {program.name}
-            </option>
-          ))
-        ) : (
-          <option value="" disabled>
-            No programs available
+        {availablePrograms.map((program) => (
+          <option key={program.id} value={program.id}>
+            {program.name}
           </option>
-        )}
+        ))}
       </select>
+      {error && <p className="mt-2 text-red-500 text-sm">{error}</p>}
     </div>
   );
 };

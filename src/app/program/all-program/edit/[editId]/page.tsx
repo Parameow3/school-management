@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation"; // Use 'useParams' and 'useRouter' for navigation
 
-interface School {
+interface Branch {
   id: number;
   name: string;
 }
@@ -15,9 +15,9 @@ const Page = () => {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    school: "", // Initialize school as an empty string to handle no selection
+    branch_id: "", // Initialize school as an empty string to handle no selection
   });
-  const [schools, setSchools] = useState<School[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -30,23 +30,21 @@ const Page = () => {
       router.push("/login");
     }
   }, [router]);
-
-  // Fetch schools
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/schools', {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`, // Pass token if available
           },
         });
-        console.log("Fetched Schools:", response.data.results);
-        setSchools(response.data.results || []);
+        console.log("Fetched branches:", response.data.results);
+        setBranches(response.data.results || []);
         setLoading(false);
       } catch (err: any) {
-        console.error("Error fetching schools:", err.response?.data || err.message);
-        setError("Failed to load schools");
+        console.error("Error fetching branches:", err.response?.data || err.message);
+        setError("Failed to load branches");
         setLoading(false);
       }
     };
@@ -63,15 +61,16 @@ const Page = () => {
     const fetchProgram = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/academics/program/${editId}/`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${editId}/`, {
           headers: {
             Authorization: `Bearer ${token}`, // Include token in the request headers
           },
         });
+        console.log(response.data)
         setFormData({
           name: response.data.name,
           description: response.data.description,
-          school: response.data.school, // Assuming the school is returned by the API
+          branch_id: response.data.branch_id, // Assuming the school is returned by the API
         });
       } catch (err: any) {
         console.error("Error fetching program data:", err.response?.data || err.message);
@@ -87,6 +86,7 @@ const Page = () => {
   // Handle form field changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    console.log(formData)
     setFormData({
       ...formData,
       [name]: value,
@@ -103,8 +103,10 @@ const Page = () => {
     }
 
     try {
-      const response = await axios.put(
-        `http://127.0.0.1:8000/api/academics/program/${editId}/`,
+      console.log("Program Updated:", formData);
+
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${editId}/`,
         formData,
         {
           headers: {
@@ -112,9 +114,9 @@ const Page = () => {
           },
         }
       );
-      console.log("Program Updated:", response.data);
+      console.log("Program Updated:", formData);
       alert("Program Updated Successfully");
-      router.push("/programs"); // Redirect to the programs list or wherever needed
+      router.push("/program/all-program"); // Redirect to the programs list or wherever needed
     } catch (err: any) {
       console.error("Error updating the program:", err.response?.data || err.message);
       alert("Failed to update program");
@@ -169,30 +171,31 @@ const Page = () => {
             />
           </div>
 
-          {/* School Dropdown */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              School
+            <label className="block text-sm font-medium text-gray-700 mb-2" htmlFor="branch_id">
+              Branch
             </label>
             <select
-              name="school"
-              value={formData.school}
-              onChange={handleChange}
+              name="branch"
+              value={formData.branch_id}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  branch_id: e.target.value, // Update user_id in formData
+                })
+              }
               className="block w-[316px] h-[44px] px-3 py-2 rounded-lg border border-gray-300 shadow-sm focus:ring-2 focus:ring-[#213458] focus:border-indigo-500"
               required
             >
-              <option value="" disabled>Select a school</option>
-              {schools.length > 0 ? (
-                schools.map((school) => (
-                  <option key={school.id} value={school.id}>
-                    {school.name}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>No schools available</option>
-              )}
+              <option value="" disabled>Select a branch</option>
+              {branches.map((branch) => (
+                <option key={branch.id} value={branch.id}>
+                  {branch.name}
+                </option>
+              ))}
             </select>
           </div>
+
 
           {/* Submit Button */}
           <button

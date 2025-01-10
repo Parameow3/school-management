@@ -1,69 +1,239 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import Button from "@/components/Button";
+import Image from "next/image";
+import Modal from "@/components/Modal";
+
+import { useRouter } from "next/navigation";
+
+
 
 const Page = () => {
-  const [attendanceData, setAttendanceData] = useState<any[]>([]); 
+  const [students, setStudents] = useState<any[]>([]); // To store the list of students
+  const [selectedStudent, setSelectedStudent] = useState<string>(""); // To store the selected student ID
+  const [classInstance, setClassInstance] = useState<string>(""); // Store the selected classroom
+  const [classrooms, setClassrooms] = useState<any[]>([]); // Store the list of classrooms
+  const [date, setDate] = useState<string>(""); // Store the selected date
+  const [status, setStatus] = useState<string>("present"); // Store the selected status
+  const [notes, setNotes] = useState<string>(""); // Store notes
+  const [showModal, setShowModal] = useState(false); // State for modal visibility
+  const [token, setToken] = useState<string | null>(null); // Store auth token
+  const [attendanceData, setAttendanceData] = useState<any[]>([]); // To store attendance history
+  const [attendaceToDelete, setAttendanceToDelete] = useState<number | null>(null); // State for tracking the exam to be deleted
+
+  const router = useRouter();
+
+  
   useEffect(() => {
-    const fetchAttendanceData = async () => {
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    if (tokenFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+    }
+  }, []);
+
+  // Fetch students data from the API
+  useEffect(() => {
+    const fetchStudents = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances`
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        setAttendanceData(response.data.results); 
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch students. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log("Fetched students data:", data);
+
+        if (data.results && data.results.length > 0) {
+          setStudents(data.results);
+        } else {
+          console.error("No students found");
+        }
       } catch (error) {
-        console.error("Error fetching attendance data:", error);
-        alert("Error fetching attendance data. Please try again.");
+        console.error("Error fetching students:", error);
       }
     };
 
-    // Fetch the attendance data when the component loads
-    fetchAttendanceData();
-  }, []); // Empty dependency array means this runs once when the component mounts
+    if (token) {
+      fetchStudents();
+    }
+  }, [token]);
 
-  // Function to handle submission
+  // Fetch classrooms data from the API (http://127.0.0.1:8000/api/academics/classroom)
+  useEffect(() => {
+    const fetchClassrooms = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch classrooms. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log("Fetched classrooms data:", data);
+
+        // Access the results field in the response
+        if (data.results && data.results.length > 0) {
+          setClassrooms(data.results); // Set classrooms from the `results` field
+        } else {
+          console.error("No classrooms found");
+        }
+      } catch (error) {
+        console.error("Error fetching classrooms:", error);
+      }
+    };
+
+    if (token) {
+      fetchClassrooms(); // Fetch classrooms only when the token is available
+    }
+  }, [token]);
+
+
+
+  // Fetch attendance data (history) from the API
+  useEffect(() => {
+    const fetchAttendanceHistory = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances/`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch attendance history. Status code: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log("Fetched attendance history:", data);
+
+        if (data.results && data.results.length > 0) {
+          setAttendanceData(data.results);
+        } else {
+          console.error("No attendance history found");
+        }
+      } catch (error) {
+        console.error("Error fetching attendance history:", error);
+      }
+    };
+
+    if (token) {
+      fetchAttendanceHistory();
+    }
+  }, [token]);
+
+   // Handle Edit
+   const handleEdit = (id: number) => {
+    router.push(`/attendance/student/edit/${id}`);
+  };
+
+  const handleDelete = (id: number) => {
+    console.log(id)
+    setAttendanceToDelete(id); // Set the exam to be deleted
+    setShowModal(true); // Show the confirmation modal
+  };
+
+
+  // Handle Confirm Delete
+  const confirmDelete = () => {
+    if (attendaceToDelete) {
+      // Perform the delete request here
+      fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances/${attendaceToDelete}/`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Failed to delete exam");
+          }
+          // Remove the deleted exam from the state
+          setAttendanceData((prevExams) =>
+            prevExams.filter((exam) => exam.id !== attendaceToDelete)
+          );
+          setShowModal(false); // Close the modal after deletion
+        })
+        .catch((error) => {
+          console.error("Error deleting exam:", error);
+        });
+    }
+  };
+
+  
+  // Form submission logic
   const handleSubmitClick = async () => {
-    // Get data from input fields by ID
-    const studentId: string | null = (
-      document.getElementById("studentId") as HTMLInputElement
-    )?.value;
-    const classInstance: string | null = (
-      document.getElementById("classInstance") as HTMLInputElement
-    )?.value;
-    const date: string | null = (
-      document.getElementById("date") as HTMLInputElement
-    )?.value;
-    const status: string | null = (
-      document.getElementById("status") as HTMLSelectElement
-    )?.value;
-    const notes: string | null = (
-      document.getElementById("notes") as HTMLInputElement
-    )?.value;
-
-    if (!studentId || !classInstance || !date || !status) {
+    if (!selectedStudent || !classInstance || !date || !status) {
       alert("Please fill all required fields.");
       return;
     }
 
     const data = {
-      student: parseInt(studentId), 
-      class_instance: parseInt(classInstance), 
-      date: date, 
+      student_id: parseInt(selectedStudent),
+      class_id: parseInt(classInstance),
+      date: date,
       status: status,
-      notes: notes || "", 
+      notes: notes || "",
     };
+
     try {
-      await axios.post(
+      console.log(data)
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/attendances/`,
-        data,
         {
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify(data),
         }
       );
-      setAttendanceData((prevData) => [...prevData, data]);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log("Error data:", errorData);
+        throw new Error(
+          `Failed to submit attendance. Server responded with: ${response.status}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("Success:", result);
+      setAttendanceData((prevData) => [...prevData, result]);
 
       alert("Attendance submitted successfully!");
     } catch (error) {
@@ -79,28 +249,35 @@ const Page = () => {
           Attendance | Submit Attendance
         </span>
       </div>
-
-      {/* Form for input data */}
       <div className="flex flex-col lg:w-[1068px] w-full p-6 bg-white rounded-lg shadow-md mb-10 space-y-4">
-        {/* First Row */}
         <div className="flex flex-col lg:flex-row lg:space-x-4">
-          {/* Student ID */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="studentId"
               className="text-sm font-medium text-gray-700"
             >
-              Student ID (required)
+              Student (required)
             </label>
-            <input
+            <select
               id="studentId"
-              type="number"
-              placeholder="Enter Student ID"
+              value={selectedStudent}
+              onChange={(e) => setSelectedStudent(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+              <option value="">Select Student</option>
+              {students.length > 0 ? (
+                students.map((student) => (
+                  <option key={student.id} value={student.id}>
+                    {`${student.first_name} ${student.last_name}`}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No students available</option>
+              )}
+            </select>
           </div>
 
-          {/* Class Instance */}
+          {/* Replace Class Instance Input with Dropdown */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="classInstance"
@@ -108,15 +285,25 @@ const Page = () => {
             >
               Class Instance (required)
             </label>
-            <input
+            <select
               id="classInstance"
-              type="number"
-              placeholder="Enter Class Instance"
+              value={classInstance}
+              onChange={(e) => setClassInstance(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+            >
+              <option value="">Select Class</option>
+              {classrooms.length > 0 ? (
+                classrooms.map((classroom) => (
+                  <option key={classroom.id} value={classroom.id}>
+                    {classroom.name} {/* Assuming classrooms have 'name' field */}
+                  </option>
+                ))
+              ) : (
+                <option disabled>No classes available</option>
+              )}
+            </select>
           </div>
 
-          {/* Date */}
           <div className="flex flex-col lg:w-1/3">
             <label htmlFor="date" className="text-sm font-medium text-gray-700">
               Date (required)
@@ -124,14 +311,14 @@ const Page = () => {
             <input
               id="date"
               type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Second Row (Status and Notes) */}
         <div className="flex flex-col lg:flex-row lg:space-x-4">
-          {/* Status */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="status"
@@ -141,6 +328,8 @@ const Page = () => {
             </label>
             <select
               id="status"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="present">Present</option>
@@ -149,7 +338,6 @@ const Page = () => {
             </select>
           </div>
 
-          {/* Notes */}
           <div className="flex flex-col lg:w-1/3">
             <label
               htmlFor="notes"
@@ -160,14 +348,14 @@ const Page = () => {
             <input
               id="notes"
               type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
               placeholder="Enter any notes"
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
 
-        {/* Submit Button */}
-        {/* Submit Button */}
         <div className="flex justify-center">
           <Button
             onClick={handleSubmitClick}
@@ -177,8 +365,6 @@ const Page = () => {
           </Button>
         </div>
       </div>
-
-      {/* Display the new attendance and history */}
       {attendanceData.length > 0 && (
         <div className="lg:w-[1068px] w-full mt-8 bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">
@@ -188,7 +374,7 @@ const Page = () => {
             <thead className="bg-gray-100">
               <tr>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
-                  Student ID
+                  Student Name
                 </th>
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
                   Class Instance
@@ -202,21 +388,64 @@ const Page = () => {
                 <th className="border px-4 py-2 text-left text-sm text-gray-700">
                   Notes
                 </th>
+                <th className="border px-4 py-2 text-left text-sm text-gray-700">
+                  Action
+                </th>
+               
               </tr>
             </thead>
             <tbody>
-              {attendanceData.map((record, index) => (
+              {attendanceData.map((record, index) => (  
                 <tr key={index} className="hover:bg-gray-100 transition-colors">
-                  <td className="border px-4 py-2">{record.student}</td>
-                  <td className="border px-4 py-2">{record.class_instance}</td>
+                  <td className="border px-4 py-2">
+                    {record.student_name}
+                  </td>
+                  <td className="border px-4 py-2">{record.class_name}</td>
                   <td className="border px-4 py-2">{record.date}</td>
                   <td className="border px-4 py-2">{record.status}</td>
                   <td className="border px-4 py-2">{record.notes}</td>
+                  <td className="border px-4 py-2">
+                  <div className="flex justify-center space-x-2">
+                        <button
+                          className="text-blue-500 hover:text-blue-700"
+                          onClick={() => handleEdit(record.id)}
+                        >
+                          <Image
+                            src="/edit.svg"
+                            alt="Edit"
+                            width={25}
+                            height={25}
+                            className="w-[25px] h-[25px]"
+                          />
+                        </button>
+                        <button
+                          className="text-red-500 hover:text-red-700"
+                          onClick={() => handleDelete(record.id)}
+                        >
+                          <Image
+                            src="/delete.svg"
+                            alt="Delete"
+                            width={25}
+                            height={25}
+                            className="w-[25px] h-[25px]"
+                          />
+                        </button>
+                      </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+       {/* Modal for delete confirmation */}
+       {showModal && (
+        <Modal
+          onClose={() => setShowModal(false)}
+          onConfirm={confirmDelete}
+          message="Are you sure you want to delete this exam?"
+        />
       )}
     </div>
   );

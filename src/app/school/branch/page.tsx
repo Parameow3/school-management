@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Button from '@/components/Button';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image'
+import Modal from '@/components/Modal';
 
 interface School {
   id: number;
@@ -19,11 +21,11 @@ interface Branch {
   school: School;
   name: string;
   address: string;
-  phone_number: string | null;
-  email: string | null;
+  phone_number: string ;
+  email: string ;
   location: string;
   school_name:string;
-  user_name: number;
+  user_name: string;
 }
 
 const Page: React.FC = () => {
@@ -32,6 +34,10 @@ const Page: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [schoolToDelete, setBranchToDelete] = useState<number | null>(null);
+
+
 
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -49,7 +55,33 @@ const Page: React.FC = () => {
   };
 
   const handleEdit = (id: number) => {
-    router.push(`/school/school/edit/${id}`);
+    router.push(`/school/branch/edit/${id}`);
+  };
+
+  const openDeleteModal = (id: number) => {
+    setBranchToDelete(id);  // Set the ID of the school to be deleted
+    setShowModal(true);  // Show the modal
+  };
+
+  const handleDeleteConfirm = async () => {
+    
+    if (schoolToDelete !== null) {
+      try {
+        // Delete school by ID
+        await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/${schoolToDelete}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        // Remove the deleted school from the state
+        setBranches((prevSchools) => prevSchools.filter((school) => school.id !== schoolToDelete));
+        setShowModal(false);  // Close the modal after deletion
+        setBranchToDelete(null);  // Reset the schoolToDelete state
+      } catch (err) {
+        console.error("Failed to delete school:", err);
+        setError("Failed to delete school. Please try again.");
+      }
+    }
   };
 
   useEffect(() => {
@@ -112,19 +144,37 @@ const Page: React.FC = () => {
                 <td className="px-2 py-2 whitespace-nowrap">{branch.email}</td>
                 <td className="px-2 py-2 whitespace-nowrap">{branch.phone_number}</td>
                 <td className="px-2 py-2 whitespace-nowrap">{branch.school_name}</td>
-                <td className="px-6 py-4 text-center flex justify-center space-x-4">
-                  <button onClick={() => handleEdit(school.id)} className="text-blue-600 hover:underline">
-                    Edit
-                  </button>
-                  <button onClick={() => openDeleteModal(school.id)} className="text-red-600 hover:underline">
-                    Delete
-                  </button>
+
+                <td className="px-6 py-4 mt-4 text-center flex justify-center space-x-2">
+                  <Image
+                    src="/update.svg"
+                    width={20}
+                    height={20}
+                    alt="update"
+                    className="mr-2"
+                    onClick={() => handleEdit(branch.id)}
+                  />
+                  <Image
+                    src="/delete.svg"
+                    width={20}
+                    height={20}
+                    alt="delete"
+                    onClick={() => openDeleteModal(branch.id)} // Trigger modal open with the correct ID
+                  />
+
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {showModal && (
+        <Modal
+          onClose={() => setShowModal(false)} // Close the modal without deleting
+          onConfirm={handleDeleteConfirm} // Confirm deletion
+          message="Are you sure you want to delete this school?"
+        />
+      )}
     </div>
   );
 };

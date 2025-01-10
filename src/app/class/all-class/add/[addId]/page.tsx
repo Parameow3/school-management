@@ -10,38 +10,7 @@ const Page = () => {
   const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const profiles = [
-    {
-      id: 1,
-      pic: "/photo.jpg",
-      name: "Lyseth",
-      job: "Student",
-    },
-    {
-      id: 2,
-      pic: "/photo.jpg",
-      name: "John Doe",
-      job: "Software Engineer",
-    },
-    {
-      id: 3,
-      pic: "/photo.jpg",
-      name: "Jane Smith",
-      job: "Designer",
-    },
-    {
-      id: 4,
-      pic: "/photo.jpg",
-      name: "Jane Smith",
-      job: "Designer",
-    },
-    {
-      id: 5,
-      pic: "/photo.jpg",
-      name: "Jane Smith",
-      job: "Designer",
-    },
-  ];
+ 
 
   const handleSearchClick = () => {
     // Logic for search functionality - placeholder for now
@@ -82,18 +51,7 @@ const Page = () => {
             Search
           </Button>
         </div>
-        <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
-          {profiles.map((profile) => (
-            <ProfileCard
-              key={profile.id}
-              pic={profile.pic}
-              first_name={profile.name}
-              job={profile.job}
-              onViewClick={() => handleViewClick(profile.id)}
-              onEditClick={() => handleEditClick(profile.id)}
-              onDeleteClick={() => handleDeleteClick(profile.id)} editPath={""} viewPath={""}            />
-          ))}
-        </div>
+        
         <div className="flex justify-center mt-4">
           <Button className="bg-[#213458] rounded-md p-1">Submit</Button>
         </div>

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Button from "@/components/Button";
@@ -10,8 +10,14 @@ interface School {
   address: string;
   email: string | null;
   established_date: string;
-  phone_number: string; // Ensure this matches the backend field
-  schoolweb: string | null; // Ensure this matches the backend field and handles null
+  phone_number: string;
+  schoolweb: string | null;
+}
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
 }
 
 const Page: React.FC = () => {
@@ -20,23 +26,19 @@ const Page: React.FC = () => {
   const [branchLocation, setBranchLocation] = useState<string>("");
   const [branchPhoneNumber, setBranchPhoneNumber] = useState<string>("");
   const [branchEmail, setBranchEmail] = useState<string>("");
-  const [userId, setUserId] = useState<number>(0);
+  const [userId, setUserId] = useState<number | null>(null);
 
   const [schools, setSchools] = useState<School[]>([]);
+  const [users, setUsers] = useState<User[]>([]); // Initialize as an empty array
   const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
-  const [schoolName, setSchoolName] = useState<string>("");
-  const [schoolAddress, setSchoolAddress] = useState<string>("");
-  const [schoolPhoneNumber, setSchoolPhoneNumber] = useState<string>("");
-  const [schoolEmail, setSchoolEmail] = useState<string>("");
-  const [schoolEstablishedDate, setSchoolEstablishedDate] = useState<string>("");
-  const [schoolWebsite, setSchoolWebsite] = useState<string>("");
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
 
-  // Fetch the token on component mount
+  // Fetch the token from localStorage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -46,48 +48,48 @@ const Page: React.FC = () => {
     }
   }, [router]);
 
-  // Fetch the schools when the token is available
   useEffect(() => {
     if (!token) return;
-    const fetchSchools = async () => {
+  
+    const fetchSchoolsAndUsers = async () => {
       try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, {
+        // Fetch schools
+        const schoolResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setSchools(response.data.results);
+        setSchools(schoolResponse.data.results);
+  
+        // Fetch users
+        const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=admin`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log("Users data:", userResponse.data); // Log the response to debug
+  
+        // Ensure the response is an array and contains users data
+        if (Array.isArray(userResponse.data.results)) {
+          setUsers(userResponse.data.results);
+        } else {
+          console.error("Users API response is not an array");
+        }
       } catch (err) {
-        console.error("Error fetching schools:", err);
-        setError("Failed to fetch schools.");
+        console.error("Error fetching data:", err);
+        setError("Failed to fetch data.");
       }
     };
-
-    fetchSchools();
+  
+    fetchSchoolsAndUsers();
   }, [token]);
 
   const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = Number(e.target.value);
     setSelectedSchool(selectedId);
-    const school = schools.find((school) => school.id === selectedId);
-    if (school) {
-      setSchoolName(school.name);
-      setSchoolAddress(school.address);
-      setSchoolEmail(school.email || "");
-      setSchoolEstablishedDate(school.established_date);
-      setSchoolPhoneNumber(school.phone_number);
-      setSchoolWebsite(school.schoolweb || "Website not available"); // Fallback in case of null
-    } else {
-      // Clear if no school is selected
-      setSchoolName("");
-      setSchoolAddress("");
-      setSchoolEmail("");
-      setSchoolEstablishedDate("");
-      setSchoolPhoneNumber("");
-      setSchoolWebsite("");
-    }
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -101,19 +103,13 @@ const Page: React.FC = () => {
         phone_number: branchPhoneNumber,
         email: branchEmail,
         location: branchLocation,
-        user_id: userId,
-        school_id: selectedSchool || null, // Use school_id if selected
-        // Always send school data, even if school is selected
-        school: {
-          name: schoolName,
-          address: schoolAddress,
-          phone_number: schoolPhoneNumber,
-          email: schoolEmail,
-          established_date: schoolEstablishedDate,
-          website: schoolWebsite,
-        },
+        user_id: userId,  // Use userId selected from the dropdown
+        school_id: selectedSchool || null,
       };
+
       console.log("Submitting data:", branchData);
+
+      // Submit branch data
       await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/branches/`, branchData, {
         headers: {
           Authorization: `Bearer ${token}`, // Ensure the token is included in the request
@@ -121,8 +117,10 @@ const Page: React.FC = () => {
       });
       router.push("/school/branch");
     } catch (err) {
-      alert("Failed to add branch. Please check the form and try again."); // Show alert on failure
-      setLoading(false);
+      setError("Failed to add branch. Please check the form and try again.");
+      console.error("Submission error:", err);
+    } finally {
+      setLoading(false); // Reset loading state after submission
     }
   };
 
@@ -135,6 +133,7 @@ const Page: React.FC = () => {
         <h1 className="text-xl font-bold text-gray-800 mb-8 text-center">
           Add New Branch
         </h1>
+
         {/* Branch Information */}
         <div className="mb-6">
           <label className="block text-gray-600 text-sm font-semibold mb-2">
@@ -206,18 +205,24 @@ const Page: React.FC = () => {
           />
         </div>
 
+        {/* User Dropdown */}
         <div className="mb-6">
           <label className="block text-gray-600 text-sm font-semibold mb-2">
-            User ID
+            Select User
           </label>
-          <input
+          <select
             className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
-            type="number"
-            value={userId}
-            onChange={(e) => setUserId(Number(e.target.value))}
-            placeholder="Enter user ID"
+            value={userId || ""}
+            onChange={(e) => setUserId(Number(e.target.value))}  // Set userId on selection
             required
-          />
+          >
+            <option value="">Select a user</option>
+            {users.length > 0 ? users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.username} 
+              </option>
+            )) : <option disabled>Loading users...</option>}
+          </select>
         </div>
 
         {/* School Information */}
@@ -244,86 +249,9 @@ const Page: React.FC = () => {
           </select>
         </div>
 
-        {/* Display school details if selected */}
-        {selectedSchool && (
-          <>
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Name
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolName}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Address
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolAddress}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Phone Number
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolPhoneNumber}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Email
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="email"
-                value={schoolEmail}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                Established Date
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="date"
-                value={schoolEstablishedDate}
-                readOnly
-              />
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-600 text-sm font-semibold mb-2">
-                School Website
-              </label>
-              <input
-                className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight"
-                type="text"
-                value={schoolWebsite || "Website not available"}
-                readOnly
-              />
-            </div>
-          </>
-        )}
-
         {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
-        <Button className=" bg-[#213458] flex items-center justify-center hover:bg[#213498] text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <Button className="bg-[#213458] flex items-center justify-center hover:bg[#213498] text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
           {loading ? "Submitting..." : "Submit"}
         </Button>
       </form>

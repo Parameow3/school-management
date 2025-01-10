@@ -1,227 +1,650 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import Button from "@/components/Button";
-import axios from "axios"; // Import Axios for HTTP requests
+import axios from "axios";
+import { useParams, useRouter } from "next/navigation";
+interface Course {
+  id: number;
+  name: string;
+}
 
-const ClassForm = () => {
-  const [formData, setFormData] = useState({
-    className: "",
-    program: "", // Store the program ID here
-    teacher: "", // Store the teacher ID here
-    studentName: "",
-    credit: "",
-    start_date: "",
-    end_date: "",
-  });
+interface Student {
+  id: number;
+  first_name: string;
+  last_name: string
+}
 
-  const [teachers, setTeachers] = useState([]); 
-  const [programs, setPrograms] = useState([]); 
-  const [loadingTeachers, setLoadingTeachers] = useState(true); 
-  const [loadingPrograms, setLoadingPrograms] = useState(true); 
-  const [error, setError] = useState(null); 
+interface Teacher {
+  username: string;
+  id: number;
+}
+
+interface Classroom {
+  id: number;
+  name: string;
+  courses_id: number[];
+  course_names: string[];
+  teacher_name: string;
+  teacher_id : number;
+  student_id: number[];
+  student_names: string[];
+  start_date: string;
+  end_date: string;
+  start_time: string;
+  end_time: string;
+}
+
+
+const Page: React.FC = () => {
+
+  
+  const [isMounted, setIsMounted] = useState(false);
+  const params = useParams();
+  const router = useRouter();
+  const classroomId = parseInt(params.editId as string, 10);
+  console.log(classroomId)
+  
+  
+
+  const [formData, setFormData] = useState<Classroom[]>([]);
+
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [currentCourse, setCurrentCourse] = useState<string>(""); // Dropdown selection
+  const [selectedCourses, setSelectedCourses] = useState<{ id: number; name: string }[]>([]);
+
+
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+
+  const [students, setStudents] = useState<Student[]>([]);
+  const [currentStudent, setCurrentStudent] = useState<string>(""); // Dropdown selection
+  const [selectedStudents, setSelectedStudents] = useState<{ id: number; first_name: string }[]>([]);
+
+  const [ selectClassrooms , setSelectClarooms ] =  useState<Classroom [] > ([]);
+  const [classroom, setClassroom] = useState<Classroom[]>([]); // Default students
+  
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [errorCourses, setErrorCourses] = useState<string | null>(null);
+  const [errorTeachers, setErrorTeachers] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/teacher`);
-        setTeachers(response.data.results);
-        setLoadingTeachers(false);
-      } catch (err:any) {
-        setError(err);
-        setLoadingTeachers(false);
-      }
-    };
-
-    fetchTeachers();
+    setIsMounted(true);
   }, []);
 
+  
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course`);
-        setPrograms(response.data.results); 
-        setLoadingPrograms(false);
-      } catch (err:any) {
-        setError(err);
-        setLoadingPrograms(false);
-      }
-    };
+    if (isMounted) {
+      const fetchData = async () => {
+        try {
+          const [studentResponse, coursesResponse , classroomDetailResponse , teacherResponse ] = await Promise.all([
+            axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+              }
+            ),
+            axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+              }
+            ),
+            axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classroomId}/`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+              }
+            ),
+            axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                },
+              }
+            ),
 
-    fetchPrograms();
-  }, []);
+          ]);
+          
+  
+          console.log("Students Fetched:", studentResponse?.data?.results);
+          console.log("Courses Fetched:", coursesResponse?.data?.results);
+          console.log("teacher Fetched:", teacherResponse?.data?.results);
+          console.log("clasrrom Fetched:", classroomDetailResponse?.data);
+  
+          setStudents(studentResponse?.data?.results || []);
+          setCourses(coursesResponse?.data?.results || []);
+          setFormData([classroomDetailResponse?.data]);
+          setTeachers(teacherResponse?.data?.results || [])
+          
+        } catch (error: any) {
+          console.error("Error loading students or courses", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchData();
+      
+    }
+  }, [isMounted]);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  // Handle form submission and post the data to the backend
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const postData = {
-      name: formData.className, 
-      courses: [parseInt(formData.program)], 
-      teacher: parseInt(formData.teacher), 
-      start_date: formData.start_date, 
-      end_date: formData.end_date,    
-    };
-
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`, postData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+  
+  const handleAddCourse = () => {
+    const selectedId = Number(currentCourse);
+    console.log("Selected ID:", selectedId);
+  
+    // Find the student based on the selected ID
+    const selectedCourseToAdd = courses.find(
+      (course) => course.id === selectedId
+    );
+  
+    // Check if the student exists and is not already added
+    if (selectedCourseToAdd && !selectedCourses.some((s) => s.id === selectedId)) {
+      // Add student to the selected students array
+      setSelectedCourses((prevSelectedStudents) => [
+        ...prevSelectedStudents,
+        selectedCourseToAdd,
+      ]);
+  
+      // Update the form data
+      setFormData((prevFormData) => {
+        if (prevFormData.length === 0) {
+          // Create a new classroom if none exists
+          return [
+            {
+              id: 1, // Replace with actual classroom ID or logic
+              name: "", // Replace with actual data
+              courses_id: [], // Replace with actual course IDs
+              course_names: [], // Replace with actual course names
+              teacher_id: 1,
+              teacher_name: "", // Replace with actual teacher name
+              student_id: [selectedId],
+              student_names: [selectedCourseToAdd.name], // Assuming student has a `name` field
+              start_date: "", // Replace with actual start date
+              end_date: "", // Replace with actual end date
+              start_time: "", // Replace with actual start time
+              end_time: "", // Replace with actual end time
+            },
+          ];
+        } else {
+          // Update existing classroom
+          const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
+  
+          if (!updatedClassroom.courses_id.includes(selectedId)) {
+            updatedClassroom.courses_id.push(selectedId);
+            updatedClassroom.course_names.push(selectedCourseToAdd.name); // Assuming student has a `name` field
+          }
+  
+          return [updatedClassroom];
+        }
       });
-      console.log("Response:", response.data);
-      alert("Classroom created successfully!");
-    } catch (error: any) {
-      console.error("Error submitting the form:", error);
-      if (error.response && error.response.data) {
-        alert(`Error: ${error.response.data.detail || "An error occurred."}`);
-      } else {
-        alert("Failed to submit the form.");
-      }
+  
+      // Clear the current student selection
+      setCurrentCourse("");
+    } else {
+      alert("Student already added or invalid selection.");
     }
   };
 
-  return (
-    <div className="lg:ml-[16%] mt-20 ml-[11%] flex flex-col">
-      <div className="lg:w-[1079px] w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-        <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
-          Class | <Image src={"/home.svg"} width={15} height={15} alt="public" /> Update-class
-        </span>
+  // Handle removing a student
+  const handleRemoveCourse = (id: number) => {
+    setSelectedCourses(selectedCourses.filter((s) => s.id !== id));
+  
+    setFormData((prevFormData) => {
+      if (prevFormData.length === 0) return prevFormData;
+  
+      const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
+      const indexToRemove = updatedClassroom.courses_id.indexOf(id);
+      if (indexToRemove !== -1) {
+        updatedClassroom.courses_id.splice(indexToRemove, 1);
+        updatedClassroom.course_names.splice(indexToRemove, 1);
+      }
+      return [updatedClassroom];
+    });
+  };
 
-        <Link href={"/#"} passHref>
-          <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
-            <Image src={"/refresh.svg"} width={16} height={16} alt="Refresh" />
+  const handleAddStudent = () => {
+    const selectedId = Number(currentStudent);
+    console.log("Selected ID:", selectedId);
+  
+    // Find the student based on the selected ID
+    const selectedStudentToAdd = students.find(
+      (student) => student.id === selectedId
+    );
+  
+    // Check if the student exists and is not already added
+    if (selectedStudentToAdd && !selectedStudents.some((s) => s.id === selectedId)) {
+      // Add student to the selected students array
+      setSelectedStudents((prevSelectedStudents) => [
+        ...prevSelectedStudents,
+        selectedStudentToAdd,
+      ]);
+  
+      // Update the form data
+      setFormData((prevFormData) => {
+        if (prevFormData.length === 0) {
+          // Create a new classroom if none exists
+          return [
+            {
+              id: 1, // Replace with actual classroom ID or logic
+              name: "", // Replace with actual data
+              courses_id: [], // Replace with actual course IDs
+              course_names: [], // Replace with actual course names
+              teacher_id : 1 ,
+              teacher_name: "", // Replace with actual teacher name
+              student_id: [selectedId],
+              student_names: [selectedStudentToAdd.first_name], // Assuming student has a `name` field
+              start_date: "", // Replace with actual start date
+              end_date: "", // Replace with actual end date
+              start_time: "", // Replace with actual start time
+              end_time: "", // Replace with actual end time
+            },
+          ];
+        } else {
+          // Update existing classroom
+          const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
+  
+          if (!updatedClassroom.student_id.includes(selectedId)) {
+            updatedClassroom.student_id.push(selectedId);
+            updatedClassroom.student_names.push(selectedStudentToAdd.first_name +" "+ selectedStudentToAdd.last_name); // Assuming student has a `name` field
+          }
+  
+          return [updatedClassroom];
+        }
+      });
+  
+      // Clear the current student selection
+      setCurrentStudent("");
+    } else {
+      alert("Student already added or invalid selection.");
+    }
+  };
+
+
+  
+  // Handle removing a student
+  const handleRemoveStudent = (id: number) => {
+    setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
+  
+    setFormData((prevFormData) => {
+      if (prevFormData.length === 0) return prevFormData;
+  
+      const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
+      const indexToRemove = updatedClassroom.student_id.indexOf(id);
+      if (indexToRemove !== -1) {
+        updatedClassroom.student_id.splice(indexToRemove, 1);
+        updatedClassroom.student_names.splice(indexToRemove, 1);
+      }
+      return [updatedClassroom];
+    });
+  };
+
+  const handleInputChange = (id: number, field: any, value: any) => {
+    setFormData((prevFormData) =>
+      prevFormData.map((item) =>
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    id: number // Identifier to locate the specific object in the array
+  ) => {
+    const { name, value } = e.target;
+  
+    setFormData((prevFormData) =>
+      prevFormData.map((item) =>
+        item.id === id ? { ...item, [name]: value } : item
+      )
+    );
+  };
+
+   
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault(); // Prevent default form submission behavior
+  
+    // Validate that formData has valid entries
+    if (formData.length === 0) {
+      alert("Please add at least one student before submitting.");
+      return;
+    }
+  
+    // Map formData to the structure required by your API or backend
+    const payload = formData.map((entry) => ({
+      name : entry.name,
+      student_id: entry.student_id, // Adjust field names as required
+      courses_id: entry.courses_id, // Include relevant fields
+      start_date: entry.start_date,
+      end_date: entry.end_date,
+      start_time: entry.start_time,
+      end_time: entry.end_time,
+      teacher_id:entry.teacher_id,
+    }));
+  
+    // merged object
+    const result = payload.reduce((acc, entry) => {
+      Object.assign(acc, entry); // Merge fields directly into a single object
+      return acc;
+    }, {} as Record<string, any>);
+    // console.log("Submitting data:", result);
+
+    try {
+      console.log("Submitting data:", result);
+      console.log(classroomId)
+
+      await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classroomId}/`,
+        result,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+        }
+      );
+      console.log("Program Updated:", result);
+      alert("Program Updated Successfully");
+      router.push("/class/all-class"); // Redirect to the programs list or wherever needed
+    } catch (err: any) {
+      console.error("Error updating the program:", err.response?.data || err.message);
+      alert("Failed to update program");
+    }
+
+  
+    // Simulate API submission and handle success/error
+    
+  };
+
+  
+  
+  
+
+
+  
+
+  if (!isMounted) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+
+    <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
+      <div className="lg:w-[60%] w-[90%] mx-auto mt-10 p-6 bg-white rounded-lg shadow-md space-y-6">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-800">Update Class Form</h1>
+        </div>
+
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="flex flex-col">
+            <label
+              htmlFor="className"
+              className="text-sm font-medium text-gray-700"
+            >
+              Class Name
+            </label>
+
+          {formData.map((data) =>(
+            <input
+              id="className"
+              name="className"
+              type="text"
+              placeholder="Enter Class Name"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => handleInputChange(data.id, 'name', e.target.value)}
+              value={data.name}
+            />
+          ))}
           </div>
-        </Link>
+
+        
+
+          <div className="flex flex-col">
+            <label
+              htmlFor="teacher"
+              className="text-sm font-medium text-gray-700"
+            >
+              Teacher
+            </label>
+            
+              {formData.map((data)=>(
+
+              <select
+                id="teacher"
+                name="teacher"
+                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={data.teacher_id}
+                
+                onChange={(e) => handleInputChange(data.id, 'teacher_id', Number(e.target.value))}
+
+              >
+                {formData.map((data)=>(
+
+                <option value="data.teacher_id">{data.teacher_name}</option>
+                ))}
+                {teachers.map((teacher) => (
+                  <option key={teacher.id} value={teacher.id}>
+                    {teacher.username}
+                  </option>
+                ))}
+              </select>
+              ))}
+            
+          </div>
+
+
+          <div className="flex flex-col">
+            <label
+              htmlFor="start_date"
+              className="text-sm font-medium text-gray-700"
+            >
+              Start Date
+            </label>
+            {formData.map((data) =>(
+            <input
+              id="start_date"
+              name="start_date"
+              type="date"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={data.start_date } // Ensure value is a valid string
+
+              onChange={(e) => handleChange(e, data.id)} // Pass the event and the object's ID
+              />
+          ))}
+
+          </div>
+
+          <div className="flex flex-col">
+            <label
+              htmlFor="end_date"
+              className="text-sm font-medium text-gray-700"
+            >
+              End Date
+            </label>
+            {formData.map((data) =>(
+
+            <input
+              id="end_date"
+              name="end_date"
+              type="date"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={data.end_date}
+              onChange={(e) => handleChange(e, data.id)} // Pass the event and the object's ID
+
+            />
+          ))}
+
+          </div>
+
+
+          <div>
+        <label 
+          htmlFor="student-select" 
+          className="block text-lg font-medium text-gray-900 mb-2"
+        >
+          Select a Course to Add
+        </label>
+        <div className="flex items-center gap-3">
+          <select
+            id="student-select"
+            className="flex-1 h-10 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={currentCourse}
+            onChange={(e) => setCurrentCourse(e.target.value)}
+            aria-label="Select a student"
+          >
+            <option value="" disabled>
+              Select a course
+            </option>
+            {courses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.name} 
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="h-10 px-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+            onClick={handleAddCourse}
+            disabled={!currentCourse}
+            aria-label="Add selected student"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+  
+      {/* Display selected students dynamically in a table */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Selected course</h2>
+        <table className="w-full text-left border-collapse border border-gray-300 rounded-lg overflow-hidden">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-2 border-b border-gray-300 font-medium">Student Name</th>
+              <th className="px-4 py-2 border-b border-gray-300 font-medium text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          {formData.map((classroom) => (
+            classroom.courses_id.map((id, index) => (
+              <tr 
+                key={id} 
+                className="hover:bg-gray-50 transition-colors"
+              >
+                <td className="px-4 py-2 border-b border-gray-300">{classroom.course_names[index]}</td>
+                <td className="px-4 py-2 border-b border-gray-300 text-center">
+                  <button
+                    type="button"
+                    className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"
+                    onClick={() => handleRemoveCourse(id)}
+                    aria-label={`Remove student ${classroom.course_names[index]}`}
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))
+          ))}
+          </tbody>
+        </table>
       </div>
 
-      <h1 className="text-center lg:text-2xl text-lg font-bold mb-8 mt-4 border-b-2">
-        Update Form
-      </h1>
 
-      <div className="">
-        <form onSubmit={handleSubmit} className="flex flex-col items-center space-y-4">
-          {/* Responsive grid - 1 column on mobile and 3 columns on large screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 w-full">
 
-            {/* Class Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Class Name</label>
-              <input
-                type="text"
-                name="className"
-                value={formData.className}
-                onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
-              />
-            </div>
-
-            {/* Program Dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Program</label>
-              {loadingPrograms ? (
-                <p>Loading programs...</p>
-              ) : error ? (
-                <p>Error loading programs</p>
-              ) : (
-                <select
-                  name="program"
-                  value={formData.program}
-                  onChange={handleChange}
-                  className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select a Program</option>
-                  {programs.map((program: any) => (
-                    <option key={program.id} value={program.id}>
-                      {program.name} {/* Adjusted to access program name */}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Teacher Dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Teacher</label>
-              {loadingTeachers ? (
-                <p>Loading teachers...</p>
-              ) : error ? (
-                <p>Error loading teachers</p>
-              ) : (
-                <select
-                  name="teacher"
-                  value={formData.teacher}
-                  onChange={handleChange}
-                  className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                >
-                  <option value="">Select a Teacher</option>
-                  {teachers.map((teacher: any) => (
-                    <option key={teacher.id} value={teacher.id}>
-                      {teacher.user.username} {/* Adjusted to access username */}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-
-            {/* Start Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Start Date</label>
-              <input
-                type="date"
-                name="start_date"
-                value={formData.start_date}
-                onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
-              />
-            </div>
-
-            {/* End Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">End Date</label>
-              <input
-                type="date"
-                name="end_date"
-                value={formData.end_date}
-                onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
-              />
-            </div>
-
-            {/* Credit */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Credit</label>
-              <select
-                name="credit"
-                value={formData.credit}
-                onChange={handleChange}
-                className="mt-1 block w-full h-[40px] outline-none p-2 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-slate-700 sm:text-sm"
+    <div>
+        <label 
+          htmlFor="student-select" 
+          className="block text-lg font-medium text-gray-900 mb-2"
+        >
+          Select a Student to Add
+        </label>
+        <div className="flex items-center gap-3">
+          <select
+            id="student-select"
+            className="flex-1 h-10 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={currentStudent}
+            onChange={(e) => setCurrentStudent(e.target.value)}
+            aria-label="Select a student"
+          >
+            <option value="" disabled>
+              Select a Student
+            </option>
+            {students.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.first_name + " " + student.last_name} 
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="h-10 px-4 text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500"
+            onClick={handleAddStudent}
+            disabled={!currentStudent}
+            aria-label="Add selected student"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+  
+      {/* Display selected students dynamically in a table */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Selected Students</h2>
+        <table className="w-full text-left border-collapse border border-gray-300 rounded-lg overflow-hidden">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-4 py-2 border-b border-gray-300 font-medium">Student Name</th>
+              <th className="px-4 py-2 border-b border-gray-300 font-medium text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+          {formData.map((classroom) => (
+            classroom.student_id.map((id, index) => (
+              <tr 
+                key={id} 
+                className="hover:bg-gray-50 transition-colors"
               >
-                <option value="">Select a credit</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-              </select>
-            </div>
-          </div>
+                <td className="px-4 py-2 border-b border-gray-300">{classroom.student_names[index]}</td>
+                <td className="px-4 py-2 border-b border-gray-300 text-center">
+                  <button
+                    type="button"
+                    className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"
+                    onClick={() => handleRemoveStudent(id)}
+                    aria-label={`Remove student ${classroom.student_names[index]}`}
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))
+          ))}
+          </tbody>
+        </table>
+      </div>
 
-          {/* Submit Button */}
-          <Button bg="secondary">Create</Button>
-        </form>
+     
+        </div>
+        <div className="flex justify-center mt-6">
+          <button
+            type="submit"
+            className="w-[184px] px-4 py-2 bg-[#213458] text-white rounded flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-[#214567]"
+            onClick={handleSubmit}
+
+          >
+            Submit
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default ClassForm;
+export default Page;

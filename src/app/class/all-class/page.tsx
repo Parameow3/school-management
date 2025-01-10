@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Image from "next/image";
@@ -7,7 +7,6 @@ import Modal from "@/components/Modal";
 import { useRouter } from "next/navigation";
 import Dropdown from "@/components/Dropdown";
 
-// Define interfaces based on backend data
 interface Class {
   id: number;
   name: string;
@@ -15,6 +14,7 @@ interface Class {
   teacher_name: string;
   start_date: string;
   end_date: string;
+  students: Student[];
 }
 
 interface Student {
@@ -28,14 +28,13 @@ const Page = () => {
   const router = useRouter();
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<Class | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const [classToDelete, setClassToDelete] = useState<Class | null>(null);
+  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [classData, setClassData] = useState<Class[]>([]);
-  const [studentData, setStudentData] = useState<Student[]>([]); // New state for student data
-  const [loading, setLoading] = useState(true); 
-  const [studentLoading, setStudentLoading] = useState(false); // Loading state for students
-  const [error, setError] = useState<string | null>(null); 
-  const [token, setToken] = useState<string | null>(null); // Store token here
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -46,74 +45,59 @@ const Page = () => {
   }, [router]);
 
   useEffect(() => {
-    setIsMounted(true);
-    const fetchData = async () => {
-      if(!token) return;
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`,{
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setClassData(response.data.results); 
-        setLoading(false); 
-      } catch (err:any) {
-        setError(err.message);
-        setLoading(false); 
-      }
-    };
-
-    fetchData();
-  }, [token]);
-  const fetchStudents = async (classId: number) => {
-    setStudentLoading(true);
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classId}/students`,{
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setStudentData(response.data.results); 
-      setStudentLoading(false);
-    } catch (err: any) {
-      console.error("Error fetching students:", err);
-      setStudentLoading(false);
+    if (token) {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setClassData(response.data.results);
+          setLoading(false);
+        } catch (err: any) {
+          setError(err.message);
+          setLoading(false);
+        }
+      };
+      fetchData();
     }
-  };
-
-  const handleCardClick = (classId: number) => {
-    setSelectedClass(classId);
-    fetchStudents(classId);
-  };
-
-  const handleDeleteClick = (classInfo: Class) => {
-    setStudentToDelete(classInfo);
-    setIsModalOpen(true);
-  };
+  }, [token]);
 
   const closeModal = () => {
     setIsModalOpen(false);
+    setClassToDelete(null);
     setStudentToDelete(null);
   };
 
-  const handleAddClick = (id: number) => {
-    router.push(`/class/all-class/add/${id}`);
-  };
+  const handleDeleteClass = async () => {
+    if (!classToDelete) return; // Ensure a class is selected for deletion
 
-  const handleEditClick = (id: number) => {
-    router.push(`/class/all-class/edit/${id}`);
-  };
+    try {
+      // Attempt to delete the classroom
+      console.log(classToDelete.id)
+     await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classToDelete.id}/`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      alert("delete successfully")
 
-  const handleShowAllCards = () => {
-    setSelectedClass(null);
+    } catch (err) {
+      // Detailed error handling
+      if (axios.isAxiosError(err)) {
+        console.error("Error deleting class:", err.response); // Log the entire error response
+        const errorMessage = err.response?.data?.message || "Failed to delete classroom.";
+        setError(errorMessage); // Set user-friendly error message
+      } else {
+        console.error("Unexpected error:", err); // Log unexpected errors
+        setError("An unexpected error occurred.");
+      }
+      closeModal(); // Close modal in case of error
+    }
   };
-  const countUniqueTeachers = () => {
-    const uniqueTeachers = new Set(classData.map((classInfo) => classInfo.teacher_name));
-    return uniqueTeachers.size;
-  };
-
   if (loading) {
-    return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>; 
+    return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>;
   }
 
   if (error) {
@@ -137,12 +121,12 @@ const Page = () => {
       <div className="relative mt-4">
         <Dropdown />
       </div>
+
       <div className="mt-4 grid grid-cols-1 lg:w-[1070px] w-[330px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {classData.map((classInfo) => (
           <div
             key={classInfo.id}
-            onClick={() => handleCardClick(classInfo.id)}
-            className={`p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between`}
+            className="p-4 bg-white rounded-lg shadow-md cursor-pointer h-[130px] flex flex-col justify-between"
           >
             <div className="flex justify-between items-center">
               <h2 className="font-bold text-[18px]">{classInfo.name}</h2>
@@ -154,7 +138,7 @@ const Page = () => {
                   alt="Add"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleAddClick(classInfo.id);
+                    router.push(`/class/all-class/add/${classInfo.id}`);
                   }}
                 />
                 <Image
@@ -164,52 +148,40 @@ const Page = () => {
                   alt="Edit"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleEditClick(classInfo.id);
+                    router.push(`/class/all-class/edit/${classInfo.id}`);
                   }}
                 />
                 <Image
                   src={"/delete.svg"}
                   width={20}
                   height={20}
-                  alt="Delete"
+                  alt="Delete Class"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDeleteClick(classInfo);
+                    setClassToDelete(classInfo); // Set the class to delete
+                    setIsModalOpen(true); // Open modal for class deletion
                   }}
                 />
               </div>
             </div>
+
             <p className="text-[14px] font-normal mt-2">
               {classInfo.start_date} - {classInfo.end_date}
             </p>
             <div className="flex justify-between items-center mt-auto">
-              <p className="text-[16px] font-medium"> {classInfo.teacher_name}</p>
-              <p className="text-[16px] font-medium"> {countUniqueTeachers()}</p>
+              <p className="text-[16px] font-medium">{classInfo.teacher_name}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Display students if a class is selected */}
-      {selectedClass && (
-        <div className="mt-6">
-          <h3 className="font-bold text-xl">Students in Class {selectedClass}</h3>
-          {studentLoading ? (
-            <p>Loading students...</p>
-          ) : studentData.length === 0 ? (
-            <p>No students found for this class.</p>
-          ) : (
-            <ul className="mt-4">
-              {studentData.map((student) => (
-                <li key={student.id} className="p-2 bg-white rounded-md shadow-md my-2">
-                  {student.first_name} {student.last_name} ({student.email})
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {isModalOpen && classToDelete && (
+        <Modal
+          onClose={closeModal}
+          onConfirm={handleDeleteClass}
+          message={`Are you sure you want to delete the classroom ${classToDelete.name}?`}
+        />
       )}
-      {isModalOpen && <Modal onClose={closeModal} />}
     </div>
   );
 };

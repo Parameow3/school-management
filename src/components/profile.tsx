@@ -1,26 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
-import axios from 'axios';
-import { Menu, MenuButton } from '@headlessui/react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 const Profile = () => {
   const router = useRouter();
-  const [userName, setUserName] = useState<string>('User'); // Fallback to "User" if not available
-  // const [userUrl, setUserUrl] = useState<string>('/default-profile.jpg'); // Default profile image
-  const [error, setError] = useState<string | null>(null); // For handling errors
+  const [username, setUserName] = useState<string>('User');
+  const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-
-  // Fetch token from localStorage when the component mounts
+  const [userId, setUserId] = useState<string | null>(null);
   useEffect(() => {
-    const tokenFromLocalStorage = localStorage.getItem("authToken"); // Correct token key
-    const userInfo = localStorage.getItem("userInfo");
-    const userId = localStorage.getItem("userId");
-   
-    if (tokenFromLocalStorage) {
-      setToken(tokenFromLocalStorage); // Set token in state
+    const tokenFromLocalStorage = localStorage.getItem("authToken");
+    const userIdFromLocalStorage = localStorage.getItem("userId");
+
+    if (tokenFromLocalStorage && userIdFromLocalStorage) {
+      setToken(tokenFromLocalStorage);
+      setUserId(userIdFromLocalStorage);
     } else {
-      // Redirect to login if no token found
+      console.log("Token or userId missing, redirecting to login...");
       router.push("/login");
     }
   }, [router]);
@@ -28,52 +24,43 @@ const Profile = () => {
   useEffect(() => {
     const userInfo = localStorage.getItem("userInfo");
     const userId = localStorage.getItem("userId");
-    console.log("hello", userId)
+    // console.log("hello", userInfo)
     const fetchUserProfile = async () => {
-      if (!token) return; // Ensure token is present before making the request
+      if (!token || !userId) {
+        // console.log("Token or userId is missing.");
+        return;
+      }
+
       try {
-        const response = await axios.get(  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // Correct token usage
-          },
-        });
-        
-        console.log('Fetched Profile Data:', response.data);
-        const currentUser = response.data.username
-        setUserName(currentUser || 'User');
-      } catch (error:any) {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const { username } = response.data;
+        // console.log(response.data)
+        setUserName(username || 'User');
+      } catch (error: any) {
         console.error('Error fetching profile:', error);
         if (error.response && error.response.status === 403) {
-          setError('Access forbidden: Invalid or expired token'); // Handle 403 error
+          setError('Access forbidden: Invalid or expired token');
         } else {
-          setError('Failed to load user profile'); // Set generic error message if other issues arise
+          setError('Failed to load user profile');
         }
       }
     };
 
     fetchUserProfile();
-  }, [token]);
+  }, [token, userId]);
 
   return (
     <nav className="p-4 ml-6 flex justify-between items-center">
       <div className="flex items-center space-x-4">
-        {/* User's name */}
-        <span className="text-white">{error ? 'Error' : userName}</span>
-        
-        {/* User's profile picture */}
-        <Menu as="div" className="relative">
-          <MenuButton className="flex items-center">
-            {/* <Image
-              alt={userName}
-              // src={userUrl}
-              className="h-8 w-8 rounded-full bg-gray-800"
-              width={32}
-              height={32}
-              // onError={() => setUserUrl('/default-profile.jpg')} // Set default on error
-            /> */}
-          </MenuButton>
-        </Menu>
+        <span className="text-white">{error ? error : username}</span>
       </div>
     </nav>
   );

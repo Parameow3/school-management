@@ -5,52 +5,68 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 
 
 interface School {
-    id: number;
-    name: string;
-    address: string;
-    phone_number: string | null;
-    email: string | null;
-    established_date: string;
-    website: string | null;
-  }
+  id: number;
+  name: string;
+  address: string;
+  email: string | null;
+  established_date: string;
+  phone_number: string;
+  schoolweb: string | null;
+}
 
 interface BranchData {
     id: number;
-    school: School;
     name: string;
     address: string;
-    phone_number: string | null;
-    email: string | null;
+    phone_number: string ;
+    email: string ;
     location: string;
+    school_id:string;
     school_name:string;
-    user_name: number;
+    user_id: string;
+    user_name: string;
 }
 
+interface User {
+  id: number;
+  username: string;
+  email: string;
+}
 const Page: React.FC = () => {
   const router = useRouter();
   const params = useParams();
-  const schoolId = parseInt(params.editId as string, 10);
+  const branchId = parseInt(params.editId as string, 10);
 // Assume you're passing school id in the URL as a query param
-  console.log("SchoolId",schoolId)
+  console.log("branchId",branchId)
   const [formData, setFormData] = useState<BranchData>({
+    id: 0,
     name: '',
     address: '',
     phone_number: '',
     email: '',
-    established_date: '',
-    website: ''
+    location: '',
+    school_id: '',
+    user_id: '',
+    user_name: '', 
+    school_name: '',
   });
+
   const [loading, setLoading] = useState<boolean>(true); // Make sure to check loading state
   const [error, setError] = useState<string>('');
+  const [userId, setUserId] = useState<number | null>(null);
+  const [users, setUsers] = useState<User[]>([]); // Initialize as an empty array
+  const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
+  const [schools, setSchools] = useState<School[]>([]);
+
 
   // Fetch the school data when the component mounts (for editing)
   useEffect(() => {
-    if (schoolId) {
+    if (branchId) {
       const fetchSchool = async () => {
         try {
           const token = localStorage.getItem('authToken'); // Ensure the token is stored under 'token'
 
-          const response = await axios.get(`http://127.0.0.1:8000/api/schools/${schoolId}/`,
+          const response = await axios.get(`http://127.0.0.1:8000/api/branches/${branchId}/`,
             {
             
               headers: {
@@ -58,16 +74,41 @@ const Page: React.FC = () => {
               },
             
           });
+          const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=admin`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          const schoolResponse = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setSchools(schoolResponse.data.results);
+             
+          console.log("Users data:", userResponse.data.results); // Log the response to debug
+          if (Array.isArray(userResponse.data.results)) {
+            setUsers(userResponse.data.results);
+          } else {
+            console.error("Users API response is not an array");
+          }
+
+          console.log(response.data)
           setFormData(response.data);
           setLoading(false); // Stop loading once data is fetched
         } catch (err) {
-          setError('Failed to fetch school data.');
+          setError('Failed to fetch branch data.');
           setLoading(false); // Stop loading in case of error
         }
+
       };
       fetchSchool();
     }
-  }, [schoolId]);
+  }, [branchId]);
+
+  console.log(users)
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -76,6 +117,10 @@ const Page: React.FC = () => {
     });
   };
 
+  const handleSchoolChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = Number(e.target.value);
+    setSelectedSchool(selectedId);
+  };
   const validateForm = (): boolean => {
     if (!formData.name || formData.name.length < 1 || formData.name.length > 255) {
       setError('Name is required and must be between 1 and 255 characters.');
@@ -94,15 +139,18 @@ const Page: React.FC = () => {
 
     try {
       const token = localStorage.getItem('authToken'); // Ensure the token is stored under 'token'
-
-      await axios.put(`http://127.0.0.1:8000/api/schools/${schoolId}/`, formData,
+      console.log("dadwdw" , formData.phone_number)
+      await axios.put(`http://127.0.0.1:8000/api/branches/${branchId}/`, formData,
         {
           headers: {
           Authorization: `Bearer ${token}`, // Add the token to the Authorization header
         },
       }
       );
-      router.push("/school/school");
+
+      console.log(formData)
+      // setFormData(formData)
+      router.push("/school/branch");
       alert('School updated successfully!');
       setError('');
     } catch (err: any) {
@@ -144,18 +192,7 @@ const Page: React.FC = () => {
           />
         </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone_number">
-            Phone Number:
-          </label>
-          <input
-            type="text"
-            name="phone_number"
-            value={formData.phone_number}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+       
 
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
@@ -171,30 +208,91 @@ const Page: React.FC = () => {
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="established_date">
-            Established Date:
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone_number">
+            phone :
           </label>
           <input
-            type="date"
-            name="established_date"
-            value={formData.established_date}
+            type="text"
+            name="phone_number"
+            value={formData.phone_number}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="website">
-            Website:
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="location">
+            location :
           </label>
           <input
-            type="url"
-            name="website"
-            value={formData.website}
+            type="text"
+            name="location"
+            value={formData.location}
             onChange={handleInputChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+
+        <div className="mb-6">
+          <label className="block text-gray-600 text-sm font-semibold mb-2" htmlFor='user_id'>
+            Select User
+          </label>
+          <select
+            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+            name="user_id"
+            value={formData.user_id}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                user_id: e.target.value, // Update user_id in formData
+              })
+            }
+            required
+          >
+            <option value="">Select a user</option>
+            {users.length > 0 ? users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.username} 
+              </option>
+            )) : <option disabled>Loading users...</option>}
+          </select>
+        </div>
+
+        {/* <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="school_id">
+            school:
+          </label>
+          <input
+            type="text"
+            name="school_id"
+            value={formData.school_name}
+            onChange={handleInputChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div> */}
+
+
+        <div className="mb-6">
+          <label className="block text-gray-600 text-sm font-semibold mb-2" htmlFor='school_id'>
+            Select School
+          </label>
+          <select
+            className="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-800 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+            name = "school_id"
+            value={formData.school_id}
+            onChange={handleSchoolChange}
+            required
+          >
+            <option value="">Select a school</option>
+            {schools.map((school) => (
+              <option key={school.id} value={school.id}>
+                {school.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        
 
         <button
           type="submit"

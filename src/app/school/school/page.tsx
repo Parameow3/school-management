@@ -4,7 +4,7 @@ import axios from "axios";
 import Button from "@/components/Button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Modal from "@/components/Modal";
+import Modal from "@/components/Modal";  // Assuming you have a Modal component
 
 interface School {
   id: number;
@@ -34,20 +34,23 @@ const Page: React.FC = () => {
   };
 
   const openDeleteModal = (id: number) => {
-    setSchoolToDelete(id);
-    setShowModal(true);
+    setSchoolToDelete(id);  // Set the ID of the school to be deleted
+    setShowModal(true);  // Show the modal
   };
 
   const handleDeleteConfirm = async () => {
     if (schoolToDelete !== null) {
       try {
+        // Delete school by ID
         await axios.delete(`${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/${schoolToDelete}/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        // Remove the deleted school from the state
         setSchools((prevSchools) => prevSchools.filter((school) => school.id !== schoolToDelete));
-        setShowModal(false);
+        setShowModal(false);  // Close the modal after deletion
+        setSchoolToDelete(null);  // Reset the schoolToDelete state
       } catch (err) {
         console.error("Failed to delete school:", err);
         setError("Failed to delete school. Please try again.");
@@ -60,14 +63,13 @@ const Page: React.FC = () => {
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
 
+
     } else {
       router.push("/login");
     }
   }, [router]);
 
   useEffect(() => {
-    console.log("token:" , token)
-
     if (!token) return;
     const fetchSchools = async () => {
       try {
@@ -145,14 +147,25 @@ const Page: React.FC = () => {
                     "N/A"
                   )}
                 </td>
-                <td className="px-6 py-4 text-center flex justify-center space-x-4">
-                  <button onClick={() => handleEdit(school.id)} className="text-blue-600 hover:underline">
-                    Edit
-                  </button>
-                  <button onClick={() => openDeleteModal(school.id)} className="text-red-600 hover:underline">
-                    Delete
-                  </button>
+
+                <td className="px-6 py-4 mt-4 text-center flex justify-center space-x-2">
+                  <Image
+                    src="/update.svg"
+                    width={20}
+                    height={20}
+                    alt="update"
+                    className="mr-2"
+                    onClick={() => handleEdit(school.id)}
+                  />
+                  <Image
+                    src="/delete.svg"
+                    width={20}
+                    height={20}
+                    alt="delete"
+                    onClick={() => openDeleteModal(school.id)} // Trigger modal open with the correct ID
+                  />
                 </td>
+                
               </tr>
             ))}
           </tbody>
@@ -162,8 +175,8 @@ const Page: React.FC = () => {
       {/* Modal for Delete Confirmation */}
       {showModal && (
         <Modal
-          onClose={() => setShowModal(false)}
-          onConfirm={handleDeleteConfirm}
+          onClose={() => setShowModal(false)} // Close the modal without deleting
+          onConfirm={handleDeleteConfirm} // Confirm deletion
           message="Are you sure you want to delete this school?"
         />
       )}
