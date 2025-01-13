@@ -589,26 +589,28 @@ const Page: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-          {formData.map((classroom) => (
-            classroom.student_id.map((id, index) => (
-              <tr 
-                key={id} 
-                className="hover:bg-gray-50 transition-colors"
-              >
-                <td className="px-4 py-2 border-b border-gray-300">{classroom.student_names[index]}</td>
-                <td className="px-4 py-2 border-b border-gray-300 text-center">
-                  <button
-                    type="button"
-                    className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"
-                    onClick={() => handleRemoveStudent(id)}
-                    aria-label={`Remove student ${classroom.student_names[index]}`}
+          {formData.map((classroom) =>
+              classroom.student_id.map((id, index) => (
+                  <tr
+                      key={`${classroom.id}-${id}`} // Use a combination of classroom.id and student ID for a unique key
+                      className="hover:bg-gray-50 transition-colors"
                   >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))
-          ))}
+                    <td className="px-4 py-2 border-b border-gray-300">
+                      {classroom.student_names[index]}
+                    </td>
+                    <td className="px-4 py-2 border-b border-gray-300 text-center">
+                      <button
+                          type="button"
+                          className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"
+                          onClick={() => handleRemoveStudent(id)}
+                          aria-label={`Remove student ${classroom.student_names[index]}`}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+              ))
+          )}
           </tbody>
         </table>
       </div>

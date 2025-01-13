@@ -168,25 +168,7 @@ function StudentSelection() {
   }
 };
 
-  
 
-  // Handle removing a student
-  const handleRemoveStudent = (id: number) => {
-    setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
-  
-    setFormData((prevFormData) => {
-      if (prevFormData.length === 0) return prevFormData;
-  
-      const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
-      const indexToRemove = updatedClassroom.student_id.indexOf(id);
-      if (indexToRemove !== -1) {
-        updatedClassroom.student_id.splice(indexToRemove, 1);
-        updatedClassroom.student_names.splice(indexToRemove, 1);
-      }
-      return [updatedClassroom];
-    });
-  };
-  
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault(); // Prevent default form submission behavior
