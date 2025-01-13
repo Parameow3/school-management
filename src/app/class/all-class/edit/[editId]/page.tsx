@@ -250,27 +250,27 @@ const Page: React.FC = () => {
 
 
 
-  const handleRemoveStudent = (id: number) => {
-    // Remove student from selectedStudents
-    setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
-
-    // Update formData
-    setFormData((prevFormData) => {
-      if (prevFormData.length === 0) return prevFormData;
-
-      const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
-      const indexToRemove = updatedClassroom.student_id.indexOf(id);
-
-      if (indexToRemove !== -1) {
-        updatedClassroom.student_id.splice(indexToRemove, 1); // Remove student ID
-        updatedClassroom.student_names.splice(indexToRemove, 1); // Remove student name
-      }
-
-      console.log("Updated FormData:", updatedClassroom); // Debugging log
-
-      return [updatedClassroom]; // Return updated classroom
-    });
-  };
+  // const handleRemoveStudent = (id: number) => {
+  //   // Remove student from selectedStudents
+  //   setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
+  //
+  //   // Update formData
+  //   setFormData((prevFormData) => {
+  //     if (prevFormData.length === 0) return prevFormData;
+  //
+  //     const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
+  //     const indexToRemove = updatedClassroom.student_id.indexOf(id);
+  //
+  //     if (indexToRemove !== -1) {
+  //       updatedClassroom.student_id.splice(indexToRemove, 1); // Remove student ID
+  //       updatedClassroom.student_names.splice(indexToRemove, 1); // Remove student name
+  //     }
+  //
+  //     console.log("Updated FormData:", updatedClassroom); // Debugging log
+  //
+  //     return [updatedClassroom]; // Return updated classroom
+  //   });
+  // };
 
   const handleInputChange = (id: number, field: any, value: any) => {
     setFormData((prevFormData) =>
@@ -594,26 +594,26 @@ const Page: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-          {formData.map((classroom, classroomIndex) => (
-              classroom.student_id.map((id, index) => (
-                  <tr
-                      key={`${classroom.id}-${id}`} // Use unique keys for rows
-                      className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-2 border-b border-gray-300">{classroom.student_names[index]}</td>
-                    <td className="px-4 py-2 border-b border-gray-300 text-center">
-                      <button
-                          type="button"
-                          className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"
-                          onClick={() => handleRemoveStudent(id)}
-                          aria-label={`Remove student ${classroom.student_names[index]}`}
-                      >
-                        Remove
-                      </button>
-                    </td>
-                  </tr>
-              ))
-          ))}
+          {/*{formData.map((classroom, classroomIndex) => (*/}
+          {/*    classroom.student_id.map((id, index) => (*/}
+          {/*        <tr*/}
+          {/*            key={`${classroom.id}-${id}`} // Use unique keys for rows*/}
+          {/*            className="hover:bg-gray-50 transition-colors"*/}
+          {/*        >*/}
+          {/*          <td className="px-4 py-2 border-b border-gray-300">{classroom.student_names[index]}</td>*/}
+          {/*          <td className="px-4 py-2 border-b border-gray-300 text-center">*/}
+          {/*            <button*/}
+          {/*                type="button"*/}
+          {/*                className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"*/}
+          {/*                onClick={() => handleRemoveStudent(id)}*/}
+          {/*                aria-label={`Remove student ${classroom.student_names[index]}`}*/}
+          {/*            >*/}
+          {/*              Remove*/}
+          {/*            </button>*/}
+          {/*          </td>*/}
+          {/*        </tr>*/}
+          {/*    ))*/}
+          {/*))}*/}
 
           </tbody>
         </table>
