@@ -72,69 +72,47 @@ const Page: React.FC = () => {
     setIsMounted(true);
   }, []);
 
-  
+
   useEffect(() => {
     if (isMounted) {
       const fetchData = async () => {
         try {
-          const [studentResponse, coursesResponse , classroomDetailResponse , teacherResponse ] = await Promise.all([
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classroomId}/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-
+          const [studentResponse, coursesResponse, classroomDetailResponse, teacherResponse] = await Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classroomId}/`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
           ]);
-          
-  
-          console.log("Students Fetched:", studentResponse?.data?.results);
-          console.log("Courses Fetched:", coursesResponse?.data?.results);
-          console.log("teacher Fetched:", teacherResponse?.data?.results);
-          console.log("clasrrom Fetched:", classroomDetailResponse?.data);
-  
+
           setStudents(studentResponse?.data?.results || []);
           setCourses(coursesResponse?.data?.results || []);
           setFormData([classroomDetailResponse?.data]);
-          setTeachers(teacherResponse?.data?.results || [])
-          
-        } catch (error: any) {
-          console.error("Error loading students or courses", error);
+          setTeachers(teacherResponse?.data?.results || []);
+        } catch (error) {
+          console.error("Error loading data", error);
         } finally {
           setLoading(false);
         }
       };
-  
       fetchData();
-      
     }
-  }, [isMounted]);
+  }, [isMounted, classroomId]);
 
   
   const handleAddCourse = () => {
