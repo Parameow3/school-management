@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const StudentCourseDropdown = () => {
   const [students, setStudents] = useState<{ id: number; name: string }[]>([]);
-  const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState<{ id: number; title: string }[]>([]);
   const [selectedStudent, setSelectedStudent] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
 
@@ -29,7 +29,7 @@ const StudentCourseDropdown = () => {
   const fetchCourses = async () => {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/courses/`); // Replace with your endpoint
-      setCourses(response.data);
+      setCourses(response.data || []); // Ensure default fallback
     } catch (error) {
       console.error('Error fetching courses:', error);
     }
