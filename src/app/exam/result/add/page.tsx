@@ -14,7 +14,7 @@ interface ExamResult {
   score: string;
   exam_name: string;
   grade: string;
-  exam_date: string;
+  exam_date: Date;
 }
 
 const Page = () => {
