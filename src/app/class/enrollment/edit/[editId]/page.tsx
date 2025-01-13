@@ -256,37 +256,32 @@ const Page = () => {
               Select Student
             </label>
 
-            {formData.map((data)=>(
-              
-            <select
-              value={data.student_id}
-              onChange={(e) => handleInputChange(data.id, 'student_id', Number(e.target.value))}
-              className="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-             
-
-            <select>
-              {formData.map((data) => (
-                <option key={data.student_id} value={data.student_id}>
-                  {data.student_name} {/* Display the student's name */}
-                </option>
-              ))}
-            </select>
-
-
-
-              {students.length > 0 ? (
-                students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.first_name}
+            {formData.map((data, index) => (
+                <select
+                    key={data.id || index} // Unique key for each select element
+                    value={data.student_id || ""} // Ensure valid default value
+                    onChange={(e) => handleInputChange(data.id, 'student_id', Number(e.target.value))}
+                    className="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                >
+                  {/* Default placeholder option */}
+                  <option value="" disabled>
+                    Select a student
                   </option>
-                ))
-              ) : (
-                <option disabled>Loading students...</option>
-              )}
-            </select>
+
+                  {/* Students dropdown */}
+                  {students.length > 0 ? (
+                      students.map((student) => (
+                          <option key={student.id} value={student.id}>
+                            {`${student.first_name} ${student.last_name}`} {/* Full name of the student */}
+                          </option>
+                      ))
+                  ) : (
+                      <option disabled>Loading students...</option>
+                  )}
+                </select>
             ))}
+
           </div>
           
 
