@@ -249,23 +249,29 @@ const Page: React.FC = () => {
   };
 
 
-  
-  // Handle removing a student
+
   const handleRemoveStudent = (id: number) => {
+    // Remove student from selectedStudents
     setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
-  
+
+    // Update formData
     setFormData((prevFormData) => {
       if (prevFormData.length === 0) return prevFormData;
-  
+
       const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
       const indexToRemove = updatedClassroom.student_id.indexOf(id);
+
       if (indexToRemove !== -1) {
-        updatedClassroom.student_id.splice(indexToRemove, 1);
-        updatedClassroom.student_names.splice(indexToRemove, 1);
+        updatedClassroom.student_id.splice(indexToRemove, 1); // Remove student ID
+        updatedClassroom.student_names.splice(indexToRemove, 1); // Remove student name
       }
-      return [updatedClassroom];
+
+      console.log("Updated FormData:", updatedClassroom); // Debugging log
+
+      return [updatedClassroom]; // Return updated classroom
     });
   };
+
 
   const handleInputChange = (id: number, field: any, value: any) => {
     setFormData((prevFormData) =>
@@ -592,12 +598,10 @@ const Page: React.FC = () => {
           {formData.map((classroom, classroomIndex) => (
               classroom.student_id.map((id, index) => (
                   <tr
-                      key={`${classroom.id}-${id}`} // Ensure a globally unique key for each row
+                      key={`${classroom.id}-${id}`} // Use unique keys for rows
                       className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-4 py-2 border-b border-gray-300">
-                      {classroom.student_names[index]}
-                    </td>
+                    <td className="px-4 py-2 border-b border-gray-300">{classroom.student_names[index]}</td>
                     <td className="px-4 py-2 border-b border-gray-300 text-center">
                       <button
                           type="button"
@@ -611,6 +615,7 @@ const Page: React.FC = () => {
                   </tr>
               ))
           ))}
+
           </tbody>
         </table>
       </div>
