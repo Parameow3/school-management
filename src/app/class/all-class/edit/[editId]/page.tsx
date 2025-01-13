@@ -589,10 +589,10 @@ const Page: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-          {formData.map((classroom) =>
+          {formData.map((classroom, classroomIndex) => (
               classroom.student_id.map((id, index) => (
                   <tr
-                      key={`${classroom.id}-${id}`} // Use a combination of classroom.id and student ID for a unique key
+                      key={`${classroom.id}-${id}`} // Ensure a globally unique key for each row
                       className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-2 border-b border-gray-300">
@@ -610,7 +610,7 @@ const Page: React.FC = () => {
                     </td>
                   </tr>
               ))
-          )}
+          ))}
           </tbody>
         </table>
       </div>
