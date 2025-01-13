@@ -18,7 +18,7 @@ const StudentCourseDropdown = () => {
   // Fetch students
   const fetchStudents = async () => {
     try {
-      const response = await axios.get('/api/students'); // Replace with your endpoint
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/students/`); // Replace with your endpoint
       setStudents(response.data || []); // Ensure default fallback
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -28,7 +28,7 @@ const StudentCourseDropdown = () => {
   // Fetch courses
   const fetchCourses = async () => {
     try {
-      const response = await axios.get('/api/courses'); // Replace with your endpoint
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/courses/`); // Replace with your endpoint
       setCourses(response.data);
     } catch (error) {
       console.error('Error fetching courses:', error);
