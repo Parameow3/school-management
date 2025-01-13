@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const StudentCourseDropdown = () => {
-  const [students, setStudents] = useState([]);
+  const [students, setStudents] = useState<{ id: number; name: string }[]>([]);
   const [courses, setCourses] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState('');
   const [selectedCourse, setSelectedCourse] = useState('');
@@ -19,7 +19,7 @@ const StudentCourseDropdown = () => {
   const fetchStudents = async () => {
     try {
       const response = await axios.get('/api/students'); // Replace with your endpoint
-      setStudents(response.data);
+      setStudents(response.data || []); // Ensure default fallback
     } catch (error) {
       console.error('Error fetching students:', error);
     }
