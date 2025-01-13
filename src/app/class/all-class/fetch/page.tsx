@@ -46,27 +46,27 @@ const StudentCourseDropdown = () => {
   };
 
   return (
-    <div>
-      <h2>Choose Student</h2>
-      <select value={selectedStudent} onChange={handleStudentChange}>
-        <option value="">Select a student</option>
-        {students.map((student) => (
-          <option key={student.id} value={student.id}>
-            {student.name}
-          </option>
-        ))}
-      </select>
+      <div>
+        <h2>Choose Student</h2>
+        <select value={selectedStudent} onChange={handleStudentChange}>
+          <option value="">Select a student</option>
+          {students.map((student) => (
+              <option key={student.id} value={student.id}>
+                {student.name}
+              </option>
+          ))}
+        </select>
 
-      <h2>Choose Course</h2>
-      <select value={selectedCourse} onChange={handleCourseChange}>
-        <option value="">Select a course</option>
-        {courses.map((course) => (
-          <option key={course.id} value={course.id}>
-            {course.title}
-          </option>
-        ))}
-      </select>
-    </div>
+        <h2>Choose Course</h2>
+        <select value={selectedCourse} onChange={handleCourseChange}>
+          <option value="">Select a course</option>
+          {courses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.title}
+              </option>
+          ))}
+        </select>
+      </div>
   );
 };
 
