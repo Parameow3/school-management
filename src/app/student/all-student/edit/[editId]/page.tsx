@@ -139,18 +139,6 @@ const Page = () => {
     return <div className="text-center mt-20">Student not found</div>;
   }
 
-  useEffect(() => {
-    if (imagePreview instanceof File) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageSrc(reader.result as string); // Convert File to data URL
-      };
-      reader.readAsDataURL(imagePreview);
-    } else if (typeof imagePreview === 'string') {
-      setImageSrc(imagePreview); // Directly use the string URL
-    }
-  }, [imagePreview]);
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
