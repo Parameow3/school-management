@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 interface Student {
   id: number;
   first_name: string;
+  last_name: string;
 }
 
 interface Course {
