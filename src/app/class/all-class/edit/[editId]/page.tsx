@@ -272,7 +272,6 @@ const Page: React.FC = () => {
     });
   };
 
-
   const handleInputChange = (id: number, field: any, value: any) => {
     setFormData((prevFormData) =>
       prevFormData.map((item) =>
