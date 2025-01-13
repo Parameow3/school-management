@@ -8,6 +8,7 @@ import ProfileCard from "@/components/ProfileCard";
 import Modal from "@/components/Modal";
 import axios from "axios";
 import Button from "@/components/Button";
+import { useCallback } from 'react';
 
 const Page = () => {
   const router = useRouter();
@@ -52,9 +53,17 @@ const Page = () => {
     }
   };
 
+  const fetchProfile = useCallback(() => {
+    // Your logic for fetching profiles
+    if (!token) return;
+    console.log("Fetching profiles with token:", token);
+    // Perform fetch logic
+  }, [token]); // Include `token` as a dependency
+
   useEffect(() => {
-    fetchProfiles(); // Initial fetch when component loads
-  }, [token]);
+    fetchProfile(); // Initial fetch when component loads
+  }, [fetchProfile]); // Use the memoized function as a dependency
+
 
   const handleBranchChange = (branchId: number | null) => {
     if (branchId === null) {

@@ -50,31 +50,29 @@ const Page = () => {
   // Retrieve token from local storage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
-    console.log(exams)
+    console.log("Exams:", exams);
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
     } else {
       router.push("/login");
     }
-  }, [router]);
+  }, [router]); // Include router in dependencies
 
-  // Fetch exam, course, and classroom data
-  
+// Fetch exam, course, and classroom data
   useEffect(() => {
     const fetchProgramsAndBranches = async () => {
       if (!token) return;
       setLoading(true);
 
       try {
-        const [examResponse, ] = await Promise.all([
+        const [examResponse] = await Promise.all([
           axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/exams/`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-         
         ]);
 
         setExams(examResponse.data.results || []);
-        console.log(exams)
+        console.log("Exams Fetched:", examResponse.data.results); // Log directly from the response
       } catch (err) {
         setError("Failed to fetch programs or branches");
       } finally {
@@ -83,9 +81,12 @@ const Page = () => {
     };
 
     fetchProgramsAndBranches();
-  }, [token]);
+  }, [token]); // Include token in dependencies
 
-
+// Log exams when they change
+  useEffect(() => {
+    console.log("Exams Updated:", exams);
+  }, [exams]);
 
   // Handle Edit
   const handleEdit = (id: number) => {

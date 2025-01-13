@@ -51,8 +51,7 @@ function StudentSelection() {
     console.log('selectSallstudemt:', courses);
     console.log('selectcourse:', students);
     console.log('selectStudent:', formData);
-    
-  }, [formData]);
+  }, [courses, students, formData]); // Add courses and students to the dependency array
 
   // Fetch initial students and courses data on component mount
   useEffect(() => {

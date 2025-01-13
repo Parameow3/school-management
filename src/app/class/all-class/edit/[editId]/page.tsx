@@ -212,18 +212,20 @@ const Page: React.FC = () => {
           // Create a new classroom if none exists
           return [
             {
-              id: 1, // Replace with actual classroom ID or logic
-              name: "", // Replace with actual data
-              courses_id: [], // Replace with actual course IDs
-              course_names: [], // Replace with actual course names
-              teacher_id : 1 ,
-              teacher_name: "", // Replace with actual teacher name
+              id: new Date().getTime(), // Use a unique identifier, like a timestamp
+              name: "",
+              courses_id: [],
+              course_names: [],
+              teacher_id: 1,
+              teacher_name: "",
               student_id: [selectedId],
-              student_names: [selectedStudentToAdd.first_name], // Assuming student has a `name` field
-              start_date: "", // Replace with actual start date
-              end_date: "", // Replace with actual end date
-              start_time: "", // Replace with actual start time
-              end_time: "", // Replace with actual end time
+              student_names: [
+                selectedStudentToAdd.first_name + " " + selectedStudentToAdd.last_name,
+              ],
+              start_date: "",
+              end_date: "",
+              start_time: "",
+              end_time: "",
             },
           ];
         } else {

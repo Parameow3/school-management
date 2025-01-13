@@ -36,12 +36,12 @@ const StudentCourseDropdown = () => {
   };
 
   // Handle student selection
-  const handleStudentChange = (e) => {
+  const handleStudentChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
     setSelectedStudent(e.target.value);
   };
 
   // Handle course selection
-  const handleCourseChange = (e) => {
+  const handleCourseChange = (e: { target: { value: React.SetStateAction<string>; }; }) => {
     setSelectedCourse(e.target.value);
   };
 

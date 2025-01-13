@@ -62,64 +62,59 @@ const Page = () => {
     setIsMounted(true);
   }, []);
 
-  // Fetch existing enrollment data, students, and courses
   useEffect(() => {
     if (isMounted) {
-
       const fetchData = async () => {
         try {
-          console.log("dawdawd" ,enrollmentId)
-          const [studentResponse, coursesResponse , enrollmentDetailResponse  ] = await Promise.all([
+          console.log("Enrollment ID:", enrollmentId);
+
+          const [studentResponse, coursesResponse, enrollmentDetailResponse] = await Promise.all([
             axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                  },
+                }
             ),
             axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                  },
+                }
             ),
             axios.get(
-              
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${enrollmentId}/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${enrollmentId}/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                  },
+                }
             ),
-            
           ]);
-          
-  
+
           console.log("Students Fetched:", studentResponse?.data?.results);
           console.log("Courses Fetched:", coursesResponse?.data?.results);
-          console.log("enrollment Fetched:", enrollmentDetailResponse?.data);
-  
+          console.log("Enrollment Fetched:", enrollmentDetailResponse?.data);
+
           setStudents(studentResponse?.data?.results || []);
           setCourses(coursesResponse?.data?.results || []);
           setFormData([enrollmentDetailResponse?.data]);
-         
-          
         } catch (error: any) {
           console.error("Error loading students or courses", error);
         } finally {
           setLoading(false);
         }
       };
-  
+
       fetchData();
     }
-    }, [isMounted]);
+  }, [isMounted, enrollmentId]); // Add `enrollmentId` as a dependency
 
-    const handleAddCourse = () => {
+
+  const handleAddCourse = () => {
       const selectedId = Number(currentCourse);
       console.log("Selected ID:", selectedId);
     
