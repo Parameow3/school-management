@@ -220,8 +220,29 @@ function StudentSelection() {
       }, 1000);
     });
   };
-  
-  
+
+  // Add this function to handle removing a student
+  const handleRemoveStudent = (id: number) => {
+    // Update selectedStudents state
+    setSelectedStudents((prevStudents) =>
+        prevStudents.filter((student) => student.id !== id)
+    );
+
+    // Update formData to remove the student
+    setFormData((prevFormData) =>
+        prevFormData.map((classroom) => {
+          const updatedClassroom = { ...classroom };
+          const indexToRemove = updatedClassroom.student_id.indexOf(id);
+
+          if (indexToRemove !== -1) {
+            updatedClassroom.student_id.splice(indexToRemove, 1);
+            updatedClassroom.student_names.splice(indexToRemove, 1);
+          }
+          return updatedClassroom;
+        })
+    );
+  };
+
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col gap-6 mt-12 ml-20">
