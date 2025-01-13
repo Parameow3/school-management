@@ -7,7 +7,6 @@ import Button from "@/components/Button";
 import axios from "axios";
 import { urlToFile } from "../../../../../../util/urlToFile"
 
-
 interface Classroom {
   id: number;
   name: string;
@@ -57,11 +56,12 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | undefined>(undefined);
   const [imagePreview, setImagePreview] = useState<string | File | undefined>(undefined);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [file, setFile] = useState<File | null>(null);
 
-  
+
 
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -135,29 +135,21 @@ const Page = () => {
     fetchClassrooms();
   }, [token]);
 
-
-
+  if (!formData) {
+    return <div className="text-center mt-20">Student not found</div>;
+  }
 
   useEffect(() => {
     if (imagePreview instanceof File) {
       const reader = new FileReader();
       reader.onload = () => {
-        setImagePreview(reader.result as string); // Convert File to data URL
+        setImageSrc(reader.result as string); // Convert File to data URL
       };
       reader.readAsDataURL(imagePreview);
-    } else if (typeof imagePreview === "string") {
-      setImagePreview(imagePreview); // Directly use the string URL
+    } else if (typeof imagePreview === 'string') {
+      setImageSrc(imagePreview); // Directly use the string URL
     }
   }, [imagePreview]);
-
-
-
-
-  if (!formData) {
-    return <div className="text-center mt-20">Student not found</div>;
-  }
-
-  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -548,7 +540,7 @@ const Page = () => {
         <div className="mt-2">
           {imagePreview && (
             <Image
-              src={imagePreview} // Show the current or fetched image
+              src={""} // Show the current or fetched image
               alt="Student"
               className="mt-2 w-40 h-40 object-cover rounded-md border border-gray-300"
             />
