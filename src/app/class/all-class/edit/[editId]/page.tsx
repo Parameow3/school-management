@@ -371,20 +371,21 @@ const Page: React.FC = () => {
               Class Name
             </label>
 
-          {formData.map((data) =>(
-            <input
-              id="className"
-              name="className"
-              type="text"
-              placeholder="Enter Class Name"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => handleInputChange(data.id, 'name', e.target.value)}
-              value={data.name}
-            />
-          ))}
+            {formData.map((data, index) => (
+                <input
+                    key={data.id || index} // Add a unique key, preferably using `data.id`
+                    id="className"
+                    name="className"
+                    type="text"
+                    placeholder="Enter Class Name"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => handleInputChange(data.id, 'name', e.target.value)}
+                    value={data.name}
+                />
+            ))}
           </div>
 
-        
+
 
           <div className="flex flex-col">
             <label
@@ -393,30 +394,31 @@ const Page: React.FC = () => {
             >
               Teacher
             </label>
-            
-              {formData.map((data)=>(
 
-              <select
-                id="teacher"
-                name="teacher"
-                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={data.teacher_id}
-                
-                onChange={(e) => handleInputChange(data.id, 'teacher_id', Number(e.target.value))}
-
-              >
-                {formData.map((data)=>(
-
-                <option value="data.teacher_id">{data.teacher_name}</option>
-                ))}
-                {teachers.map((teacher) => (
-                  <option key={teacher.id} value={teacher.id}>
-                    {teacher.username}
+            {formData.map((data, index) => (
+                <select
+                    key={data.id || index} // Add a unique key for the select element
+                    id="teacher"
+                    name="teacher"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={data.teacher_id}
+                    onChange={(e) => handleInputChange(data.id, 'teacher_id', Number(e.target.value))}
+                >
+                  {/* Remove the inner formData.map(). It seems redundant */}
+                  <option value="" disabled>
+                    Select a teacher
                   </option>
-                ))}
-              </select>
-              ))}
-            
+
+                  {/* Use the teachers array for teacher options */}
+                  {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.username}
+                      </option>
+                  ))}
+                </select>
+            ))}
+
+
           </div>
 
 
@@ -427,17 +429,18 @@ const Page: React.FC = () => {
             >
               Start Date
             </label>
-            {formData.map((data) =>(
-            <input
-              id="start_date"
-              name="start_date"
-              type="date"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={data.start_date } // Ensure value is a valid string
+            {formData.map((data, index) => (
+                <input
+                    key={data.id || index} // Add a unique key for each input element
+                    id="start_date"
+                    name="start_date"
+                    type="date"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={data.start_date || ""} // Ensure value is a valid string, defaulting to an empty string
+                    onChange={(e) => handleChange(e, data.id)} // Pass the event and the data ID to the handler
+                />
+            ))}
 
-              onChange={(e) => handleChange(e, data.id)} // Pass the event and the object's ID
-              />
-          ))}
 
           </div>
 
@@ -448,18 +451,18 @@ const Page: React.FC = () => {
             >
               End Date
             </label>
-            {formData.map((data) =>(
+            {formData.map((data, index) => (
+                <input
+                    key={data.id || index} // Add a unique key for each input element
+                    id="end_date"
+                    name="end_date"
+                    type="date"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={data.end_date || ""} // Ensure value is a valid string, defaulting to an empty string
+                    onChange={(e) => handleChange(e, data.id)} // Pass the event and the data ID to the handler
+                />
+            ))}
 
-            <input
-              id="end_date"
-              name="end_date"
-              type="date"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={data.end_date}
-              onChange={(e) => handleChange(e, data.id)} // Pass the event and the object's ID
-
-            />
-          ))}
 
           </div>
 
