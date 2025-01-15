@@ -51,8 +51,7 @@ function StudentSelection() {
     console.log('selectSallstudemt:', courses);
     console.log('selectcourse:', students);
     console.log('selectStudent:', formData);
-    
-  }, [formData]);
+  }, [courses, students, formData]); // Add courses and students to the dependency array
 
   // Fetch initial students and courses data on component mount
   useEffect(() => {
@@ -169,25 +168,7 @@ function StudentSelection() {
   }
 };
 
-  
 
-  // Handle removing a student
-  const handleRemoveStudent = (id: number) => {
-    setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
-  
-    setFormData((prevFormData) => {
-      if (prevFormData.length === 0) return prevFormData;
-  
-      const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
-      const indexToRemove = updatedClassroom.student_id.indexOf(id);
-      if (indexToRemove !== -1) {
-        updatedClassroom.student_id.splice(indexToRemove, 1);
-        updatedClassroom.student_names.splice(indexToRemove, 1);
-      }
-      return [updatedClassroom];
-    });
-  };
-  
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault(); // Prevent default form submission behavior
@@ -239,8 +220,29 @@ function StudentSelection() {
       }, 1000);
     });
   };
-  
-  
+
+  // Add this function to handle removing a student
+  const handleRemoveStudent = (id: number) => {
+    // Update selectedStudents state
+    setSelectedStudents((prevStudents) =>
+        prevStudents.filter((student) => student.id !== id)
+    );
+
+    // Update formData to remove the student
+    setFormData((prevFormData) =>
+        prevFormData.map((classroom) => {
+          const updatedClassroom = { ...classroom };
+          const indexToRemove = updatedClassroom.student_id.indexOf(id);
+
+          if (indexToRemove !== -1) {
+            updatedClassroom.student_id.splice(indexToRemove, 1);
+            updatedClassroom.student_names.splice(indexToRemove, 1);
+          }
+          return updatedClassroom;
+        })
+    );
+  };
+
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-lg flex flex-col gap-6 mt-12 ml-20">

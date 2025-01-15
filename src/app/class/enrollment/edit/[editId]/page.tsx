@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 interface Student {
   id: number;
   first_name: string;
+  last_name: string;
 }
 
 interface Course {
@@ -62,64 +63,59 @@ const Page = () => {
     setIsMounted(true);
   }, []);
 
-  // Fetch existing enrollment data, students, and courses
   useEffect(() => {
     if (isMounted) {
-
       const fetchData = async () => {
         try {
-          console.log("dawdawd" ,enrollmentId)
-          const [studentResponse, coursesResponse , enrollmentDetailResponse  ] = await Promise.all([
+          console.log("Enrollment ID:", enrollmentId);
+
+          const [studentResponse, coursesResponse, enrollmentDetailResponse] = await Promise.all([
             axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                  },
+                }
             ),
             axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                  },
+                }
             ),
             axios.get(
-              
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${enrollmentId}/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/enrollment/${enrollmentId}/`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+                  },
+                }
             ),
-            
           ]);
-          
-  
+
           console.log("Students Fetched:", studentResponse?.data?.results);
           console.log("Courses Fetched:", coursesResponse?.data?.results);
-          console.log("enrollment Fetched:", enrollmentDetailResponse?.data);
-  
+          console.log("Enrollment Fetched:", enrollmentDetailResponse?.data);
+
           setStudents(studentResponse?.data?.results || []);
           setCourses(coursesResponse?.data?.results || []);
           setFormData([enrollmentDetailResponse?.data]);
-         
-          
         } catch (error: any) {
           console.error("Error loading students or courses", error);
         } finally {
           setLoading(false);
         }
       };
-  
+
       fetchData();
     }
-    }, [isMounted]);
+  }, [isMounted, enrollmentId]); // Add `enrollmentId` as a dependency
 
-    const handleAddCourse = () => {
+
+  const handleAddCourse = () => {
       const selectedId = Number(currentCourse);
       console.log("Selected ID:", selectedId);
     
@@ -261,37 +257,32 @@ const Page = () => {
               Select Student
             </label>
 
-            {formData.map((data)=>(
-              
-            <select
-              value={data.student_id}
-              onChange={(e) => handleInputChange(data.id, 'student_id', Number(e.target.value))}
-              className="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-             
-
-            <select>
-              {formData.map((data) => (
-                <option key={data.student_id} value={data.student_id}>
-                  {data.student_name} {/* Display the student's name */}
-                </option>
-              ))}
-            </select>
-
-
-
-              {students.length > 0 ? (
-                students.map((student) => (
-                  <option key={student.id} value={student.id}>
-                    {student.first_name}
+            {formData.map((data, index) => (
+                <select
+                    key={data.id || index} // Unique key for each select element
+                    value={data.student_id || ""} // Ensure valid default value
+                    onChange={(e) => handleInputChange(data.id, 'student_id', Number(e.target.value))}
+                    className="shadow-sm appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                >
+                  {/* Default placeholder option */}
+                  <option value="" disabled>
+                    Select a student
                   </option>
-                ))
-              ) : (
-                <option disabled>Loading students...</option>
-              )}
-            </select>
+
+                  {/* Students dropdown */}
+                  {students.length > 0 ? (
+                      students.map((student) => (
+                          <option key={student.id} value={student.id}>
+                            {`${student.first_name} ${student.last_name}`} {/* Full name of the student */}
+                          </option>
+                      ))
+                  ) : (
+                      <option disabled>Loading students...</option>
+                  )}
+                </select>
             ))}
+
           </div>
           
 

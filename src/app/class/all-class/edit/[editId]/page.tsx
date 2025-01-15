@@ -72,69 +72,47 @@ const Page: React.FC = () => {
     setIsMounted(true);
   }, []);
 
-  
+
   useEffect(() => {
     if (isMounted) {
       const fetchData = async () => {
         try {
-          const [studentResponse, coursesResponse , classroomDetailResponse , teacherResponse ] = await Promise.all([
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classroomId}/`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-            axios.get(
-              `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-                },
-              }
-            ),
-
+          const [studentResponse, coursesResponse, classroomDetailResponse, teacherResponse] = await Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classroomId}/`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+            }),
           ]);
-          
-  
-          console.log("Students Fetched:", studentResponse?.data?.results);
-          console.log("Courses Fetched:", coursesResponse?.data?.results);
-          console.log("teacher Fetched:", teacherResponse?.data?.results);
-          console.log("clasrrom Fetched:", classroomDetailResponse?.data);
-  
+
           setStudents(studentResponse?.data?.results || []);
           setCourses(coursesResponse?.data?.results || []);
           setFormData([classroomDetailResponse?.data]);
-          setTeachers(teacherResponse?.data?.results || [])
-          
-        } catch (error: any) {
-          console.error("Error loading students or courses", error);
+          setTeachers(teacherResponse?.data?.results || []);
+        } catch (error) {
+          console.error("Error loading data", error);
         } finally {
           setLoading(false);
         }
       };
-  
       fetchData();
-      
     }
-  }, [isMounted]);
+  }, [isMounted, classroomId]);
 
   
   const handleAddCourse = () => {
@@ -234,18 +212,20 @@ const Page: React.FC = () => {
           // Create a new classroom if none exists
           return [
             {
-              id: 1, // Replace with actual classroom ID or logic
-              name: "", // Replace with actual data
-              courses_id: [], // Replace with actual course IDs
-              course_names: [], // Replace with actual course names
-              teacher_id : 1 ,
-              teacher_name: "", // Replace with actual teacher name
+              id: new Date().getTime(), // Use a unique identifier, like a timestamp
+              name: "",
+              courses_id: [],
+              course_names: [],
+              teacher_id: 1,
+              teacher_name: "",
               student_id: [selectedId],
-              student_names: [selectedStudentToAdd.first_name], // Assuming student has a `name` field
-              start_date: "", // Replace with actual start date
-              end_date: "", // Replace with actual end date
-              start_time: "", // Replace with actual start time
-              end_time: "", // Replace with actual end time
+              student_names: [
+                selectedStudentToAdd.first_name + " " + selectedStudentToAdd.last_name,
+              ],
+              start_date: "",
+              end_date: "",
+              start_time: "",
+              end_time: "",
             },
           ];
         } else {
@@ -269,21 +249,26 @@ const Page: React.FC = () => {
   };
 
 
-  
-  // Handle removing a student
+
   const handleRemoveStudent = (id: number) => {
+    // Remove student from selectedStudents
     setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
-  
+
+    // Update formData
     setFormData((prevFormData) => {
       if (prevFormData.length === 0) return prevFormData;
-  
+
       const updatedClassroom = { ...prevFormData[0] }; // Assuming single classroom
       const indexToRemove = updatedClassroom.student_id.indexOf(id);
+
       if (indexToRemove !== -1) {
-        updatedClassroom.student_id.splice(indexToRemove, 1);
-        updatedClassroom.student_names.splice(indexToRemove, 1);
+        updatedClassroom.student_id.splice(indexToRemove, 1); // Remove student ID
+        updatedClassroom.student_names.splice(indexToRemove, 1); // Remove student name
       }
-      return [updatedClassroom];
+
+      console.log("Updated FormData:", updatedClassroom); // Debugging log
+
+      return [updatedClassroom]; // Return updated classroom
     });
   };
 
@@ -393,20 +378,21 @@ const Page: React.FC = () => {
               Class Name
             </label>
 
-          {formData.map((data) =>(
-            <input
-              id="className"
-              name="className"
-              type="text"
-              placeholder="Enter Class Name"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => handleInputChange(data.id, 'name', e.target.value)}
-              value={data.name}
-            />
-          ))}
+            {formData.map((data, index) => (
+                <input
+                    key={data.id || index} // Add a unique key, preferably using `data.id`
+                    id="className"
+                    name="className"
+                    type="text"
+                    placeholder="Enter Class Name"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => handleInputChange(data.id, 'name', e.target.value)}
+                    value={data.name}
+                />
+            ))}
           </div>
 
-        
+
 
           <div className="flex flex-col">
             <label
@@ -415,30 +401,31 @@ const Page: React.FC = () => {
             >
               Teacher
             </label>
-            
-              {formData.map((data)=>(
 
-              <select
-                id="teacher"
-                name="teacher"
-                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={data.teacher_id}
-                
-                onChange={(e) => handleInputChange(data.id, 'teacher_id', Number(e.target.value))}
-
-              >
-                {formData.map((data)=>(
-
-                <option value="data.teacher_id">{data.teacher_name}</option>
-                ))}
-                {teachers.map((teacher) => (
-                  <option key={teacher.id} value={teacher.id}>
-                    {teacher.username}
+            {formData.map((data, index) => (
+                <select
+                    key={data.id || index} // Add a unique key for the select element
+                    id="teacher"
+                    name="teacher"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={data.teacher_id}
+                    onChange={(e) => handleInputChange(data.id, 'teacher_id', Number(e.target.value))}
+                >
+                  {/* Remove the inner formData.map(). It seems redundant */}
+                  <option value="" disabled>
+                    Select a teacher
                   </option>
-                ))}
-              </select>
-              ))}
-            
+
+                  {/* Use the teachers array for teacher options */}
+                  {teachers.map((teacher) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.username}
+                      </option>
+                  ))}
+                </select>
+            ))}
+
+
           </div>
 
 
@@ -449,17 +436,18 @@ const Page: React.FC = () => {
             >
               Start Date
             </label>
-            {formData.map((data) =>(
-            <input
-              id="start_date"
-              name="start_date"
-              type="date"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={data.start_date } // Ensure value is a valid string
+            {formData.map((data, index) => (
+                <input
+                    key={data.id || index} // Add a unique key for each input element
+                    id="start_date"
+                    name="start_date"
+                    type="date"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={data.start_date || ""} // Ensure value is a valid string, defaulting to an empty string
+                    onChange={(e) => handleChange(e, data.id)} // Pass the event and the data ID to the handler
+                />
+            ))}
 
-              onChange={(e) => handleChange(e, data.id)} // Pass the event and the object's ID
-              />
-          ))}
 
           </div>
 
@@ -470,18 +458,18 @@ const Page: React.FC = () => {
             >
               End Date
             </label>
-            {formData.map((data) =>(
+            {formData.map((data, index) => (
+                <input
+                    key={data.id || index} // Add a unique key for each input element
+                    id="end_date"
+                    name="end_date"
+                    type="date"
+                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={data.end_date || ""} // Ensure value is a valid string, defaulting to an empty string
+                    onChange={(e) => handleChange(e, data.id)} // Pass the event and the data ID to the handler
+                />
+            ))}
 
-            <input
-              id="end_date"
-              name="end_date"
-              type="date"
-              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={data.end_date}
-              onChange={(e) => handleChange(e, data.id)} // Pass the event and the object's ID
-
-            />
-          ))}
 
           </div>
 
@@ -528,7 +516,7 @@ const Page: React.FC = () => {
         <table className="w-full text-left border-collapse border border-gray-300 rounded-lg overflow-hidden">
           <thead className="bg-gray-100">
             <tr>
-              <th className="px-4 py-2 border-b border-gray-300 font-medium">Student Name</th>
+              <th className="px-4 py-2 border-b border-gray-300 font-medium">Course Name</th>
               <th className="px-4 py-2 border-b border-gray-300 font-medium text-center">Action</th>
             </tr>
           </thead>
@@ -606,26 +594,27 @@ const Page: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-          {formData.map((classroom) => (
-            classroom.student_id.map((id, index) => (
-              <tr 
-                key={id} 
-                className="hover:bg-gray-50 transition-colors"
-              >
-                <td className="px-4 py-2 border-b border-gray-300">{classroom.student_names[index]}</td>
-                <td className="px-4 py-2 border-b border-gray-300 text-center">
-                  <button
-                    type="button"
-                    className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"
-                    onClick={() => handleRemoveStudent(id)}
-                    aria-label={`Remove student ${classroom.student_names[index]}`}
+          {formData.map((classroom, classroomIndex) => (
+              classroom.student_id.map((id, index) => (
+                  <tr
+                      key={`${classroom.id}-${id}`} // Use unique keys for rows
+                      className="hover:bg-gray-50 transition-colors"
                   >
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))
+                    <td className="px-4 py-2 border-b border-gray-300">{classroom.student_names[index]}</td>
+                    <td className="px-4 py-2 border-b border-gray-300 text-center">
+                      <button
+                          type="button"
+                          className="px-3 py-1 text-white bg-red-500 rounded-md hover:bg-red-600 focus:ring-2 focus:ring-red-500"
+                          onClick={() => handleRemoveStudent(id)}
+                          aria-label={`Remove student ${classroom.student_names[index]}`}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+              ))
           ))}
+
           </tbody>
         </table>
       </div>
