@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    userName: "",
     email: "",
     password: "",
   });
@@ -146,23 +145,6 @@ const Login = () => {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Username Input */}
-          <div className="relative">
-            <label htmlFor="userName" className="sr-only">
-              Username
-            </label>
-            <input
-              type="text"
-              name="userName"
-              id="userName"
-              value={formData.userName}
-              onChange={handleChange}
-              placeholder="Username"
-              className="w-full h-[45px] p-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
           {/* Email Input */}
           <div className="relative">
             <label htmlFor="email" className="sr-only">
