@@ -5,9 +5,8 @@ import Card from "@/components/Card";
 import Report from "@/components/Report";
 import Calender from "@/components/Calender";
 import FacebookCard from "@/components/facebookCard";
-import Typography from "@/components/Typography";
 import { useRouter } from "next/navigation";
-
+import axios from "axios";
 const Page = () => {
   const [studentCount, setStudentCount] = useState(0);
   const [teacherCount, setTeacherCount] = useState(0);  
@@ -16,11 +15,14 @@ const Page = () => {
   const [classCount, setClassCount] = useState(0);
   const [trailCount, setTrailCount] = useState(0);
   const router = useRouter();
-
+  const [userName, setUserName] = useState("User");
+  const [userId, setUserId] = useState<string | null>(null);
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
+    const userIdFromLocalStorage = localStorage.getItem("userId");
     if (tokenFromLocalStorage) {
-      setToken(tokenFromLocalStorage); // Set token state
+      setToken(tokenFromLocalStorage);
+      setUserId(userIdFromLocalStorage); // Set token state
     } else {
       router.push("/login"); // Redirect to login
     }
@@ -31,6 +33,36 @@ const Page = () => {
     const recordDate = new Date(dateString).toISOString().split("T")[0]; // Record's date in YYYY-MM-DD format
     return today === recordDate;
   };
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!token || !userId) return;
+
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user/${userId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const { username } = response.data;
+        setUserName(username || "User");
+        console.log("Fetched username:", userId);
+      } catch (error: any) {
+        console.error("Error fetching profile:", error);
+        if (error.response && error.response.status === 403) {
+          setError("Access forbidden: Invalid or expired token");
+        } else {
+          setError("Failed to load user profile");
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [token, userId]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -164,9 +196,9 @@ const Page = () => {
           <div className="lg:w-[800px] flex flex-col p-2 ">
             <div className="lg:w-[618px] w-[300px] bg-[#FF6F61] mr-4 backdrop-opacity-75 lg:h-[112px] h-[94px] rounded-[8px] flex flex-row justify-between">
               <div className="flex flex-col justify-center ml-4">
-                <Typography className="text-[15px] lg:text-[24px]">
-                  Welcome back stella
-                </Typography>
+                <p className="text-[15px] lg:text-[24px] font-bold text-white">
+                    Welcome back {userName}
+                </p>
                 <h3 className="text-white font-medium lg:text-[14px] text-[8px]">
                   you work well , keep it up
                 </h3>
@@ -232,3 +264,7 @@ const Page = () => {
 };
 
 export default Page;
+function setError(arg0: string) {
+  throw new Error("Function not implemented.");
+}
+

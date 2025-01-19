@@ -130,10 +130,10 @@ const Page = () => {
           </div>
         </Link>
       </div>
-
+{/* 
       <div className="relative mt-4">
         <Dropdown />
-      </div>
+      </div> */}
 
       <div className="mt-4 grid grid-cols-1 lg:w-[1070px] w-[330px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {classData.map((classInfo) => (

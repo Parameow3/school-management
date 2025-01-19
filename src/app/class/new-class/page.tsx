@@ -4,6 +4,13 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 
 interface Course {
+  program_id: number;
+  id: number;
+  name: string;
+}
+
+interface Program {
+  course_list: any;
   id: number;
   name: string;
 }
@@ -20,149 +27,172 @@ interface Student {
 
 const Page: React.FC = () => {
   const router = useRouter();
-  const [isMounted, setIsMounted] = useState(false);
-
   const [formData, setFormData] = useState({
     className: "",
+    program: "",
     course: "",
     teacher: "",
-    credit: "",
     start_date: "",
     end_date: "",
-    students: [""], // Initializing with an empty student input
+    students: [""],
   });
 
+  const [programs, setPrograms] = useState<Program[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
+  const [allCourses, setAllCourses] = useState<Course[]>([]); // All courses fetched from API
+  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingTeachers, setLoadingTeachers] = useState(true);
   const [loadingStudents, setLoadingStudents] = useState(true);
 
+  const [errorPrograms, setErrorPrograms] = useState<string | null>(null);
   const [errorCourses, setErrorCourses] = useState<string | null>(null);
   const [errorTeachers, setErrorTeachers] = useState<string | null>(null);
   const [errorStudents, setErrorStudents] = useState<string | null>(null);
 
+  const token = localStorage.getItem("authToken") || ""; // Get token from localStorage
+
+  // Fetch programs, teachers, students, and courses
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isMounted) {
-      const fetchTeachers = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-            }
-          );
-          const teacherUsers = response.data.results.filter(
-            (user: any) => user.roles_name === "teacher"
-          );
-          setTeachers(teacherUsers);
-        } catch (err: any) {
-          const errorMessage = err.response?.data?.detail || err.message;
-          setErrorTeachers(`Error loading teachers: ${errorMessage}`);
-        } finally {
-          setLoadingTeachers(false);
-        }
-      };
-
-      const fetchCourses = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-            }
-          );
-          if (Array.isArray(response.data)) {
-            setCourses(response.data);
+    const fetchPrograms = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        } catch (err: any) {
-          const errorMessage = err.response?.data?.detail || err.message;
-          setErrorCourses(`Error loading courses: ${errorMessage}`);
-        } finally {
-          setLoadingCourses(false);
-        }
-      };
+        );
+        setPrograms(response.data.results || []);
+      } catch (error: any) {
+        setErrorPrograms("Failed to load programs.");
+      } finally {
+        setLoadingPrograms(false);
+      }
+    };
 
-      const fetchStudents = async () => {
-        try {
-          const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-            }
-          );
-          if (response.data && Array.isArray(response.data.results)) {
-            setStudents(response.data.results);
-          } else {
-            throw new Error("Invalid student data format");
+    const fetchTeachers = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        } catch (err: any) {
-          const errorMessage = err.response?.data?.detail || err.message;
-          setErrorStudents(`Error loading students: ${errorMessage}`);
-        } finally {
-          setLoadingStudents(false);
-        }
-      };
+        );
+        const teacherUsers = response.data.results.filter(
+          (user: any) => user.roles_name === "teacher"
+        );
+        setTeachers(teacherUsers);
+      } catch (error: any) {
+        setErrorTeachers("Failed to load teachers.");
+      } finally {
+        setLoadingTeachers(false);
+      }
+    };
 
-      fetchTeachers();
-      fetchCourses();
-      fetchStudents();
-    }
-  }, [isMounted]);
+    const fetchStudents = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setStudents(response.data.results || []);
+      } catch (error: any) {
+        setErrorStudents("Failed to load students.");
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("Courses Data from API:", response.data);
+
+        // Check if courses include program_id and handle mapping if needed
+        const coursesWithProgram = response.data.map((course: any) => ({
+          ...course,
+          program_id: course.program_id || course.program, // Ensure program_id exists
+        }));
+        console.log("Updated Courses with program_id:", coursesWithProgram);
+
+        setAllCourses(coursesWithProgram);
+      } catch (error: any) {
+        setErrorCourses("Failed to load courses.");
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+
+
+
+    fetchPrograms();
+    fetchTeachers();
+    fetchStudents();
+    fetchCourses();
+  }, [token]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleStudentChange = (
     e: React.ChangeEvent<HTMLSelectElement>,
     index: number
   ) => {
-    const newStudents = [...formData.students];
-    newStudents[index] = e.target.value;
-    setFormData({
-      ...formData,
-      students: newStudents,
-    });
+    const updatedStudents = [...formData.students];
+    updatedStudents[index] = e.target.value;
+    setFormData({ ...formData, students: updatedStudents });
   };
-
+  const handleProgramChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const programId = parseInt(e.target.value); // Convert to number for comparison
+    setFormData({ ...formData, program: programId.toString(), course: "" });
+  
+    if (programId) {
+      const filtered = allCourses.filter((course) => {
+        return course.program_id === programId; // Ensure program_id matches
+      });
+      setFilteredCourses(filtered);
+    } else {
+      setFilteredCourses([]); // Clear if no program selected
+    }
+  };
+  
   const handleAddStudent = () => {
-    setFormData({
-      ...formData,
-      students: [...formData.students, ""],
-    });
+    setFormData({ ...formData, students: [...formData.students, ""] });
   };
 
   const handleRemoveStudent = (index: number) => {
-    const newStudents = formData.students.filter((_, i) => i !== index);
-    setFormData({
-      ...formData,
-      students: newStudents,
-    });
+    const updatedStudents = formData.students.filter((_, i) => i !== index);
+    setFormData({ ...formData, students: updatedStudents });
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
+    // Ensure required fields are filled
     if (
       !formData.className ||
+      !formData.program ||
       !formData.course ||
       !formData.teacher ||
       !formData.start_date ||
@@ -171,73 +201,44 @@ const Page: React.FC = () => {
       alert("Please fill in all required fields.");
       return;
     }
-
-    const startDate = new Date(formData.start_date);
-    const endDate = new Date(formData.end_date);
-
-    if (startDate >= endDate) {
-      alert("Start date must be earlier than end date.");
-      return;
-    }
-
-    const studentIDs = formData.students
-      .map((student) => parseInt(student))
-      .filter((id) => !isNaN(id));
-
+  
+    // Prepare payload
     const postData = {
       name: formData.className,
-      courses: [parseInt(formData.course)],
-      teacher: parseInt(formData.teacher),
+      courses: [parseInt(formData.course)], // Ensure courses is an array of numbers
+      teacher: parseInt(formData.teacher), // Ensure teacher is a number
       start_date: formData.start_date,
       end_date: formData.end_date,
-      student: studentIDs, // Adjusted field name to match API requirement
+      student: formData.students
+        .map((id) => parseInt(id)) // Map student IDs to numbers
+        .filter((id) => !isNaN(id)), // Remove invalid entries
     };
-
-    // Debugging logs
-    console.log("Form Data:", formData);
-    console.log("Post Data:", postData);
-    console.log("Auth Token:", localStorage.getItem("authToken"));
-    console.log(
-      "API URL:",
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`
-    );
-
+  
     try {
-      await axios.post(
+      // Send the POST request
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
         postData,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-
+  
       alert("Classroom created successfully!");
       router.push("/class/all-class");
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail ||
-        error.message ||
-        "An unknown error occurred.";
-      alert(`Error: ${errorMessage}`);
+      alert(`Failed to create classroom: ${error.response?.data?.detail || error.message}`);
     }
   };
-
-  if (!isMounted) {
-    return <div>Loading...</div>;
-  }
-
+  
   return (
     <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
       <div className="lg:w-[60%] w-[90%] mx-auto mt-10 p-6 bg-white rounded-lg shadow-md space-y-6">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">Class Form</h1>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Class Name */}
+        <h1 className="text-2xl font-semibold text-gray-800 text-center">Class Form</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col">
             <label htmlFor="className" className="text-sm font-medium text-gray-700">
               Class Name
@@ -252,33 +253,60 @@ const Page: React.FC = () => {
             />
           </div>
 
-          {/* Course Selection */}
           <div className="flex flex-col">
-            <label htmlFor="course" className="text-sm font-medium text-gray-700">
-              Course
+            <label htmlFor="program" className="text-sm font-medium text-gray-700">
+              Program
             </label>
             <select
-              id="course"
-              name="course"
+              id="program"
+              name="program"
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={handleChange}
+              onChange={handleProgramChange}
             >
-              <option value="">Select a course</option>
-              {loadingCourses ? (
-                <option>Loading courses...</option>
-              ) : errorCourses ? (
-                <option>{errorCourses}</option>
+              <option value="">Select a Program</option>
+              {loadingPrograms ? (
+                <option disabled>Loading programs...</option>
+              ) : errorPrograms ? (
+                <option disabled>{errorPrograms}</option>
               ) : (
-                courses.map((course) => (
-                  <option key={course.id} value={course.id}>
-                    {course.name}
+                programs.map((program) => (
+                  <option key={program.id} value={program.id}>
+                    {program.name}
                   </option>
                 ))
               )}
             </select>
           </div>
 
-          {/* Teacher Selection */}
+          {formData.program && (
+            <div className="flex flex-col">
+              <label htmlFor="course" className="text-sm font-medium text-gray-700">
+                Course
+              </label>
+              <select
+                id="course"
+                name="course"
+                className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={handleChange}
+              >
+                <option value="">Select a Course</option>
+                {loadingCourses ? (
+                  <option disabled>Loading courses...</option>
+                ) : errorCourses ? (
+                  <option disabled>{errorCourses}</option>
+                ) : filteredCourses.length > 0 ? (
+                  filteredCourses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.name}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No courses available</option>
+                )}
+              </select>
+            </div>
+          )}
+
           <div className="flex flex-col">
             <label htmlFor="teacher" className="text-sm font-medium text-gray-700">
               Teacher
@@ -289,11 +317,11 @@ const Page: React.FC = () => {
               className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               onChange={handleChange}
             >
-              <option value="">Select a teacher</option>
+              <option value="">Select a Teacher</option>
               {loadingTeachers ? (
-                <option>Loading teachers...</option>
+                <option disabled>Loading teachers...</option>
               ) : errorTeachers ? (
-                <option>{errorTeachers}</option>
+                <option disabled>{errorTeachers}</option>
               ) : (
                 teachers.map((teacher) => (
                   <option key={teacher.id} value={teacher.id}>
@@ -304,7 +332,42 @@ const Page: React.FC = () => {
             </select>
           </div>
 
-          {/* Start Date */}
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-700">Students</label>
+            {formData.students.map((studentId, index) => (
+              <div key={index} className="flex items-center mt-2">
+                <select
+                  value={studentId}
+                  onChange={(e) => handleStudentChange(e, index)}
+                  className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select a Student</option>
+                  {students.map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.first_name}
+                    </option>
+                  ))}
+                </select>
+                {index > 0 && (
+                  <button
+                    type="button"
+                    className="ml-2 text-red-500"
+                    onClick={() => handleRemoveStudent(index)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+            <button
+              type="button"
+              className="mt-2 px-4 py-2 w-[164px] ml-56 flex justify-center items-center bg-[#213458] text-white rounded"
+              onClick={handleAddStudent}
+            >
+              Add Student
+            </button>
+          </div>
+
           <div className="flex flex-col">
             <label htmlFor="start_date" className="text-sm font-medium text-gray-700">
               Start Date
@@ -318,7 +381,6 @@ const Page: React.FC = () => {
             />
           </div>
 
-          {/* End Date */}
           <div className="flex flex-col">
             <label htmlFor="end_date" className="text-sm font-medium text-gray-700">
               End Date
@@ -332,61 +394,15 @@ const Page: React.FC = () => {
             />
           </div>
 
-          {/* Students */}
-          <div className="flex flex-col">
-            <label className="text-sm font-medium text-gray-700">Students</label>
-            {loadingStudents ? (
-              <span>Loading students...</span>
-            ) : errorStudents ? (
-              <span className="text-red-500">{errorStudents}</span>
-            ) : students.length > 0 ? (
-              formData.students.map((studentId, index) => (
-                <div key={index} className="flex items-center mt-2">
-                  <select
-                    value={studentId}
-                    onChange={(e) => handleStudentChange(e, index)}
-                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select a student</option>
-                    {students.map((student) => (
-                      <option key={student.id} value={student.id}>
-                        {student.first_name}
-                      </option>
-                    ))}
-                  </select>
-                  {index > 0 && (
-                    <button
-                      type="button"
-                      className="ml-2 text-red-500"
-                      onClick={() => handleRemoveStudent(index)}
-                    >
-                      Remove
-                    </button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <span>No students available</span>
-            )}
+          <div className="flex justify-center">
             <button
-              type="button"
-              className="mt-2 px-4 py-2 w-[132px] bg-[#213458] text-[#FFFFFF]"
-              onClick={handleAddStudent}
+              type="submit"
+              className="px-6 py-2 bg-[#213456] text-white rounded"
             >
-              Add Student
+              Submit
             </button>
           </div>
-        </div>
-
-        <div className="flex justify-center mt-6">
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className="w-[184px] px-4 py-2 bg-[#213458] text-white rounded flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-[#214567]"
-          >
-            Submit
-          </button>
-        </div>
+        </form>
       </div>
     </div>
   );

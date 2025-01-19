@@ -82,7 +82,17 @@ const Page: React.FC = () => {
   };
 
   return (
+    <>
+<div></div>
+     <button
+          type="button"
+          onClick={() => router.back()}
+          className=" w-[64px] bg-gray-300 text-black font-bold py-2 px-2 rounded-lg hover:bg-gray-600 transition-colors"
+        >
+          Back
+        </button>
     <div className="flex items-center justify-center min-h-screen bg-gray-100 p-6">
+      
       <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-3xl border border-gray-200">
         <h1 className="text-3xl font-semibold mb-8 text-center text-gray-800">Enrollment History</h1>
 
@@ -152,6 +162,7 @@ const Page: React.FC = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

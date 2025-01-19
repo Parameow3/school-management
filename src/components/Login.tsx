@@ -142,8 +142,6 @@ const Login = () => {
         {errorMessage && (
           <p className="text-red-600 text-center mb-4">{errorMessage}</p>
         )}
-
-        {/* Login Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Input */}
           <div className="relative">
