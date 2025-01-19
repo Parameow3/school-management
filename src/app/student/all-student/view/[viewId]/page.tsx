@@ -36,6 +36,8 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(false); // State to track the current status
+
 
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -117,6 +119,30 @@ const Page = () => {
     fetchStudentAndClassroom();
   }, [viewId, token]);
 
+
+  const studentActive = async (isActive: boolean): Promise<void> => {
+    try {
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${viewId}/status/`;
+      console.log(endpoint);
+
+      const response = await axios.patch(
+        endpoint,
+        { status: isActive ? 'Active' : 'Inactive' }, // Map boolean to "active" or "inactive"
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log('Student status updated:', response.data);
+      setIsActive(isActive); // Update local state based on the server response
+    } catch (error) {
+      console.error('Error updating student status:', error);
+    }
+  };
+  
+
   if (isLoading) {
     return <div className="text-center mt-20">Loading...</div>;
   }
@@ -143,7 +169,17 @@ const Page = () => {
           <h3 className="mt-1 lg:ml-11 lg:font-bold mr-4 text-[12px] lg:text-[16px]">
             {student.last_name} {student.first_name}
           </h3>
-        </div>
+          <div>
+            <button
+              onClick={() => studentActive(!isActive)} // Toggle status on click
+              className={`px-4 py-2 text-white rounded ${
+                isActive ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            >
+              {isActive ? 'Deactivate Student' : 'Activate Student'}
+            </button>
+          </div>
+              </div>
         <div className="text-left">
           <h2 className="font-bold inline-block border-b-2 ml-28 lg:ml-0">About Me</h2>
 
