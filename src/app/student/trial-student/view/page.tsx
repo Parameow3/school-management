@@ -11,11 +11,15 @@ interface Student {
   client: string;
   phone: string;
   number_student: number;
-  programs: number[];
+  program_id: number[];
+  program_name: string;
   status: string;
   status_display: string;
-  assign_by: number;
-  handle_by: number[];
+  admin_id: number;
+  admin_name: string;
+  teacher_id: number[];
+  teacher_name:string;
+  reason: string;
 }
 
 interface Program {
@@ -42,32 +46,6 @@ const Page: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const router = useRouter();
 
-  // Fetch user names by their IDs
-  const getUserNames = (userIds: number[]): string => {
-    // Return names by matching IDs from the users array
-    const userNames = userIds
-      .map((id) => {
-        const user = users.find((u) => u.id === id);
-        return user ? user.username : null; // Adjusted from `name` to `username`
-      })
-      .filter((name) => name !== null);
-
-    return userNames.length > 0 ? userNames.join(", ") : "No valid users";
-  };
-
-  // Get the program names based on the provided programIds
-  const getProgramNames = (programIds: number[]) => {
-    const programNames = programIds
-      .map((id) => {
-        const program = programs.find((prog) => prog.id === id);
-        return program ? program.name : null;
-      })
-      .filter((name) => name !== null);
-
-    return programNames.length > 0
-      ? programNames.join(", ")
-      : "No valid programs";
-  };
 
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -251,16 +229,16 @@ const Page: React.FC = () => {
                   {student.number_student}
                 </td>
                 <td className="border px-4 py-2 text-[14px]">
-                  {getProgramNames(student.programs)}
+                  {student.program_name}
                 </td>
                 <td className="border px-4 py-2 text-[14px]">
                   {student.status_display}
                 </td>
                 <td className="border px-4 py-2 text-[14px]">
-                  {getUserNames([student.assign_by])}
+                  {student.admin_name}
                 </td>
                 <td className="border px-4 py-2 text-[14px]">
-                  {getUserNames(student.handle_by)}
+                  {student.teacher_name}
                 </td>
                 <td className="border px-4 py-2 flex justify-center">
                   <Image

@@ -6,23 +6,50 @@ import Image from "next/image";
 import Button from "@/components/Button";
 import ProgramDropdown from "@/components/programDropdown";
 import { useRouter } from "next/navigation";
+import axios from "axios";
+
+
+interface Program {
+  id: number;
+  name: string;
+}
+
+
+
 
 const Page = () => {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
+  const [admins, setAdmins] = useState<{ id: number; username: string }[]>([]);
+
   const [teachers, setTeachers] = useState<{ id: number; username: string }[]>([]);
-  const [selectedTeacher, setSelectedTeacher] = useState<number | "">("");
-  const [selectedPrograms, setSelectedPrograms] = useState<number[]>([]);
+  const [selectedTeacher, setSelectedTeacher] = useState<{ id: number; username: string }[]>([]);
+  const [currentTeacher, setCurrentTeacher] = useState<string>(""); // Dropdown selection
+
+  const [programs, setProgams] = useState<{ id: number; name: string }[]>([]);
+  const [selectedPrograms, setSelectedPrograms] = useState<{ id: number; name: string }[]>([]);
+  const [currentProgram, setCurrentProgram] = useState<string>(""); // Dropdown selection
+
+
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [errorTeachers, setErrorTeachers] = useState<string | null>(null);
+
+
 
   const [formData, setFormData] = useState({
     client: "",
     phone: "",
     number_student: "",
-    programs: [] as number[],
+    assign_by: "",
+    // program_id: [] as number[],
+    program_name: [""],
     status: "Pending",
-    assign_by: 1,
-    handle_by: [] as number[],
+    admin_name : "",
+    teacher_name: [""] ,
+    // teacher_id: 1,
+    // admin_id: [] ,
+    reason: ""
   });
 
   useEffect(() => {
@@ -38,26 +65,26 @@ const Page = () => {
     if (token) {
       const fetchUsers = async () => {
         try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          const [teacherResponse, adminResponse , programResponse] = await Promise.all([
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=admin`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program`, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+          ]);
 
-          if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-          }
+         
+          console.log(teacherResponse)
+          console.log(adminResponse)
+          console.log(programResponse)
 
-          const data = await response.json();
-          const adminUsers = data.results.filter((user: any) => user.roles === 1);
-          const teacherUsers = data.results.filter((user: any) => user.roles_name === "teacher");
-
-          setUsers(adminUsers);
-          setTeachers(teacherUsers);
+          setProgams(programResponse.data.results)
+          setAdmins(adminResponse.data.results);
+          setTeachers(teacherResponse.data.results);
         } catch (error) {
           console.error("Error fetching users:", error);
         }
@@ -67,49 +94,94 @@ const Page = () => {
     }
   }, [token]);
 
-  const handleTeacherChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const teacherId = parseInt(event.target.value);
-    setSelectedTeacher(teacherId);
-    setFormData((prev) => ({
-      ...prev,
-      handle_by: [teacherId],
-    }));
+  // const handleTeacherChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  //   const teacherId = parseInt(event.target.value);
+  //   setSelectedTeacher(teacherId);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     handle_by: [teacherId],
+  //   }));
+  // };
+
+  const handleAddProgram = () => {
+    const program = programs.find((s) => s.id === Number(currentProgram));
+  
+    if (program && !selectedPrograms.some((s) => s.id === program.id)) {
+      setSelectedPrograms([...selectedPrograms, program]);
+      setCurrentProgram(""); // Reset dropdown
+    } else if (!program) {
+      console.error("Selected student not found in the list.");
+    }
+    console.log(program)
   };
 
-  const handleProgramSelect = (selectedPrograms: number[]) => {
-    setSelectedPrograms(selectedPrograms);
-    setFormData((prevData) => ({
-      ...prevData,
-      programs: selectedPrograms,
-    }));
+  const handleRemoveProgram = (id: number) => {
+    setSelectedPrograms(selectedPrograms .filter((s) => s.id !== id));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+
+
+  const handleAddTeacher = () => {
+    const teacher = teachers.find((s) => s.id === Number(currentTeacher));
+  
+    if (teacher && !selectedTeacher.some((s) => s.id === teacher.id)) {
+      setSelectedTeacher([...selectedTeacher, teacher]);
+      setCurrentTeacher(""); // Reset dropdown
+    } else if (!teacher) {
+      console.error("Selected student not found in the list.");
+    }
+  };
+
+
+  // const handleProgramSelect = (selectedPrograms: number[]) => {
+  //   setSelectedPrograms(selectedPrograms);
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     programs: selectedPrograms,
+  //   }));
+  // };
+
+  const handleRemoveTeacher = (id: number) => {
+    setSelectedTeacher(selectedTeacher.filter((s) => s.id !== id));
+  };
+
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "number_student" || name === "assign_by" ? parseInt(value) : value,
-    }));
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
     e.preventDefault();
     if (!token) {
       alert("Authorization token is missing. Please log in.");
       return;
     }
+    console.log(formData.assign_by)
+
+    const selectedTeacherId = selectedTeacher.map(teacher => teacher.id);
+    const selectedProgramId = selectedPrograms.map(program => program.id);
+    console.log(selectedProgramId)
+    console.log(selectedTeacherId)
 
     const dataToSubmit = {
       client: formData.client,
       phone: formData.phone,
       number_student: formData.number_student,
-      programs: formData.programs,
+      program_id: selectedProgramId,
       status: formData.status.toUpperCase(),
-      assign_by: formData.assign_by,
-      handle_by: formData.handle_by,
+      admin_id: formData.assign_by,
+      teacher_id: selectedTeacherId,
     };
 
     try {
+      console.log(dataToSubmit)
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/`,
         {
@@ -210,15 +282,60 @@ const Page = () => {
         </div>
 
         {/* Programs */}
-        <div>
-          <label htmlFor="programs" className="block text-sm font-medium text-gray-700">
-            Select Programs:
-          </label>
-          <ProgramDropdown 
-            onSelect={handleProgramSelect}
-            selectedPrograms={selectedPrograms}
-          />
-        </div>
+        <div className="p-4 bg-gray-50 rounded shadow-md ">
+      <label className="text-lg font-semibold text-gray-800 mb-2">Select a Program</label>
+      <div className="flex items-center mt-4 ">
+        <select
+          className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={currentProgram}
+          onChange={(e) => setCurrentProgram(e.target.value)} // Track dropdown selection
+        >
+          <option value="">Select a Program</option>
+          {programs.map((program) => (
+            <option key={program.id} value={program.id}>
+              {program.name}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          className="ml-2 text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+          onClick={handleAddProgram} // Add selected student to the table
+        >
+          Add
+        </button>
+      </div>
+
+      {/* Display selected students in a table */}
+      {selectedPrograms.length > 0 && (
+        <table className="mt-16 w-full border-collapse border border-gray-300">
+          <thead>
+            <tr className="bg-gray-200 ">
+              <th className="border border-gray-300 px-4 py-2">ID</th>
+              <th className="border border-gray-300 px-4 py-2">Name</th>
+              <th className="border border-gray-300 px-4 py-2">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedPrograms.map((program) => (
+              <tr key={program.id}>
+                <td className="border border-gray-300 px-4 py-2">{program.id}</td>
+                <td className="border border-gray-300 px-4 py-2">{program.name}</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  <button
+                    type="button"
+                    className="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
+                    onClick={() => handleRemoveProgram(program.id)} // Remove student from the table
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      </div>
 
         {/* Status */}
         <div>
@@ -231,7 +348,7 @@ const Page = () => {
             value={formData.status}
             onChange={handleChange}
             className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-            required
+            // required
           >
             <option value="Pending">Pending</option>
             <option value="Approved">Approved</option>
@@ -244,44 +361,78 @@ const Page = () => {
           <label htmlFor="assign_by" className="block text-sm font-medium text-gray-700">
             Assigned By
           </label>
+          
           <select
             id="assign_by"
             name="assign_by"
-            value={formData.assign_by}
             onChange={handleChange}
             className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
             required
           >
             <option value="">Select an admin</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.username}
+            {admins.map((admin) => (
+              <option key={admin.id} value={admin.id}>
+                {admin.username}
               </option>
             ))}
           </select>
         </div>
 
         {/* Handled By */}
-        <div>
-          <label htmlFor="handle_by" className="block text-sm font-medium text-gray-700">
-            Handle By
-          </label>
-          <select
-            id="handle_by"
-            name="handle_by"
-            value={selectedTeacher || ""}
-            onChange={handleTeacherChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-            required
-          >
-            <option value="">Select a teacher</option>
-            {teachers.map((teacher) => (
-              <option key={teacher.id} value={teacher.id}>
-                {teacher.username}
-              </option>
+        <div className="p-4 bg-gray-50 rounded shadow-md ">
+      <label className="text-lg font-semibold text-gray-800 mb-2">Select a Teacher</label>
+      <div className="flex items-center mt-4 ">
+        <select
+          className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={currentTeacher}
+          onChange={(e) => setCurrentTeacher(e.target.value)} // Track dropdown selection
+        >
+          <option value="">Select a Teacher</option>
+          {teachers.map((teacher) => (
+            <option key={teacher.id} value={teacher.id}>
+              {teacher.username}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          className="ml-2 text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
+          onClick={handleAddTeacher} // Add selected student to the table
+        >
+          Add
+        </button>
+      </div>
+
+      {/* Display selected students in a table */}
+      {selectedTeacher.length > 0 && (
+        <table className="mt-16 w-full border-collapse border border-gray-300">
+          <thead>
+            <tr className="bg-gray-200 ">
+              <th className="border border-gray-300 px-4 py-2">ID</th>
+              <th className="border border-gray-300 px-4 py-2">Name</th>
+              <th className="border border-gray-300 px-4 py-2">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedTeacher.map((teacher) => (
+              <tr key={teacher.id}>
+                <td className="border border-gray-300 px-4 py-2">{teacher.id}</td>
+                <td className="border border-gray-300 px-4 py-2">{teacher.username}</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  <button
+                    type="button"
+                    className="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
+                    onClick={() => handleRemoveTeacher(teacher.id)} // Remove student from the table
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
             ))}
-          </select>
-        </div>
+          </tbody>
+        </table>
+      )}
+      </div>
 
         <div className="lg:col-span-3 flex justify-center items-center space-x-4">
           <Button className="lg:h-[40px] h-[40px] flex justify-center items-center px-6 py-2 bg-[#213458] text-white font-medium rounded hover:bg-blue-500">

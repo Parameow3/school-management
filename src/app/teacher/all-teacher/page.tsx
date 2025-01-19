@@ -53,7 +53,7 @@ const Page = () => {
           
           // Fetch all users and filter by teacher role on the frontend
           const profilesResponse = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`, // Fetch all users
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`, // Fetch all users
             {
               headers: {
                 "Content-Type": "application/json",
