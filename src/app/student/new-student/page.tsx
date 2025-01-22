@@ -29,6 +29,8 @@ interface FormDataType {
   branch_id: number | null; // Branch can be a number or null
   image: File | null; // Image is a file or null
   classrooms: string[]; // Array of classroom identifiers
+  insurance_number: string;
+  insurance_expiry_date : string;
 }
 
 
@@ -57,6 +59,8 @@ const Page= ()=> {
     branch_id: null, 
     image: null, 
     classrooms: [],
+    insurance_number: "",
+    insurance_expiry_date:""
   });
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
@@ -210,6 +214,31 @@ const Page= ()=> {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Insurance Number
+              </label>
+              <input
+                type="text"
+                name="insurance_number"
+                value={formData.insurance_number}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+              Insurance exprired date
+              </label>
+              <input
+                type="date"
+                name="insurance_expiry_date"
+                value={formData.insurance_expiry_date}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
           </div>
         </section>
         <section>
@@ -229,6 +258,7 @@ const Page= ()=> {
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
               />
             </div>
+            
             <div className="">
               <label className="block text-sm font-medium text-gray-700">
                 Nationality

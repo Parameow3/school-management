@@ -12,6 +12,8 @@ const CalendarComponent: React.FC = () => {
   const day = startDay.clone().subtract(1, 'day');
   const days: moment.Moment[] = [];
 
+  
+
   while (day.isBefore(endDay, 'day')) {
     days.push(day.add(1, 'day').clone());
   }

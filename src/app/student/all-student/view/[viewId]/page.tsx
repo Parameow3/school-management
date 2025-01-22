@@ -27,6 +27,8 @@ interface Student {
   parentContact: string;
   profilePicture?: string;
   classroom?: string; // Add classroom field
+  insurance_number: string ;
+  insurance_expiry_date:string;
 }
 
 const Page = () => {
@@ -106,6 +108,8 @@ const Page = () => {
           parentContact: studentData.parent_contact,
           profilePicture: studentData.image || '/default-photo.jpg', // Fallback if no profile picture
           classroom: classroomName, // Assign the classroom name if available
+          insurance_number : studentData.insurance_number,
+          insurance_expiry_date : studentData.insurance_expiry_date,
         };
 
         setStudent(mappedStudent);
@@ -188,6 +192,8 @@ const Page = () => {
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Age:</strong> {student.age}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Gender:</strong> {student.gender}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Admission Date:</strong> {student.admissionDate}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Insurance Number:</strong> {student.insurance_number}</p>
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Insurance Date:</strong> {student.admissionDate}</p>
 
           {student.belt_level && (
             <p className="p-2 text-[12px] lg:text-[16px]"><strong>Belt Level:</strong> {student.belt_level}</p>

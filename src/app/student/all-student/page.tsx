@@ -208,27 +208,22 @@ const Page = () => {
 
         {/* Profiles List */}
         <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
-          {loading ? (
-            <p>Loading </p>
-          ) : Array.isArray(profiles) && profiles.length === 0 ? (
-            <p>No student found.</p>
-          ) : (
-            filteredProfiles.map((profile) => (
-<ProfileCard
-  key={profile.id}
-  pic={profile.image || "/default-image.jpg"} // Use a default image if profile.image is null
-  first_name={`${profile.first_name} ${profile.last_name}`}
-  job={"Student"}
-  onViewClick={() => handleViewClick(profile.id)}
-  onEditClick={() => handleEditClick(profile.id)}
-  onDeleteClick={() => handleDeleteClick(profile.id)}
-  editPath={`/student/edit/${profile.id}`}
-  viewPath={`/student/view/${profile.id}`}
-/>
-
-            ))
-          )}
+          {filteredProfiles.map((profile) => (
+            <ProfileCard
+              key={profile.id}
+              pic={profile.image || "/default-image.jpg"} // Use a default image if profile.image is null
+              first_name={`${profile.first_name} ${profile.last_name}`}
+              job={"Student"}
+              onViewClick={() => handleViewClick(profile.id)}
+              onEditClick={() => handleEditClick(profile.id)}
+              onDeleteClick={() => handleDeleteClick(profile.id)}
+              editPath={`/student/edit/${profile.id}`}
+              viewPath={`/student/view/${profile.id}`}
+            />
+          ))}
         </div>
+
+
 
         {/* "Show More" Button */}
         {nextPage && (

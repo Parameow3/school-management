@@ -178,6 +178,7 @@ const Page = () => {
       status: formData.status.toUpperCase(),
       admin_id: formData.assign_by,
       teacher_id: selectedTeacherId,
+      reason : formData.reason,
     };
 
     try {
@@ -196,6 +197,8 @@ const Page = () => {
 
       if (response.ok) {
         alert("Trial information submitted successfully!");
+        router.push("/student/trial-student/view"); // Redirect to the programs list or wherever needed
+
       } else {
         const errorData = await response.json();
         alert(`Failed to submit trial information: ${errorData.detail || errorData.message}`);
@@ -281,8 +284,66 @@ const Page = () => {
           />
         </div>
 
-        {/* Programs */}
-        <div className="p-4 bg-gray-50 rounded shadow-md ">
+       
+
+        {/* Status */}
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            Status
+          </label>
+          <select
+            id="status"
+            name="status"
+            value={formData.status}
+            onChange={handleChange}
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            // required
+          >
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+            Reason
+          </label>
+          <input
+            type="text"
+            id="reason"
+            name="reason"
+            value={formData.reason}
+            onChange={handleChange}
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+          />
+        </div>
+
+
+        {/* Assigned By */}
+        <div>
+          <label htmlFor="assign_by" className="block text-sm font-medium text-gray-700">
+            Assigned By
+          </label>
+          
+          <select
+            id="assign_by"
+            name="assign_by"
+            onChange={handleChange}
+            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            required
+          >
+            <option value="">Select an admin</option>
+            {admins.map((admin) => (
+              <option key={admin.id} value={admin.id}>
+                {admin.username}
+              </option>
+            ))}
+          </select>
+        </div>
+
+         {/* Programs */}
+         <div className="p-4 bg-gray-50 rounded shadow-md ">
       <label className="text-lg font-semibold text-gray-800 mb-2">Select a Program</label>
       <div className="flex items-center mt-4 ">
         <select
@@ -337,46 +398,7 @@ const Page = () => {
       )}
       </div>
 
-        {/* Status */}
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-            Status
-          </label>
-          <select
-            id="status"
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-            // required
-          >
-            <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
-        </div>
 
-        {/* Assigned By */}
-        <div>
-          <label htmlFor="assign_by" className="block text-sm font-medium text-gray-700">
-            Assigned By
-          </label>
-          
-          <select
-            id="assign_by"
-            name="assign_by"
-            onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-            required
-          >
-            <option value="">Select an admin</option>
-            {admins.map((admin) => (
-              <option key={admin.id} value={admin.id}>
-                {admin.username}
-              </option>
-            ))}
-          </select>
-        </div>
 
         {/* Handled By */}
         <div className="p-4 bg-gray-50 rounded shadow-md ">

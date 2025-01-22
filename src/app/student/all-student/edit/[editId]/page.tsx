@@ -45,6 +45,8 @@ interface Student {
   image:   File | string;
   branch_name: string;
   branch_id: string ;
+  insurance_number: string ;
+  insurance_expiry_date: string;
 }
 
 const Page = () => {
@@ -309,6 +311,32 @@ const Page = () => {
                 type="date"
                 name="admission_date"
                 value={formData.admission_date}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Insurance Number
+              </label>
+              <input
+                type="text"
+                name="last_name"
+                value={formData.insurance_number}
+                onChange={handleChange}
+                className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Insurance Date
+              </label>
+              <input
+                type="date"
+                name="admission_date"
+                value={formData.insurance_expiry_date} 
                 onChange={handleChange}
                 className="mt-1 block lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm bg-white text-black"
               />

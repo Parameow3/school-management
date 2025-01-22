@@ -411,7 +411,7 @@ const Page = () => {
       </div>
 
       {/* Display selected students in a table */}
-      {selectedCourses.length > 0 && (
+      {selectedStudents.length > 0 && (
         <table className="mt-16 w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-200 ">

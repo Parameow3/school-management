@@ -211,6 +211,7 @@ const Page: React.FC = () => {
             <th className="border px-3 py-2 text-[14px]">Status</th>
             <th className="border px-3 py-2 text-[14px]">Assigned By</th>
             <th className="border px-3 py-2 text-[14px]">Handled By</th>
+            <th className="border px-3 py-2 text-[14px]">Reason</th>
             <th className="border px-3 py-2 text-[14px]">Action</th>
           </tr>
         </thead>
@@ -239,6 +240,9 @@ const Page: React.FC = () => {
                 </td>
                 <td className="border px-4 py-2 text-[14px]">
                   {student.teacher_name}
+                </td>
+                <td className="border px-4 py-2 text-[14px]">
+                  {student.reason}
                 </td>
                 <td className="border px-4 py-2 flex justify-center">
                   <Image
