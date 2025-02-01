@@ -4,16 +4,41 @@ import { Card, CardBody, CardFooter } from "@nextui-org/react";
 
 interface ProfileCardProps {
   pic?: string;
-  first_name: string;
   job: string;
   onViewClick: (viewPath: string) => void;
   onEditClick: (editPath: string) => void; 
   onDeleteClick?: () => void;
   editPath: string;
   viewPath: string; 
+
+  id: number;
+  first_name: string;
+  last_name: string;
+  age: number;
+  gender: string;
+  admissionDate: string;
+  belt_level: string; 
+  dob: string;
+  address: string;
+  pob: string; // Place of birth
+  nationality: string;
+  studentPassport: string;
+  fatherName: string;
+  fatherOccupation: string;
+  fatherPhone?: string; 
+  motherName: string;
+  motherOccupation: string;
+  motherPhone?: string; 
+  parentContact: string;
+  profilePicture?: string;
+  classroom?: string; // Add classroom field
+  insurance_number: string ;
+  insurance_expiry_date:string;
+
+
 }
 
-const ProfileCard: React.FC<ProfileCardProps> = ({ pic, first_name, job, editPath, viewPath, onViewClick, onEditClick,onDeleteClick}) => {
+const ProfileCard: React.FC<ProfileCardProps> = ({  pic, first_name, job, editPath, viewPath, onViewClick, onEditClick,onDeleteClick}) => {
   const validPicSrc = pic ? pic : ''; // Fallback image if pic is undefined or null
 
   return (

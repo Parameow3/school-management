@@ -8,7 +8,6 @@ import ProfileCard from "@/components/ProfileCard";
 import Modal from "@/components/Modal";
 import axios from "axios";
 import Button from "@/components/Button";
-import { useCallback } from 'react';
 
 const Page = () => {
   const router = useRouter();
@@ -19,7 +18,8 @@ const Page = () => {
   const [error, setError] = useState<string | null>(null);
   const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>(""); // Track search term
-  const [nextPage, setNextPage] = useState<string | null>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?page=1`); // Store next page URL
+  const [prevPage, setPrevPage] = useState<string | null>(null);
+  const [nextPage, setNextPage] = useState<string | null>(null); // Initialize nextPage to null initially
   const [token, setToken] = useState<string | null>(null); // Store token here
 
   // Fetch token from localStorage
@@ -33,19 +33,27 @@ const Page = () => {
     }
   }, [router]);
 
+  // Function to construct the pagination URL
+  const constructUrl = (page: number) => {
+    const status = "Active"; // Status filter is fixed to Active
+    return `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?p=${page}&status=${status}`;
+  };
+
   // Fetch profiles (with pagination)
-  const fetchProfiles = async () => {
-    if (!token || !nextPage) return;
+  const fetchProfiles = async (url: string | null) => {
+    if (!token || !url) return; // If the URL is null, do nothing
 
     setLoading(true);
     try {
-      const response = await axios.get(nextPage, {
+      const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setProfiles((prevProfiles) => [...prevProfiles, ...response.data.results]);
-      setNextPage(response.data.next); // Set the next page URL or null if there are no more pages
+
+      setProfiles(response.data.results); // Update profiles with new data
+      setPrevPage(response.data.previous); // Set the previous page URL
+      setNextPage(response.data.next); // Set the next page URL
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -53,72 +61,26 @@ const Page = () => {
     }
   };
 
-  const fetchProfile = useCallback(() => {
-    // Your logic for fetching profiles
-    if (!token) return;
-    console.log("Fetching profiles with token:", token);
-    // Perform fetch logic
-  }, [token]); // Include `token` as a dependency
+  const handleNextPage = () => {
+    if (nextPage) { // Only call if nextPage URL exists
+      fetchProfiles(nextPage); // Pass the URL to fetchProfiles
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (prevPage) { // Only call if prevPage URL exists
+      fetchProfiles(prevPage); // Pass the URL to fetchProfiles
+    }
+  };
 
   useEffect(() => {
-    fetchProfile(); // Initial fetch when component loads
-  }, [fetchProfile]); // Use the memoized function as a dependency
-
-
-  const handleBranchChange = (branchId: number | null) => {
-    if (branchId === null) {
-      // Handle "All branches" or null case if applicable
-      console.log("All branches selected");
-      setSelectedBranch(null); // Set `null` for "All"
-    } else {
-      console.log("Selected branch ID:", branchId);
-      setSelectedBranch(branchId); // Update to the selected branch
+    if (token) {
+      fetchProfiles(constructUrl(1)); // Start from the first page
     }
-  };
-  
-  const handleViewClick = (id: number) => {
-    router.push(`/student/all-student/view/${id}`);
-  };
-
-  const handleEditClick = (id: number) => {
-    router.push(`/student/all-student/edit/${id}`);
-  };
-
-  const handleDeleteClick = (id: number) => {
-    setIsModalOpen(true);
-    setProfileToDelete(id);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setProfileToDelete(null); // Reset profile to delete
-  };
-
-  const handleConfirmDelete = async () => {
-    if (profileToDelete !== null && token) {
-      try {
-        await axios.delete(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${profileToDelete}/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        // After deleting, update the profiles list
-        setProfiles(
-          profiles.filter((profile) => profile.id !== profileToDelete)
-        );
-      } catch (err: any) {
-        setError("Failed to delete the profile.");
-      } finally {
-        setIsModalOpen(false); // Close modal after deletion
-      }
-    }
-  };
+  }, [token]); // Fetch data when token is available
 
   // Filter profiles based on search and branch selection
-  const filteredProfiles = (profiles || []).filter((profile) => {
+  const filteredProfiles = profiles.filter((profile) => {
     const matchesBranch = selectedBranch
       ? profile.branch === selectedBranch
       : true;
@@ -186,7 +148,7 @@ const Page = () => {
         <div className="relative mt-4 ml-4 flex flex-row space-x-2 justify-between items-center gap-[24px]">
           {/* Branch Dropdown */}
           <div className="w-full lg:w-[300px]">
-            <Dropdown onChange={handleBranchChange} />
+            <Dropdown onChange={(branchId: number | null) => setSelectedBranch(branchId)} />
           </div>
           {/* Buttons */}
           <div className="flex flex-row gap-2">
@@ -214,35 +176,38 @@ const Page = () => {
               pic={profile.image || "/default-image.jpg"} // Use a default image if profile.image is null
               first_name={`${profile.first_name} ${profile.last_name}`}
               job={"Student"}
-              onViewClick={() => handleViewClick(profile.id)}
-              onEditClick={() => handleEditClick(profile.id)}
-              onDeleteClick={() => handleDeleteClick(profile.id)}
-              editPath={`/student/edit/${profile.id}`}
-              viewPath={`/student/view/${profile.id}`}
+              onViewClick={() => router.push(`/student/view/${profile.id}`)}
+              onEditClick={() => router.push(`/student/edit/${profile.id}`)}
+              onDeleteClick={() => setIsModalOpen(true)}
             />
           ))}
         </div>
 
+        {/* Pagination Buttons */}
+        <div className="flex justify-between mt-6">
+          <button
+            className="bg-[#213458] text-white py-2 px-4 rounded-md shadow-md"
+            onClick={handlePrevPage}
+            disabled={!prevPage} // Disable if there's no previous page
+          >
+            Back Page
+          </button>
 
+          <button
+            className="bg-[#213458] text-white py-2 px-4 rounded-md shadow-md"
+            onClick={handleNextPage}
+            disabled={!nextPage} // Disable if there's no next page
+          >
+            Show More
+          </button>
+        </div>
 
-        {/* "Show More" Button */}
-        {nextPage && (
-          <div className="flex justify-center mt-5">
-            <Button
-              className="bg-[#213458] text-white py-2 px-6 rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105"
-              onClick={fetchProfiles}
-            >
-              Show More
-            </Button>
-          </div>
-        )}
-
-        {/* Modal for Deleting */}
+        {/* Modal */}
         {isModalOpen && (
           <Modal
-            onClose={handleCloseModal}
-            onConfirm={handleConfirmDelete}
-            message="Are you sure you want to delete this card?"
+            onClose={() => setIsModalOpen(false)}
+            onConfirm={() => setIsModalOpen(false)} // Replace with actual delete logic
+            profileToDelete={profileToDelete}
           />
         )}
       </div>
