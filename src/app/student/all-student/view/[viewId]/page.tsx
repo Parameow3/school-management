@@ -38,7 +38,7 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isActive, setIsActive] = useState(false); // State to track the current status
+  const [isActive, setIsActive] = useState<string>('');
 
 
   useEffect(() => {
@@ -67,6 +67,8 @@ const Page = () => {
         );
         
         const studentData = studentResponse.data;
+        console.log(studentResponse.data.status)
+        setIsActive(studentResponse.data.status)
 
         // Assuming the student data has a classroom ID, fetch classroom data
         const classroomId = studentData.classroom_id; // Make sure this field exists in the student data
@@ -123,28 +125,33 @@ const Page = () => {
     fetchStudentAndClassroom();
   }, [viewId, token]);
 
-
-  const studentActive = async (isActive: boolean): Promise<void> => {
+  const studentActive = async (status: string): Promise<void> => {
+    console.log(isActive)
     try {
       const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${viewId}/status/`;
       console.log(endpoint);
-
+  
+      // Set status as "Activate" or "Inactivate" based on the string passed
       const response = await axios.patch(
         endpoint,
-        { status: isActive ? 'Active' : 'Inactive' }, // Map boolean to "active" or "inactive"
+        { status: status === 'Active' ? 'Active' : 'Inactive' }, // Map "Activate" or "Inactivate" to "Active" or "Inactive"
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
+  
       console.log('Student status updated:', response.data);
-      setIsActive(isActive); // Update local state based on the server response
+      console.log(status);  // This will log "Activate" or "Inactivate"
+      setIsActive(status ); // Set status to 'Active' or 'Inactive'
+      console.log(isActive)
+
     } catch (error) {
       console.error('Error updating student status:', error);
     }
   };
+  
   
 
   if (isLoading) {
@@ -174,14 +181,16 @@ const Page = () => {
             {student.last_name} {student.first_name}
           </h3>
           <div>
-            <button
-              onClick={() => studentActive(!isActive)} // Toggle status on click
+          <button
+              onClick={() => studentActive(isActive === 'Active' ? 'Inactive' : 'Active')} // Toggle between 'Activate' and 'Inactivate'
               className={`px-4 py-2 text-white rounded ${
-                isActive ? 'bg-green-500' : 'bg-red-500'
+                isActive === 'Active' ? 'bg-red-500' : 'bg-green-500'
               }`}
             >
-              {isActive ? 'Deactivate Student' : 'Activate Student'}
-            </button>
+              {isActive === 'Active' ? 'Deactivate Student' : 'Activate Student'}
+          </button>
+
+
           </div>
               </div>
         <div className="text-left">

@@ -21,6 +21,8 @@ const Page = () => {
   const [prevPage, setPrevPage] = useState<string | null>(null);
   const [nextPage, setNextPage] = useState<string | null>(null); // Initialize nextPage to null initially
   const [token, setToken] = useState<string | null>(null); // Store token here
+  const [statusFilter, setStatusFilter] = useState<'Active' | 'Inactive'>('Active');
+
 
   // Fetch token from localStorage
   useEffect(() => {
@@ -35,8 +37,8 @@ const Page = () => {
 
   // Function to construct the pagination URL
   const constructUrl = (page: number) => {
-    const status = "Active"; // Status filter is fixed to Active
-    return `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?p=${page}&status=${status}`;
+    console.log(statusFilter)
+    return `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?p=${page}&status=${statusFilter}`;
   };
 
   // Fetch profiles (with pagination)
@@ -77,7 +79,7 @@ const Page = () => {
     if (token) {
       fetchProfiles(constructUrl(1)); // Start from the first page
     }
-  }, [token]); // Fetch data when token is available
+  }, [token , statusFilter]); // Fetch data when token is available
 
   // Filter profiles based on search and branch selection
   const filteredProfiles = profiles.filter((profile) => {
@@ -117,6 +119,8 @@ const Page = () => {
             </div>
           </Link>
         </div>
+       
+
 
         {/* Search Input */}
         <div className="mb-4 relative ml-4 mt-4">
@@ -165,6 +169,13 @@ const Page = () => {
             >
               New Trial
             </Button>
+
+            <Button
+                className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#213458] transition-all duration-300"
+                onClick={() => setStatusFilter(statusFilter === 'Active' ? 'Inactive' : 'Active')}
+              >
+                {statusFilter === 'Active' ? 'Show Inactive' : 'Show Active'}
+          </Button>
           </div>
         </div>
 
@@ -176,8 +187,8 @@ const Page = () => {
               pic={profile.image || "/default-image.jpg"} // Use a default image if profile.image is null
               first_name={`${profile.first_name} ${profile.last_name}`}
               job={"Student"}
-              onViewClick={() => router.push(`/student/view/${profile.id}`)}
-              onEditClick={() => router.push(`/student/edit/${profile.id}`)}
+              onViewClick={() => router.push(`/student/all-student/view/${profile.id}`)}
+              onEditClick={() => router.push(`/student/all-student/edit/${profile.id}`)}
               onDeleteClick={() => setIsModalOpen(true)}
             />
           ))}
