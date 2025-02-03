@@ -56,7 +56,7 @@ const Page = () => {
     } else {
       router.push("/login");
     }
-  }, [router]); // Include router in dependencies
+  }, [exams, router]); // Include router in dependencies
 
 // Fetch exam, course, and classroom data
   useEffect(() => {

@@ -546,38 +546,39 @@ const Page = () => {
           <label htmlFor="status" className="block text-sm font-medium text-gray-700">
             Status
           </label>
-          {formData.map((data)=>(
-
-          <select
-            id="status"
-            name="status"
-            value={data.status}
-            onChange={handleStatusChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-          >
-             <option value={data.status}>{data.status}</option>
-             <option value="Pending">Pending</option>
-            <option value="Approved">Approved</option>
-            <option value="Rejected">Rejected</option>
-          </select>
+          {formData.map((data) => (
+              <select
+                  key={data.id} // <-- Add this key prop
+                  id="status"
+                  name="status"
+                  value={data.status}
+                  onChange={handleStatusChange}
+                  className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+              >
+                <option value={data.status}>{data.status}</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Rejected">Rejected</option>
+              </select>
           ))}
         </div>
 
+
         <div className="flex flex-col">
-            <label
+          <label
               htmlFor=""
               className="text-sm font-medium text-gray-700"
-            >
-              Reason
-            </label>
-            {formData.map((data, index) => (
-                <input
-                    key={data.id || index} // Add a unique key for each input element
-                    id="reason"
-                    name="reason"
-                    type="text"
-                    className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={data.reason || ""} // Ensure value is a valid string, defaulting to an empty string
+          >
+            Reason
+          </label>
+          {formData.map((data, index) => (
+              <input
+                  key={data.id || index} // Add a unique key for each input element
+                  id="reason"
+                  name="reason"
+                  type="text"
+                  className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={data.reason || ""} // Ensure value is a valid string, defaulting to an empty string
                     onChange={(e) => handleChange(e, data.id)} // Pass the event and the data ID to the handler
                 />
             ))}

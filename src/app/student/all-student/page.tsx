@@ -79,7 +79,7 @@ const Page = () => {
     if (token) {
       fetchProfiles(constructUrl(1)); // Start from the first page
     }
-  }, [token , statusFilter]); // Fetch data when token is available
+  }, [token, statusFilter, fetchProfiles, constructUrl]); // Fetch data when token is available
 
   // Filter profiles based on search and branch selection
   const filteredProfiles = profiles.filter((profile) => {
@@ -190,7 +190,7 @@ const Page = () => {
               onViewClick={() => router.push(`/student/all-student/view/${profile.id}`)}
               onEditClick={() => router.push(`/student/all-student/edit/${profile.id}`)}
               onDeleteClick={() => setIsModalOpen(true)}
-            />
+             />
           ))}
         </div>
 
