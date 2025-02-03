@@ -4,12 +4,13 @@ import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
 import Typography from './Typography';
 
 interface ModalProps {
-  onClose: () => void; 
-  onConfirm?: () => void; // Optional prop, use `?` to indicate it may be undefined
-  message?: string; // Optional custom message
+  onClose: () => void;
+  onConfirm?: () => void;
+  message?: string;
+  profileToDelete?: number | null; // <-- Add this
 }
 
-const Modal = ({ onClose, onConfirm, message }: ModalProps) => {
+const Modal = ({ onClose, onConfirm, message, profileToDelete }: ModalProps) => {
   const [open, setOpen] = useState(true);
 
   const handleClose = () => {

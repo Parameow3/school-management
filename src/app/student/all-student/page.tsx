@@ -1,7 +1,7 @@
 "use client";
 import Dropdown from "@/components/Dropdown";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import ProfileCard from "@/components/ProfileCard";
@@ -35,33 +35,40 @@ const Page = () => {
     }
   }, [router]);
 
-  // Function to construct the pagination URL
-  const constructUrl = (page: number) => {
-    console.log(statusFilter)
-    return `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?p=${page}&status=${statusFilter}`;
-  };
+  const constructUrl = useCallback(
+      (page: number) => {
+        console.log(statusFilter);
+        return `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?p=${page}&status=${statusFilter}`;
+      },
+      [statusFilter]
+  );
 
-  // Fetch profiles (with pagination)
-  const fetchProfiles = async (url: string | null) => {
-    if (!token || !url) return; // If the URL is null, do nothing
+  const fetchProfiles = useCallback(
+      async (url: string | null) => {
+        if (!token || !url) return;
+        setLoading(true);
+        try {
+          const response = await axios.get(url, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setProfiles(response.data.results);
+          setPrevPage(response.data.previous);
+          setNextPage(response.data.next);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      },
+      [token] // If token changes, fetchProfiles will be re-created
+  );
 
-    setLoading(true);
-    try {
-      const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+// Then use them in useEffect:
+  useEffect(() => {
+    const url = constructUrl(page); // stable reference
+    fetchProfiles(url);             // stable reference
+  }, [page, constructUrl, fetchProfiles]);
 
-      setProfiles(response.data.results); // Update profiles with new data
-      setPrevPage(response.data.previous); // Set the previous page URL
-      setNextPage(response.data.next); // Set the next page URL
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleNextPage = () => {
     if (nextPage) { // Only call if nextPage URL exists
@@ -215,11 +222,11 @@ const Page = () => {
 
         {/* Modal */}
         {isModalOpen && (
-          <Modal
-            onClose={() => setIsModalOpen(false)}
-            onConfirm={() => setIsModalOpen(false)} // Replace with actual delete logic
-            profileToDelete={profileToDelete}
-          />
+            <Modal
+                onClose={() => setIsModalOpen(false)}
+                onConfirm={() => setIsModalOpen(false)}
+                profileToDelete={profileToDelete}
+            />
         )}
       </div>
     </>
