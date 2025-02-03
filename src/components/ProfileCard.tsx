@@ -3,40 +3,47 @@ import Image from 'next/image';
 import { Card, CardBody, CardFooter } from "@nextui-org/react";
 
 interface ProfileCardProps {
+  // If you always need these, keep them required
+  // If not, mark them optional with ?
   pic?: string;
-  job: string;
-  onViewClick: (viewPath: string) => void;
-  onEditClick: (editPath: string) => void; 
+  job?: string;
+  onViewClick?: () => void;
+  onEditClick?: () => void;
   onDeleteClick?: () => void;
-  editPath: string;
-  viewPath: string; 
 
-  id: number;
-  first_name: string;
-  last_name: string;
-  age: number;
-  gender: string;
-  admissionDate: string;
-  belt_level: string; 
-  dob: string;
-  address: string;
-  pob: string; // Place of birth
-  nationality: string;
-  studentPassport: string;
-  fatherName: string;
-  fatherOccupation: string;
-  fatherPhone?: string; 
-  motherName: string;
-  motherOccupation: string;
-  motherPhone?: string; 
-  parentContact: string;
+  // If your UI doesn't use editPath or viewPath, make them optional
+  editPath?: string;
+  viewPath?: string;
+
+  // If you are *not* displaying or needing the ID in the component, make it optional
+  id?: number;
+
+  // If you only show first_name (already combined with last_name), you can do:
+  first_name?: string;
+  last_name?: string;
+  age?: number;
+  gender?: string;
+  admissionDate?: string;
+  belt_level?: string;
+  dob?: string;
+  address?: string;
+  pob?: string;
+  nationality?: string;
+  studentPassport?: string;
+  fatherName?: string;
+  fatherOccupation?: string;
+  fatherPhone?: string;
+  motherName?: string;
+  motherOccupation?: string;
+  motherPhone?: string;
+  parentContact?: string;
   profilePicture?: string;
-  classroom?: string; // Add classroom field
-  insurance_number: string ;
-  insurance_expiry_date:string;
-
-
+  classroom?: string;
+  insurance_number?: string;
+  insurance_expiry_date?: string;
 }
+
+
 
 const ProfileCard: React.FC<ProfileCardProps> = ({  pic, first_name, job, editPath, viewPath, onViewClick, onEditClick,onDeleteClick}) => {
   const validPicSrc = pic ? pic : ''; // Fallback image if pic is undefined or null
