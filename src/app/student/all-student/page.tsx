@@ -22,6 +22,7 @@ const Page = () => {
   const [nextPage, setNextPage] = useState<string | null>(null); // Initialize nextPage to null initially
   const [token, setToken] = useState<string | null>(null); // Store token here
   const [statusFilter, setStatusFilter] = useState<'Active' | 'Inactive'>('Active');
+  const [page, setPage] = useState<number>(1);
 
 
   // Fetch token from localStorage
@@ -65,22 +66,18 @@ const Page = () => {
 
 // Then use them in useEffect:
   useEffect(() => {
-    const url = constructUrl(page); // stable reference
-    fetchProfiles(url);             // stable reference
+    const url = constructUrl(page);
+    fetchProfiles(url);
   }, [page, constructUrl, fetchProfiles]);
 
-
   const handleNextPage = () => {
-    if (nextPage) { // Only call if nextPage URL exists
-      fetchProfiles(nextPage); // Pass the URL to fetchProfiles
-    }
+    setPage((prev) => prev + 1);
   };
 
   const handlePrevPage = () => {
-    if (prevPage) { // Only call if prevPage URL exists
-      fetchProfiles(prevPage); // Pass the URL to fetchProfiles
-    }
+    setPage((prev) => (prev > 1 ? prev - 1 : 1));
   };
+
 
   useEffect(() => {
     if (token) {
