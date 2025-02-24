@@ -9,10 +9,10 @@ interface Student {
   id: number;
   first_name: string;
   last_name: string;
-  age: number;
+  // age: number;
   gender: string;
   admissionDate: string;
-  belt_level: string; 
+  // belt_level: string; 
   dob: string;
   address: string;
   pob: string; // Place of birth
@@ -26,7 +26,9 @@ interface Student {
   motherPhone?: string; 
   parentContact: string;
   profilePicture?: string;
-  classroom?: string; // Add classroom field
+  classroom?: string; 
+  insurance_number: string;
+    insurance_expiry_date:string
 }
 
 const Page = () => {
@@ -36,7 +38,7 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
-
+  const [isActive, setIsActive] = useState<string>('');
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -63,7 +65,7 @@ const Page = () => {
         );
         
         const studentData = studentResponse.data;
-
+        setIsActive(studentResponse.data.status)
         // Assuming the student data has a classroom ID, fetch classroom data
         const classroomId = studentData.classroom_id; // Make sure this field exists in the student data
 
@@ -86,10 +88,10 @@ const Page = () => {
           id: studentData.id,
           first_name: studentData.first_name,
           last_name: studentData.last_name,
-          age: studentData.age,
+          // age: studentData.age,
           gender: studentData.gender,
           admissionDate: studentData.admission_date,
-          belt_level: studentData.belt_level || '', // Optional field
+          // belt_level: studentData.belt_level || '', 
           dob: studentData.dob,
           address: studentData.address,
           pob: studentData.pob, // Place of birth
@@ -104,6 +106,8 @@ const Page = () => {
           parentContact: studentData.parent_contact,
           profilePicture: studentData.image || '/default-photo.jpg', // Fallback if no profile picture
           classroom: classroomName, // Assign the classroom name if available
+          insurance_number: studentData.insurance_number,
+          insurance_expiry_date: studentData.insurance_expiry_date
         };
 
         setStudent(mappedStudent);
@@ -116,7 +120,32 @@ const Page = () => {
 
     fetchStudentAndClassroom();
   }, [viewId, token]);
+  const studentActive = async (status: string): Promise<void> => {
+    console.log(isActive)
+    try {
+      const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${viewId}/status/`;
+      console.log(endpoint);
+  
+      // Set status as "Activate" or "Inactivate" based on the string passed
+      const response = await axios.patch(
+        endpoint,
+        { status: status === 'Active' ? 'Active' : 'Inactive' }, // Map "Activate" or "Inactivate" to "Active" or "Inactive"
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      console.log('Student status updated:', response.data);
+      console.log(status);  // This will log "Activate" or "Inactivate"
+      setIsActive(status ); // Set status to 'Active' or 'Inactive'
+      console.log(isActive)
 
+    } catch (error) {
+      console.error('Error updating student status:', error);
+    }
+  };
   if (isLoading) {
     return <div className="text-center mt-20">Loading...</div>;
   }
@@ -154,19 +183,30 @@ const Page = () => {
           <h3 className="mt-1 lg:ml-11 lg:font-bold mr-4 text-[12px] lg:text-[16px]">
             {student.last_name} {student.first_name}
           </h3>
+          <button
+              onClick={() => studentActive(isActive === 'Active' ? 'Inactive' : 'Active')} // Toggle between 'Activate' and 'Inactivate'
+              className={`px-4 py-2 text-white rounded ${
+                isActive === 'Active' ? 'bg-red-500' : 'bg-green-500'
+              }`}
+            >
+              {isActive === 'Active' ? 'Deactivate Student' : 'Activate Student'}
+          </button>
         </div>
         <div className="text-left">
           <h2 className="font-bold inline-block border-b-2 ml-28 lg:ml-0">About Me</h2>
 
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>First Name:</strong> {student.first_name}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Last Name:</strong> {student.last_name}</p>
-          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Age:</strong> {student.age}</p>
+          {/* <p className="p-2 text-[12px] lg:text-[16px]"><strong>Age:</strong> {student.age}</p> */}
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Gender:</strong> {student.gender}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Admission Date:</strong> {student.admissionDate}</p>
-
-          {student.belt_level && (
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Insurance_number:</strong> {student.insurance_number}</p>
+          
+          <p className="p-2 text-[12px] lg:text-[16px]"><strong>Insurance_expiry_date:</strong> {student.insurance_expiry_date}</p>
+          
+          {/* {student.belt_level && (
             <p className="p-2 text-[12px] lg:text-[16px]"><strong>Belt Level:</strong> {student.belt_level}</p>
-          )}
+          )} */}
 
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Date of Birth:</strong> {student.dob}</p>
           <p className="p-2 text-[12px] lg:text-[16px]"><strong>Address:</strong> {student.address}</p>

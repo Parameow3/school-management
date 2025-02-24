@@ -1,25 +1,17 @@
-
 "use client";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter, useParams } from "next/navigation";
 
-interface School {
-  id: number;
-  name: string;
-}
-
 const Page = () => {
   const router = useRouter();
   const params = useParams();
-  const programId = params.addId; // Get the program ID from the URL parameters
+  const programId = params.addId; // Ensure this matches the actual route param
 
-  const [schools, setSchools] = useState<School[]>([]);
-  const [selectedSchool, setSelectedSchool] = useState<number | null>(null);
   const [courseName, setCourseName] = useState<string>("");
   const [courseCode, setCourseCode] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-  const [credits, setCredits] = useState<number | null>(null);
+  const [credits, setCredits] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -35,37 +27,20 @@ const Page = () => {
     }
   }, [router]);
 
-  // Fetch the specific program name and available schools
+  // Fetch Program Name
   useEffect(() => {
-    const fetchData = async () => {
-      if (!token) return;
+    if (!token || !programId) return;
 
+    const fetchData = async () => {
       try {
         setLoading(true);
-
-        // Fetch the specific program details to get the name
         const programResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/${programId}/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        setProgramName(programResponse.data.name || ""); // Set the program name (e.g., "Robotic")
-
-        // Fetch schools
-        const schoolsResponse = await axios.get(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/schools/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setSchools(schoolsResponse.data.results || []);
+        setProgramName(programResponse.data.name || "");
       } catch (err) {
-        setError("Failed to fetch program details or schools.");
+        setError("Failed to fetch program details.");
       } finally {
         setLoading(false);
       }
@@ -76,49 +51,38 @@ const Page = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-  
-    if (!selectedSchool || !courseName || !courseCode || !credits) {
-      setError("All fields are required.");
-      return;
-    }
-  
-    // Log the payload before sending
     const payload = {
       name: courseName,
       code: courseCode,
       description,
       credits,
-      program: programId, // Automatically use the program ID from the URL
-      school: selectedSchool,
+      program_id: programId, // Ensure correct API key
     };
-  
+
     console.log("Submitting the following data:", payload);
-  
+
     try {
       setError(null);
-  
       await axios.post(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
         payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-  
+
       console.log("Course created successfully!");
       router.push("/program/all-program");
     } catch (err: any) {
-      console.error("Error creating course:", err.response?.data || err.message);
+      console.error("Error creating course:", err);
       setError(err.response?.data?.detail || "Failed to create course.");
     }
   };
-  
 
   return (
     <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-md shadow-md w-full max-w-lg mx-auto">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-md shadow-md w-full max-w-lg mx-auto"
+      >
         <h1 className="text-2xl font-bold mb-6">Create Course</h1>
 
         {/* Display Program Name */}
@@ -180,44 +144,14 @@ const Page = () => {
           name="credits"
           className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
           placeholder="Enter number of credits"
-          value={credits || ""}
-          onChange={(e) => setCredits(Number(e.target.value))}
+          value={credits}
+          onChange={(e) => setCredits(parseInt(e.target.value) || 0)}
         />
 
-        {/* Error message */}
+        {/* Error Message */}
         {error && <p className="text-red-500 mb-4">{error}</p>}
 
-        {/* School selection */}
-        <label htmlFor="school" className="block mb-2 font-medium">
-          Select School
-        </label>
-        <select
-          id="school"
-          name="school"
-          value={selectedSchool || ""}
-          onChange={(e) => setSelectedSchool(Number(e.target.value))}
-          className="border border-gray-300 rounded-md w-full px-3 py-2 mb-4"
-        >
-          <option value="" disabled>
-            {loading ? "Loading schools..." : "Select a school"}
-          </option>
-          {schools.length > 0 ? (
-            schools.map((school) => (
-              <option key={school.id} value={school.id}>
-                {school.name}
-              </option>
-            ))
-          ) : (
-            <option value="" disabled>
-              No schools available
-            </option>
-          )}
-        </select>
-
-        <button
-          type="submit"
-          className="bg-[#213458] text-white py-2 px-4 rounded-md shadow-md hover:bg-[#1c2b47] transition-all w-full"
-        >
+        <button type="submit" className="bg-[#213458] text-white py-2 px-4 rounded-md w-full">
           Create Course
         </button>
       </form>

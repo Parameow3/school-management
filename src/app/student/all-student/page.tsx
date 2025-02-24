@@ -1,232 +1,269 @@
 "use client";
-import Dropdown from "@/components/Dropdown";
-import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import ProfileCard from "@/components/ProfileCard";
-import Modal from "@/components/Modal";
 import axios from "axios";
 import Button from "@/components/Button";
+import Image from "next/image";
+import {
+  PencilSquareIcon,
+  TrashIcon,
+  EyeIcon,
+} from "@heroicons/react/24/solid";
+
 
 const Page = () => {
   const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [profileToDelete, setProfileToDelete] = useState<number | null>(null);
   const [profiles, setProfiles] = useState<any[]>([]);
+  const [allProfiles, setAllProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedBranch, setSelectedBranch] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState<string>(""); // Track search term
-  const [nextPage, setNextPage] = useState<string | null>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?page=1`); // Store next page URL
-  const [token, setToken] = useState<string | null>(null); // Store token here
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<"Active" | "Inactive">(
+    "Active"
+  );
+  const [token, setToken] = useState<string | null>(null);
+  const [selectedProfiles, setSelectedProfiles] = useState<number[]>([]);
 
-  // Fetch token from localStorage
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
       setToken(tokenFromLocalStorage);
     } else {
-      // Redirect to login if no token
       router.push("/login");
     }
   }, [router]);
 
-  // Fetch profiles (with pagination)
   const fetchProfiles = async () => {
-    if (!token || !nextPage) return;
-
+    if (!token) return;
     setLoading(true);
     try {
-      const response = await axios.get(nextPage, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setProfiles((prevProfiles) => [...prevProfiles, ...response.data.results]);
-      setNextPage(response.data.next); // Set the next page URL or null if there are no more pages
-    } catch (err: any) {
-      setError(err.message);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/?status=${statusFilter}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (response.data.results.length > 0) {
+        setAllProfiles(response.data.results);
+        setProfiles(response.data.results);
+      } else {
+        setAllProfiles([]);
+        setProfiles([]);
+      }
+    } catch (err) {
+      console.error("API Error:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProfiles(); // Initial fetch when component loads
-  }, [token]);
+    if (token) {
+      fetchProfiles();
+    }
+  }, [token, statusFilter]);
 
-  const handleBranchChange = (branchId: number | null) => {
-    if (branchId === null) {
-      // Handle "All branches" or null case if applicable
-      console.log("All branches selected");
-      setSelectedBranch(null); // Set `null` for "All"
+  useEffect(() => {
+    if (searchQuery === "") {
+      setProfiles(allProfiles);
     } else {
-      console.log("Selected branch ID:", branchId);
-      setSelectedBranch(branchId); // Update to the selected branch
+      const filtered = allProfiles.filter((profile) =>
+        `${profile.first_name} ${profile.last_name}`
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())
+      );
+      setProfiles(filtered);
+    }
+  }, [searchQuery, allProfiles]);
+
+  /** ✅ Toggle student selection */
+  const toggleSelection = (id: number) => {
+    setSelectedProfiles((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+  };
+  const isSelected = (id: number) => selectedProfiles.includes(id);
+  const getStatusBadge = (status: string) => {
+    return status === "Active" ? (
+      <span className="px-3 py-1 text-xs font-semibold text-green-800 bg-green-200 rounded-full">
+        Active
+      </span>
+    ) : (
+      <span className="px-3 py-1 text-xs font-semibold text-red-800 bg-red-200 rounded-full">
+        Inactive
+      </span>
+    );
+  };
+
+  /** ✅ Handle edit */
+  const handleEdit = (id: number) => {
+    router.push(`/student/all-student/edit/${id}`);
+  };
+  const handleView = (id: number) => {
+    router.push(`/student/all-student/view/${id}`);
+  };
+  /** ✅ Handle delete */
+  const handleDelete = async (id: number) => {
+    if (!token) {
+      alert("Unauthorized! Please log in again.");
+      return;
+    }
+  
+    const confirmDelete = window.confirm("Are you sure you want to delete this student?");
+    if (!confirmDelete) return;
+  
+    try {
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+  
+      if (response.status === 204 || response.status === 200) {
+        // ✅ Successfully deleted, remove from state
+        setProfiles((prevProfiles) => prevProfiles.filter((profile) => profile.id !== id));
+        alert("Student deleted successfully!");
+      } else {
+        alert("Failed to delete student. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("❌ Error deleting student:", error);
+      alert(`Failed to delete student: ${error.response?.data?.message || error.message}`);
     }
   };
   
-  const handleViewClick = (id: number) => {
-    router.push(`/student/all-student/view/${id}`);
-  };
-
-  const handleEditClick = (id: number) => {
-    router.push(`/student/all-student/edit/${id}`);
-  };
-
-  const handleDeleteClick = (id: number) => {
-    setIsModalOpen(true);
-    setProfileToDelete(id);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setProfileToDelete(null); // Reset profile to delete
-  };
-
-  const handleConfirmDelete = async () => {
-    if (profileToDelete !== null && token) {
-      try {
-        await axios.delete(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/${profileToDelete}/`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        // After deleting, update the profiles list
-        setProfiles(
-          profiles.filter((profile) => profile.id !== profileToDelete)
-        );
-      } catch (err: any) {
-        setError("Failed to delete the profile.");
-      } finally {
-        setIsModalOpen(false); // Close modal after deletion
-      }
-    }
-  };
-
-  // Filter profiles based on search and branch selection
-  const filteredProfiles = (profiles || []).filter((profile) => {
-    const matchesBranch = selectedBranch
-      ? profile.branch === selectedBranch
-      : true;
-    const matchesSearch =
-      profile.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      profile.last_name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesBranch && matchesSearch;
-  });
-
   return (
-    <>
-      <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
-        {/* Header Section */}
-        <div className="lg:w-full bg-white w-[330px] h-[42px] ml-4 p-4 rounded-md flex items-center justify-between shadow-sm">
-          <span className="flex flex-row lg:gap-3 gap-2 text-[12px] lg:text-[16px] items-center">
-            Student |
-            <Image
-              src={"/home.svg"}
-              width={15}
-              height={15}
-              alt="public"
-              className="ml-1"
-            />
-            - All students
-          </span>
-          <Link href={"/#"} passHref>
-            <div className="h-[23px] w-[57px] bg-[#1c2b47] flex items-center justify-center rounded-md hover:bg-[#16223a] cursor-pointer">
-              <Image
-                src={"/refresh.svg"}
-                width={16}
-                height={16}
-                alt="Refresh"
-              />
-            </div>
-          </Link>
+    <div className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">
+      <div className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
+        <span className="text-lg font-semibold">Student List</span>
+        <div className="flex space-x-2">
+          <Button onClick={() => router.push(`/student/new-student`)}>
+            New Student
+          </Button>
+          <Button onClick={() => router.push(`/student/trial-student`)}>
+            New Trial
+          </Button>
+          <Button
+            className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#172B4D] transition-all duration-300"
+            onClick={() =>
+              setStatusFilter(statusFilter === "Active" ? "Inactive" : "Active")
+            }
+          >
+            {statusFilter === "Active" ? "Show Inactive" : "Show Active"}
+          </Button>
         </div>
-
-        {/* Search Input */}
-        <div className="mb-4 relative ml-4 mt-4">
-          <input
-            type="text"
-            className="border border-gray-300 rounded-full pl-10 py-2 pr-5 lg:py-3 w-[280px] lg:w-[380px] focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm placeholder-gray-400 text-sm"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)} // Update search query
-          />
-        </div>
-
-        <div className="relative mt-4 ml-4 flex flex-row space-x-2 justify-between items-center gap-[24px]">
-          {/* Branch Dropdown */}
-          <div className="w-full lg:w-[300px]">
-            <Dropdown onChange={handleBranchChange} />
-          </div>
-          {/* Buttons */}
-          <div className="flex flex-row gap-2">
-            <Button
-              className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#213458] transition-all duration-300 mr-4"
-              onClick={() => router.push(`/student/new-student`)}
-            >
-              New Student
-            </Button>
-
-            <Button
-              className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#213458] transition-all duration-300"
-              onClick={() => router.push(`/student/trial-student`)}
-            >
-              New Trial
-            </Button>
-          </div>
-        </div>
-
-        {/* Profiles List */}
-        <div className="mt-5 p-5 w-[330px] lg:w-[1055px] grid grid-cols-2 gap-5 lg:gap-10 lg:grid-cols-4">
-          {loading ? (
-            <p>Loading </p>
-          ) : Array.isArray(profiles) && profiles.length === 0 ? (
-            <p>No student found.</p>
-          ) : (
-            filteredProfiles.map((profile) => (
-<ProfileCard
-  key={profile.id}
-  pic={profile.image || "/default-image.jpg"} // Use a default image if profile.image is null
-  first_name={`${profile.first_name} ${profile.last_name}`}
-  job={"Student"}
-  onViewClick={() => handleViewClick(profile.id)}
-  onEditClick={() => handleEditClick(profile.id)}
-  onDeleteClick={() => handleDeleteClick(profile.id)}
-  editPath={`/student/edit/${profile.id}`}
-  viewPath={`/student/view/${profile.id}`}
-/>
-
-            ))
-          )}
-        </div>
-
-        {/* "Show More" Button */}
-        {nextPage && (
-          <div className="flex justify-center mt-5">
-            <Button
-              className="bg-[#213458] text-white py-2 px-6 rounded-lg shadow-lg hover:bg-blue-600 transition-all duration-300 ease-in-out transform hover:scale-105"
-              onClick={fetchProfiles}
-            >
-              Show More
-            </Button>
-          </div>
-        )}
-
-        {/* Modal for Deleting */}
-        {isModalOpen && (
-          <Modal
-            onClose={handleCloseModal}
-            onConfirm={handleConfirmDelete}
-            message="Are you sure you want to delete this card?"
-          />
-        )}
       </div>
-    </>
+
+      {/* ✅ Show action buttons ABOVE the table only when at least one row is selected */}
+      {selectedProfiles.length > 0 && (
+        <div className="mt-4 flex space-x-4 bg-gray-100 p-4 rounded-lg shadow">
+          <button
+            onClick={() => handleView(selectedProfiles[0])}
+            className="hover:scale-110 transition-transform transform p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+          >
+            <EyeIcon className="w-5 h-5 text-blue-600" />
+          </button>
+          <button
+            onClick={() => handleEdit(selectedProfiles[0])}
+            className="hover:scale-110 transition-transform transform p-2 rounded-full bg-gray-200 hover:bg-gray-300"
+          >
+            <PencilSquareIcon className="w-5 h-5 text-gray-700" />
+          </button>
+          {/* <button
+            onClick={() => handleDelete(selectedProfiles[0])}
+            className="hover:scale-110 transition-transform transform p-2 rounded-full bg-red-100 hover:bg-red-200"
+          >
+            <TrashIcon className="w-5 h-5 text-red-600" />
+          </button> */}
+        </div>
+      )}
+
+      {/* ✅ Search Box */}
+      <div className="flex items-center mt-4 space-x-4">
+        <input
+          type="text"
+          className="border p-2 rounded-md w-64"
+          placeholder="Search student by name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
+      <div className="overflow-x-auto mt-6 h-[500px] p-4">
+        <table className="border w-[1050px] bg-white rounded-lg shadow-md">
+          <thead>
+            <tr className="text-center font-normal text-black">
+              <th className="p-2 border-2">
+                <input type="checkbox" disabled />
+              </th>
+              <th className="p-2 border-2">ID</th>
+              <th className="p-2 border-2">Insurance Number</th>
+              <th className="p-2 border-2">Name</th>
+              {/* <th className="p-2 border-2">Age</th> */}
+              {/* <th className="p-2 border-2">Admission Date</th> */}
+              <th className="p-2 border-2">Parent Contact</th>
+              {/* <th className="p-2 border-2">Belt_Level</th> */}
+              <th className="p-2 border-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={8} className="text-center p-4">
+                  Loading...
+                </td>
+              </tr>
+            ) : profiles.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="text-center p-4">
+                  No students found.
+                </td>
+              </tr>
+            ) : (
+              profiles.map((profile) => (
+                <tr key={profile.id} className="border-t text-center">
+                  <td className="p-2 border-2">
+                    <input
+                      type="checkbox"
+                      checked={isSelected(profile.id)}
+                      onChange={() => toggleSelection(profile.id)}
+                    />
+                  </td>
+                  <td className="p-2 border-2">{profile.id}</td>
+                  <td className="p-2 border-2">{profile.insurance_number}</td>
+                  <td className="p-2 flex items-center space-x-3">
+                    <div className="w-10 h-10 rounded-full flex justify-center items-center overflow-hidden border border-gray-300">
+                      <Image
+                        src={profile.image ? profile.image : "/default.png"} // Ensure this is a valid image URL
+                        alt={`${profile.first_name} ${profile.last_name}`}
+                        width={40} // Ensure proper width
+                        height={40} // Ensure proper height
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <span className="text-black">
+                      {profile.first_name} {profile.last_name}
+                    </span>
+                  </td>
+                  {/* <td className="p-2 border-2 text-black">
+  {profile.age ? profile.age : "N/A"}
+</td> */}
+
+                  {/* <td className="p-2 border-2 text-black">{profile.age}</td> */}
+                  {/* <td className="p-2 border-2">{profile.admission_date}</td> */}
+                  <td className="p-2 border-2">{profile.parent_contact}</td>
+                  {/* <td className="p-2 border-2 text-black">{profile.belt_level}</td> */}
+                  <td className="p-2 border-2">
+                    {getStatusBadge(profile.status)}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 };
 

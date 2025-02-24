@@ -69,46 +69,33 @@ const Page = () => {
   };
 
   const handleDeleteClass = async () => {
-    if (!classToDelete) {
-      setError("No class selected for deletion.");
-      return; // Ensure a class is selected for deletion
-    }
-  
+    if (!classToDelete) return; // Ensure a class is selected for deletion
+
     try {
-      const response = await axios.delete(
+      // Attempt to delete the classroom
+      console.log(classToDelete.id)
+     await axios.delete(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/${classToDelete.id}/`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-  
-      if (response.status === 204) { // 204 is the typical status code for successful DELETE
-        console.log(`Class with ID ${classToDelete.id} deleted successfully.`);
-        
-        // Update the state to remove the deleted class
-        setClassData((prevClassData) =>
-          prevClassData.filter((classInfo) => classInfo.id !== classToDelete.id)
-        );
-  
-        closeModal(); // Close the modal after successful deletion
-      } else {
-        throw new Error("Failed to delete classroom."); // Handle unexpected status
-      }
+      
+      alert("delete successfully")
+
     } catch (err) {
       // Detailed error handling
       if (axios.isAxiosError(err)) {
-        console.error("Error deleting class:", err.response); 
+        console.error("Error deleting class:", err.response); // Log the entire error response
         const errorMessage = err.response?.data?.message || "Failed to delete classroom.";
-        setError(errorMessage); 
+        setError(errorMessage); // Set user-friendly error message
       } else {
         console.error("Unexpected error:", err); // Log unexpected errors
         setError("An unexpected error occurred.");
       }
-    } finally {
-      closeModal(); // Close the modal regardless of success or error
+      closeModal(); // Close modal in case of error
     }
   };
-  
   if (loading) {
     return <p className="lg:ml-[16%] ml-[11%] mt-20 flex flex-col">Loading...</p>;
   }
@@ -130,10 +117,10 @@ const Page = () => {
           </div>
         </Link>
       </div>
-{/* 
+
       <div className="relative mt-4">
         <Dropdown />
-      </div> */}
+      </div>
 
       <div className="mt-4 grid grid-cols-1 lg:w-[1070px] w-[330px] sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {classData.map((classInfo) => (

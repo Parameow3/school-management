@@ -48,7 +48,7 @@ const roleNavigationMap: Record<string, NavigationItem[]> = {
       icon: LightBulbIcon,
       subItems: [
         { name: "School", href: "/school/school", current: false },
-        // { name: "Branch", href: "/school/branch", current: false },
+        { name: "Branch", href: "/school/branch", current: false },
       ],
     },
     {
@@ -133,6 +133,11 @@ const roleNavigationMap: Record<string, NavigationItem[]> = {
         {
           name: "Account Setting",
           href: "/setting/account-setting",
+          current: false,
+        },
+        {
+          name: "All User",
+          href: "/setting/all-user",
           current: false,
         },
         {

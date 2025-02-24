@@ -4,10 +4,10 @@ interface ButtonProps {
   children: string;
   bg?: 'primary' | 'secondary';
   className?: string;
-  onClick?: () => void; // Corrected the type of onClick
+  onClick?: () => void;
 }
 
-const Button: React.FC<ButtonProps> = ({ children, bg = 'primary', className = '', onClick }) => {
+const Button: React.FC<ButtonProps> = ({ children ,bg = 'primary', className = '', onClick }) => {
   const getButtonBg = (bg: 'primary' | 'secondary') => {
     switch (bg) {
       case 'primary':

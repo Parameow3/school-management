@@ -4,17 +4,17 @@ import { useRouter } from "next/navigation";
 import Dropdown from "@/components/Dropdown";
 import Image from "next/image";
 import Link from "next/link";
+import axios from "axios";
 import { userSchema } from "@/validation/student_validation";
 import Button from "@/components/Button";
+import { string } from "yup";
 interface FormDataType {
   first_name: string;
   last_name: string;
-  age: string;
   gender: string;
   dob: string;
   pob: string;
   nationality: string;
-  belt_level: string;
   phone: string;
   email: string;
   mother_name: string;
@@ -26,23 +26,29 @@ interface FormDataType {
   student_passport: string;
   admission_date: string;
   branch: number | null; // Branch can be a number or null
-  image: File | null; // Image is a file or null
-  classrooms: string[]; // Array of classroom identifiers
+  image: File | null;
+  classrooms: number[];
+  courses: number[];
+  course_name: string[];
+  insurance_number: string;
+  insurance_expiry_date: string; // Array of classroom identifiers
 }
 
-const Page= ()=> {
+const Page = () => {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [errors, setErrors] = useState<Partial<FormDataType>>({});
+  const [courses, setCourses] = useState<any[]>([]);
+  const [classrooms, setClassrooms] = useState<any[]>([]);
+  const [selectedCourses, setSelectedCourses] = useState<number[]>([]);
+  const [selectedClassrooms, setSelectedClassrooms] = useState<number[]>([]);
   const [formData, setFormData] = useState<FormDataType>({
     first_name: "",
     last_name: "",
-    age: "",
-    gender: "Male",
+    gender: "",
     dob: "",
     pob: "",
     nationality: "",
-    belt_level: "",
     phone: "",
     email: "",
     mother_name: "",
@@ -56,8 +62,68 @@ const Page= ()=> {
     branch: null, 
     image: null, 
     classrooms: [],
+    courses: [], 
+    course_name: [], 
+    insurance_number: "",
+    insurance_expiry_date: "",
   });
+  
+  const handleCourseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValues = Array.from(e.target.selectedOptions, (option) =>
+      Number(option.value)
+    );
+    console.log("Selected Courses:", selectedValues);
+    setFormData((prevData) => ({
+      ...prevData,
+      courses: selectedValues,
+    }));
+  };
+  useEffect(() => {
+    const fetchCoursesAndClassrooms = async () => {
+      if (!token) {
+        console.warn("No token found, skipping fetch.");
+        return;
+      }
 
+      try {
+        console.log("Fetching courses...");
+        const courseResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        console.log("Fetched Courses Response:", courseResponse.data);
+        const fetchedCourses = courseResponse.data.results || courseResponse.data;
+        if (Array.isArray(fetchedCourses)) {
+          setCourses(fetchedCourses);
+        } else {
+          console.error("Unexpected course data format:", courseResponse.data);
+        }
+
+        console.log("Fetching classrooms...");
+        const classroomResponse = await axios.get(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        console.log("Fetched Classrooms Response:", classroomResponse.data);
+        const fetchedClassrooms = classroomResponse.data.results || classroomResponse.data;
+        if (Array.isArray(fetchedClassrooms)) {
+          setClassrooms(fetchedClassrooms);
+        } else {
+          console.error("Unexpected classroom data format:", classroomResponse.data);
+        }
+      } catch (error) {
+        console.error("Error fetching courses/classrooms:", error);
+      }
+    };
+
+    fetchCoursesAndClassrooms();
+  }, [token]);
   useEffect(() => {
     const tokenFromLocalStorage = localStorage.getItem("authToken");
     if (tokenFromLocalStorage) {
@@ -82,83 +148,73 @@ const Page= ()=> {
   const handleBranchChange = (selectedBranchId: number | null) => {
     setFormData({
       ...formData,
-      branch: selectedBranchId, // Allow null for "All branches"
+      branch: selectedBranchId, 
     });
-  };
-  
+  };  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const classroomNames = formData.classrooms.map((id) => {
+      const classroom = classrooms.find((c) => c.id === id);
+      return classroom ? classroom.name : null;
+    }).filter(Boolean); 
+    const courseNames = formData.courses.map((id) => {
+      const course = courses.find((c) => c.id === id);
+      return course ? course.name : null;
+    }).filter(Boolean);
+    const submissionData = {
+      ...formData,
+      branch_id: formData.branch, 
+      classroom_name: classroomNames,
+      course_name: courseNames, 
+    };
+  
+    console.log("🚀 JSON Data to Send:", submissionData); // ✅ Debugging before sending
   
     try {
-      // Validate the form data against the Yup schema
-      await userSchema.validate(formData, { abortEarly: false });
-  
-      const data = new FormData();
-      for (const key in formData) {
-        const value = formData[key as keyof FormDataType];
-        if (value !== null) {
-          data.append(key, value instanceof File ? value : String(value));
-        }
-      }
-  
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: data,
-          }
-        );
-  
-        if (response.ok) {
-          alert("Student data saved successfully!");
-          setFormData({
-            first_name: "",
-            last_name: "",
-            age: "",
-            gender: "Male",
-            dob: "",
-            pob: "",
-            nationality: "",
-            belt_level: "black",
-            phone: "",
-            email: "",
-            mother_name: "",
-            mother_occupation: "",
-            father_name: "",
-            father_occupation: "",
-            address: "",
-            parent_contact: "",
-            student_passport: "",
-            admission_date: "",
-            branch: null,
-            image: null,
-            classrooms: [],
-          });
-          router.push("/student/all-student");
-        } else {
-          const errorData = await response.json();
-          alert(
-            `Failed to create student: ${errorData.message || "Unknown error"}`
-          );
-        }
-      } catch (error: any) {
-        alert(`Error: ${error.message}`);
-      }
-    } catch (validationError: any) {
-      // Handle validation errors from Yup
-      if (validationError.inner) {
-        const validationErrors: Partial<FormDataType> = {};
-        validationError.inner.forEach((err: any) => {
-          validationErrors[err.path as keyof FormDataType] = err.message;
+      let requestBody = submissionData;
+      let headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+      if (formData.image) {
+        const formDataObject = new FormData();
+        Object.entries(submissionData).forEach(([key, value]) => {
+          if (value !== null) formDataObject.append(key, String(value));
         });
-        setErrors(validationErrors); // Set validation errors in state
+        formDataObject.append("image", formData.image);
+  
+       let requestBody = formDataObject;
+        headers["Content-Type"] = "multipart/form-data";
       }
+  
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/students/`,
+        requestBody,
+        { headers }
+      );
+  
+      console.log("✅ Form Submitted Successfully:", response.data);
+      alert("Student created successfully.");
+      router.push("/student/all-student");
+    } catch (error) {
+      console.error("❌ Error submitting the form:", error);
+      alert("Failed to create student.");
     }
   };
+  
+  const handleClassroomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedValues = Array.from(e.target.selectedOptions, (option) =>
+      Number(option.value)
+    );
+    console.log("Selected Classrooms:", selectedValues);
+    setFormData((prevData) => ({
+      ...prevData,
+      classrooms: selectedValues,
+    }));
+  };
+  useEffect(() => {
+    console.log("Updated formData.classrooms:", formData.classrooms);
+  }, [formData.classrooms]);
   
   return (
     <div className="lg:ml-[18%] ml-[11%] mt-20 h-[1040px] flex flex-col">
@@ -180,31 +236,45 @@ const Page= ()=> {
         Admission Form
       </h1>
       <form onSubmit={handleSubmit} className="space-y-8">
-        <section>
+        <section className="bg-white shadow-md p-6">
           <h2 className="text-2xl font-bold mb-8 lg:mt-4 border-b-2">
             Student Information Form
           </h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.first_name
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
                 First Name
               </label>
               <input
-                type="text"
+                id="name"
                 name="first_name"
                 placeholder="Input FirstName"
                 value={formData.first_name}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent ${
                   errors.first_name ? "border-red-500" : ""
                 }`}
               />
+
               {errors.first_name && (
-                <p className="text-red-500 text-sm">{errors.first_name}</p>
+                <p className="text-red-500 text-sm mt-1">{errors.first_name}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.last_name ? "text-red-500 peer-focus:text-red-500" : ""
+                }`}
+              >
                 Last Name
               </label>
               <input
@@ -213,41 +283,28 @@ const Page= ()=> {
                 placeholder="Input LastName"
                 value={formData.last_name}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.last_name ? "border-red-500" : ""
                 }`}
               />
-               {errors.last_name && (
+              {errors.last_name && (
                 <p className="text-red-500 text-sm">{errors.last_name}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Age
-              </label>
-              <input
-                type="text"
-                name="age"
-                placeholder="Input Age"
-                value={formData.age}
-                onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
-                  errors.age ? "border-red-500" : ""
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.gender ? "text-red-500 peer-focus:text-red-500" : ""
                 }`}
-              />
-              {errors.age && (
-                <p className="text-red-500 text-sm">{errors.age}</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+              >
                 Gender
               </label>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm
+                className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent 
                   
                 "
               >
@@ -256,8 +313,15 @@ const Page= ()=> {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.admission_date
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
                 Admission Date
               </label>
               <input
@@ -266,7 +330,7 @@ const Page= ()=> {
                 placeholder="Input Admission Date"
                 value={formData.admission_date}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.admission_date ? "border-red-500" : ""
                 }`}
               />
@@ -274,15 +338,108 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.admission_date}</p>
               )}
             </div>
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.insurance_number
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
+                Insurance Number
+              </label>
+              <input
+                type="text"
+                name="insurance_number"
+                placeholder="Input Insuance Numberj"
+                value={formData.insurance_number}
+                onChange={handleChange}
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
+                  errors.insurance_number ? "border-red-500" : ""
+                }`}
+              />
+              {errors.insurance_number && (
+                <p className="text-red-500 text-sm">
+                  {errors.insurance_number}
+                </p>
+              )}
+            </div>
+              <div className="relative w-full">
+              
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.insurance_expiry_date
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
+                Insurance exprired date
+              </label>
+              <input
+                type="date"
+                name="insurance_expiry_date"
+                value={formData.insurance_expiry_date}
+                onChange={handleChange}
+                className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent"
+              />
+            </div>
+            <div className="mb-4">
+            <label className="block font-semibold text-gray-700">Select Courses:</label>
+            <select
+              name="courses"
+              multiple
+              className="w-full border rounded p-2"
+              value={formData.courses.map(String)}
+              onChange={handleCourseChange}
+            >
+              {courses.length > 0 ? (
+                courses.map((course) => (
+                  <option key={course.id} value={String(course.id)}>
+                    {course.name}
+                  </option>
+                ))
+              ) : (
+                <option disabled>⚠️ Failed to load courses</option>
+              )}
+            </select>
+          </div>
+          {/* Classroom Selection Dropdown */}
+          <div className="mb-4">
+            <label className="block font-semibold text-gray-700">Select Classrooms:</label>
+            <select
+              name="classrooms"
+              multiple
+              className="w-full border rounded p-2"
+              value={formData.classrooms.map(String)} // ✅ Convert to string[]
+              onChange={handleClassroomChange}
+            >
+              {classrooms.length > 0 ? (
+                classrooms.map((classroom) => (
+                  <option key={classroom.id} value={String(classroom.id)}>
+                    {classroom.name}
+                  </option>
+                ))
+              ) : (
+                <option disabled>Loading classrooms...</option>
+              )}
+            </select>
+          </div>
           </div>
         </section>
-        <section>
+        <section className="bg-white shadow-md p-6">
           <h2 className="text-2xl font-bold mb-8 mt-4 border-b-2">
             Other Information
           </h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.dob ? "text-red-500 peer-focus:text-red-500" : ""
+                }`}
+              >
                 Date of Birth
               </label>
               <input
@@ -291,7 +448,7 @@ const Page= ()=> {
                 placeholder="Input Date of Birth"
                 value={formData.dob}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.dob ? "border-red-500" : ""
                 }`}
               />
@@ -299,8 +456,13 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.dob}</p>
               )}
             </div>
-            <div className="">
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.dob ? "text-red-500 peer-focus:text-red-500" : ""
+                }`}
+              >
                 Nationality
               </label>
               <input
@@ -309,7 +471,7 @@ const Page= ()=> {
                 placeholder="Input Nationality"
                 value={formData.nationality}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.nationality ? "border-red-500" : ""
                 }`}
               />
@@ -317,26 +479,14 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.nationality}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Belt Level
-              </label>
-              <input
-                type="text"
-                name="belt_level"
-                placeholder="Input Belt_Level"
-                value={formData.belt_level}
-                onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
-                  errors.belt_level ? "border-red-500" : ""
+            
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.pob ? "text-red-500 peer-focus:text-red-500" : ""
                 }`}
-              />
-              {errors.belt_level && (
-                <p className="text-red-500 text-sm">{errors.belt_level}</p>
-              )}
-            </div>
-            <div className="">
-              <label className="block text-sm font-medium text-gray-700">
+              >
                 Place of Birth
               </label>
               <input
@@ -345,7 +495,7 @@ const Page= ()=> {
                 placeholder="Input Place Of Birth"
                 value={formData.pob}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.pob ? "border-red-500" : ""
                 }`}
               />
@@ -353,9 +503,16 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.pob}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Student Passport
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.student_passport
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
+                Student_passport
               </label>
               <input
                 type="text"
@@ -363,16 +520,23 @@ const Page= ()=> {
                 placeholder="Input Student_passport"
                 value={formData.student_passport}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.student_passport ? "border-red-500" : ""
                 }`}
               />
               {errors.student_passport && (
-                <p className="text-red-500 text-sm">{errors.student_passport}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.student_passport}
+                </p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.phone ? "text-red-500 peer-focus:text-red-500" : ""
+                }`}
+              >
                 Phone
               </label>
               <input
@@ -381,7 +545,7 @@ const Page= ()=> {
                 placeholder="Input Phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.phone ? "border-red-500" : ""
                 }`}
               />
@@ -389,8 +553,13 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.phone}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.email ? "text-red-500 peer-focus:text-red-500" : ""
+                }`}
+              >
                 Email
               </label>
               <input
@@ -399,7 +568,7 @@ const Page= ()=> {
                 placeholder="Input Email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.email ? "border-red-500" : ""
                 }`}
               />
@@ -409,14 +578,21 @@ const Page= ()=> {
             </div>
           </div>
         </section>
-        <section>
+        <section className="bg-white shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4 border-b-2">
             Contact Information
           </h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Father's Name
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.father_name
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
+                Father_Name
               </label>
               <input
                 type="text"
@@ -424,7 +600,7 @@ const Page= ()=> {
                 placeholder="Input Father Name"
                 value={formData.father_name}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.father_name ? "border-red-500" : ""
                 }`}
               />
@@ -432,9 +608,16 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.father_name}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                father's Occupation
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.father_occupation
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
+                Father_Occupation
               </label>
               <input
                 type="text"
@@ -442,17 +625,26 @@ const Page= ()=> {
                 placeholder="Input Occupation"
                 value={formData.father_occupation}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
-                  errors.father_occupation? "border-red-500" : ""
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
+                  errors.father_occupation ? "border-red-500" : ""
                 }`}
               />
               {errors.father_occupation && (
-                <p className="text-red-500 text-sm">{errors.father_occupation}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.father_occupation}
+                </p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Mother's Name
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.mother_name
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
+                Mother_Name
               </label>
               <input
                 type="text"
@@ -460,7 +652,7 @@ const Page= ()=> {
                 placeholder="Input Mother Name"
                 value={formData.mother_name}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.mother_name ? "border-red-500" : ""
                 }`}
               />
@@ -468,9 +660,16 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.mother_name}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Mother's Occupation
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.mother_occupation
+                    ? "text-red-500 peer-focus:text-red-500"
+                    : ""
+                }`}
+              >
+                Mother_Occupation
               </label>
               <input
                 type="text"
@@ -478,16 +677,23 @@ const Page= ()=> {
                 placeholder="Input Occupation"
                 value={formData.mother_occupation}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.mother_occupation ? "border-red-500" : ""
                 }`}
               />
               {errors.mother_occupation && (
-                <p className="text-red-500 text-sm">{errors.mother_occupation}</p>
+                <p className="text-red-500 text-sm">
+                  {errors.mother_occupation}
+                </p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.address ? "text-red-500 peer-focus:text-red-500" : ""
+                }`}
+              >
                 Address
               </label>
               <input
@@ -496,7 +702,7 @@ const Page= ()=> {
                 placeholder="Input Address"
                 value={formData.address}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.address ? "border-red-500" : ""
                 }`}
               />
@@ -504,9 +710,14 @@ const Page= ()=> {
                 <p className="text-red-500 text-sm">{errors.address}</p>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Parent Contact
+            <div className="relative w-full">
+              <label
+                htmlFor="name"
+                className={`absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500 ${
+                  errors.pob ? "text-red-500 peer-focus:text-red-500" : ""
+                }`}
+              >
+                Parent_Contact
               </label>
               <input
                 type="text"
@@ -514,7 +725,7 @@ const Page= ()=> {
                 placeholder="Input Parent_Contact"
                 value={formData.parent_contact}
                 onChange={handleChange}
-                className={`mt-1 block p-2 lg:w-[272px] w-[329px] h-[40px] rounded-md outline-none border-gray-300 shadow-sm ${
+                className={`peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent  ${
                   errors.parent_contact ? "border-red-500" : ""
                 }`}
               />
@@ -545,11 +756,18 @@ const Page= ()=> {
           </div>
         </section>
         <div className="flex justify-center items-center space-x-4">
-          <Button bg="secondary">Cancel</Button>
+          <Button
+            bg="secondary"
+            onClick={() => router.push("/student/all-student")}
+          >
+            Cancel
+          </Button>
           <Button>Submit</Button>
         </div>
       </form>
     </div>
   );
-}
+};
 export default Page;
+
+
