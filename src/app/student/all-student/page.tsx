@@ -9,7 +9,7 @@ import {
   TrashIcon,
   EyeIcon,
 } from "@heroicons/react/24/solid";
-
+// import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 const Page = () => {
   const router = useRouter();
@@ -138,10 +138,10 @@ const Page = () => {
       <div className="bg-white p-4 rounded-md shadow-sm flex justify-between items-center">
         <span className="text-lg font-semibold">Student List</span>
         <div className="flex space-x-2">
-          <Button onClick={() => router.push(`/student/new-student`)}>
+          <Button className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#172B4D] transition-all duration-300" onClick={() => router.push(`/student/new-student`)}>
             New Student
           </Button>
-          <Button onClick={() => router.push(`/student/trial-student`)}>
+          <Button className="bg-[#213458] text-white font-semibold py-2 px-2 rounded-lg shadow-md hover:bg-[#172B4D] transition-all duration-300" onClick={() => router.push(`/student/trial-student`)}>
             New Trial
           </Button>
           <Button
@@ -150,7 +150,7 @@ const Page = () => {
               setStatusFilter(statusFilter === "Active" ? "Inactive" : "Active")
             }
           >
-            {statusFilter === "Active" ? "Show Inactive" : "Show Active"}
+            {statusFilter === "Active" ? " Inactive" : " Active"}
           </Button>
         </div>
       </div>

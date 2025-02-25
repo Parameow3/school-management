@@ -1,30 +1,44 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import axios from "axios";
 import Button from "@/components/Button";
-import ProgramDropdown from "@/components/programDropdown";
-import { useRouter, useParams} from "next/navigation";
 
-const EditPage = () => {
-  const router = useRouter();
+interface Admin {
+  id: number;
+  username: string;
+}
+
+interface Teacher {
+  id: number;
+  username: string;
+}
+
+interface Program {
+  id: number;
+  name: string;
+}
+
+const UpdateTrialStudent = () => {
   const params = useParams();
-  const id = parseInt(params.editId as string, 10); 
+  const router = useRouter();
+  const trialId = parseInt(params.editId as string, 10);
   const [token, setToken] = useState<string | null>(null);
-  const [users, setUsers] = useState<{ id: number; username: string }[]>([]);
-  const [teachers, setTeachers] = useState<{ id: number; username: string }[]>([]);
-  const [selectedTeacher, setSelectedTeacher] = useState<number | "">("");
-  const [selectedPrograms, setSelectedPrograms] = useState<number[]>([]);
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [programs, setPrograms] = useState<Program[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     client: "",
     phone: "",
     number_student: "",
-    programs: [] as number[],
+    assign_by: "", // Stores the selected admin ID
+    handle_by: "",
     status: "Pending",
-    assign_by: 1,
-    handle_by: [] as number[],
+    reason: "",
   });
 
   useEffect(() => {
@@ -38,94 +52,83 @@ const EditPage = () => {
 
   useEffect(() => {
     if (token) {
-      const fetchUsers = async () => {
+      const fetchData = async () => {
         try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
+          console.log("Fetching admins, teachers, and programs...");
 
-          if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
+          const [adminRes, teacherRes, programRes] = await Promise.all([
+            axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=admin`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            ),
+            axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/user?role_name=teacher`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            ),
+            axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            ),
+          ]);
+
+          console.log("Admins fetched:", adminRes.data.results);
+          console.log("Teachers fetched:", teacherRes.data.results);
+          console.log("Programs fetched:", programRes.data.results);
+
+          setAdmins(adminRes.data.results);
+          setTeachers(teacherRes.data.results);
+          setPrograms(programRes.data.results);
+
+          // ✅ Fetch trial student data and set form values
+          if (trialId) {
+            console.log(`Fetching trial student data for ID: ${trialId}`);
+
+            const trialResponse = await axios.get(
+              `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/${trialId}`,
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            console.log("Trial student data:", trialResponse.data);
+
+            const trialData = trialResponse.data;
+
+            // ✅ Ensure old data loads by checking if values exist
+            setFormData((prev) => ({
+              ...prev, // Preserve existing state
+              client: trialData.client || prev.client || "",
+              phone: trialData.phone || prev.phone || "",
+              number_student:
+                trialData.number_student || prev.number_student || "",
+              assign_by: trialData.admin_id?.toString() || prev.assign_by || "", // Ensure it's a string
+              handle_by:
+                trialData.teacher_id?.map((id: string) => id.toString()) ||
+                prev.handle_by ||
+                [],
+              status: trialData.status || prev.status || "Pending",
+              reason: trialData.reason || prev.reason || "",
+            }));
           }
 
-          const data = await response.json();
-          const adminUsers = data.results.filter((user: any) => user.roles === 1);
-          const teacherUsers = data.results.filter((user: any) => user.roles_name === "teacher");
-
-          setUsers(adminUsers);
-          setTeachers(teacherUsers);
+          setLoading(false);
         } catch (error) {
-          console.error("Error fetching users:", error);
+          console.error("Error fetching data:", error);
+          setError("Error loading data.");
+          setLoading(false);
         }
       };
 
-      const fetchTrailData = async () => {
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/${id}/`,
-            {
-              method: "GET",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          setFormData({
-            client: data.client,
-            phone: data.phone,
-            number_student: data.number_student,
-            programs: data.programs,
-            status: data.status,
-            assign_by: data.assign_by,
-            handle_by: data.handle_by,
-          });
-          setSelectedTeacher(data.handle_by[0] || "");
-          setSelectedPrograms(data.programs || []);
-        } catch (error) {
-          console.error("Error fetching trail data:", error);
-        }
-      };
-
-      fetchUsers();
-      fetchTrailData();
+      fetchData();
     }
-  }, [token, id]);
+  }, [token, trialId]);
 
-  const handleTeacherChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const teacherId = parseInt(event.target.value);
-    setSelectedTeacher(teacherId);
-    setFormData((prev) => ({
-      ...prev,
-      handle_by: [teacherId],
-    }));
-  };
-
-  const handleProgramSelect = (selectedPrograms: number[]) => {
-    setSelectedPrograms(selectedPrograms);
-    setFormData((prevData) => ({
-      ...prevData,
-      programs: selectedPrograms,
-    }));
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "number_student" || name === "assign_by" ? parseInt(value) : value,
-    }));
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -135,191 +138,184 @@ const EditPage = () => {
       return;
     }
 
-    const dataToSubmit = {
+    const updatedData = {
       client: formData.client,
       phone: formData.phone,
       number_student: formData.number_student,
-      programs: formData.programs,
+      program_id: [],
       status: formData.status.toUpperCase(),
-      assign_by: formData.assign_by,
-      handle_by: formData.handle_by,
+      admin_id: formData.assign_by ? Number(formData.assign_by) : null,
+      teacher_id: formData.handle_by ? Number(formData.handle_by) : null,
+      reason: formData.reason,
     };
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/${id}/`,
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/student_trail/${trialId}/`,
+        updatedData,
         {
-          method: "PUT",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-          body: JSON.stringify(dataToSubmit),
         }
       );
-
-      if (response.ok) {
-        alert("Trial information updated successfully!");
+      console.log("reposne", response);
+      if (response.status === 200) {
+        alert("Trial student updated successfully!");
         router.push("/student/trial-student/view");
       } else {
-        const errorData = await response.json();
-        alert(`Failed to update trial information: ${errorData.detail || errorData.message}`);
+        alert("Failed to update trial student.");
       }
     } catch (error) {
-      console.error("Error submitting the form:", error);
-      alert("Error submitting the form.");
+      console.error("Error updating the trial student:", error);
+      alert("Error updating the trial student.");
     }
   };
 
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+
   return (
     <div className="lg:ml-[219px] mt-20 ml-[25px] flex flex-col">
-      {/* Header Section */}
-      <div className="lg:w-full w-[330px] h-[40px] p-4 bg-white flex items-center rounded-md justify-between">
-        <span className="flex flex-row gap-2 text-[12px] lg:text-[15px]">
-          Student |{" "}
-          <Image src="/home.svg" width={15} height={15} alt="public" />{" "}
-          Edit-student
-        </span>
-        <Link href="/#" passHref>
-          <div className="h-[23px] w-[57px] bg-[#213458] flex items-center justify-center rounded-md">
-            <Image src="/refresh.svg" width={16} height={16} alt="Refresh" />
-          </div>
-        </Link>
-      </div>
+      <h1 className="text-center text-2xl font-bold mb-8 mt-4">
+        Edit Trial Form
+      </h1>
 
-      <div className="flex flex-row justify-between p-3">
-        <h1 className="text-center text-2xl font-bold mb-8 mt-4 border-b-2">
-          Edit Trial Form
-        </h1>
-        <Button className="w-[180px] p-2" onClick={() => router.push(`/student/trial-student/view`)}>
-          View
-        </Button>
-      </div>
-
-      {/* Form */}
-      <form className="grid grid-cols-1 lg:grid-cols-3 gap-8" onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="client" className="block text-sm font-medium text-gray-700">
-            Client (Student Name)
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+      >
+        <div className="relative w-full">
+          <label
+            htmlFor=""
+            className="absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500"
+          >
+            Client Name
           </label>
           <input
             type="text"
-            id="client"
+            className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent "
             name="client"
             value={formData.client}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            placeholder="Client Name"
             required
           />
         </div>
-
-        <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+        <div className="relative w-full">
+          <label
+            htmlFor=" 
+        "
+            className="absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500"
+          >
             Phone
           </label>
           <input
             type="text"
-            id="phone"
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            placeholder="Phone"
+            className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent "
             required
           />
         </div>
-
-        <div>
-          <label htmlFor="number_student" className="block text-sm font-medium text-gray-700">
-            Number Of Students
+        <div className="relative w-full">
+          <label
+            htmlFor=""
+            className="absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500"
+          >
+            Number_Student
           </label>
           <input
             type="number"
-            id="number_student"
             name="number_student"
             value={formData.number_student}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
+            placeholder="Number of Students"
+            className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent "
             required
           />
         </div>
-
-        <div>
-          <label htmlFor="programs" className="block text-sm font-medium text-gray-700">
-            Select Programs:
-          </label>
-          <ProgramDropdown 
-            onSelect={handleProgramSelect}
-            selectedPrograms={selectedPrograms}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+        <div className="relative w-full">
+          <label
+            htmlFor=""
+            className="absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500"
+          >
             Status
           </label>
           <select
-            id="status"
             name="status"
             value={formData.status}
             onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-            required
+            className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent "
           >
             <option value="Pending">Pending</option>
             <option value="Approved">Approved</option>
             <option value="Rejected">Rejected</option>
           </select>
-        </div>
-
-        <div>
-          <label htmlFor="assign_by" className="block text-sm font-medium text-gray-700">
-            Assigned By
-          </label>
-          <select
-            id="assign_by"
-            name="assign_by"
-            value={formData.assign_by}
-            onChange={handleChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-            required
+        </div>  
+        <div className="relative w-full">
+        <label
+            htmlFor=""
+            className="absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500"
           >
-            <option value="">Select an admin</option>
-            {users.map((user) => (
-              <option key={user.id} value={user.id}>
-                {user.username}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="handle_by" className="block text-sm font-medium text-gray-700">
-            Handle By
+            Handle_By
           </label>
-          <select
-            id="handle_by"
-            name="handle_by"
-            value={selectedTeacher || ""}
-            onChange={handleTeacherChange}
-            className="mt-1 block lg:w-[272px] w-[329px] p-2 rounded-md outline-none border-gray-300 shadow-sm"
-            required
-          >
-            <option value="">Select a teacher</option>
-            {teachers.map((teacher) => (
+        <select
+          name="handle_by"
+          value={formData.handle_by}
+          onChange={handleChange}
+          className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent "
+        >
+          <option value="">Select a teacher</option>
+          {teachers.length > 0 ? (
+            teachers.map((teacher) => (
               <option key={teacher.id} value={teacher.id}>
                 {teacher.username}
               </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="lg:col-span-3 flex justify-center items-center space-x-4">
-          <Button className="lg:h-[40px] h-[40px] flex justify-center items-center px-6 py-2 bg-[#213458] text-white font-medium rounded hover:bg-blue-500">
-            Submit
-          </Button>
+            ))
+          ) : (
+            <option value="">No teachers available</option>
+          )}
+        </select>
+</div>
+<div>
+<label
+            htmlFor=""
+            className="absolute left-4 top 1/2 transform -translate-y-1/2 bg-white px-1 text-sm text-gray-500 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-blue-500"
+          >
+           Assign_By
+          </label>
+        <select
+          name="assign_by"
+          value={formData.assign_by}
+          onChange={handleChange}
+          className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent "
+        >
+          <option value="">Select an admin</option>
+          {admins.length > 0 ? (
+            admins.map((admin) => (
+              <option key={admin.id} value={admin.id}>
+                {admin.username}
+              </option>
+            ))
+          ) : (
+            <option value="">No admins available</option>
+          )}
+        </select>
+</div>
+        <div className="ml-[420px] w-[187px]">
+        <button
+          type="submit"
+          className="bg-[#213458] text-white px-4 py-2 rounded text-center flex items-center justify-center"
+        >
+          Update Trial Student
+        </button>
         </div>
       </form>
     </div>
   );
 };
 
-export default EditPage;
+export default UpdateTrialStudent;

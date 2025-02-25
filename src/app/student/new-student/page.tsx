@@ -86,31 +86,24 @@ const Page = () => {
       }
 
       try {
-        console.log("Fetching courses...");
         const courseResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        console.log("Fetched Courses Response:", courseResponse.data);
         const fetchedCourses = courseResponse.data.results || courseResponse.data;
         if (Array.isArray(fetchedCourses)) {
           setCourses(fetchedCourses);
         } else {
           console.error("Unexpected course data format:", courseResponse.data);
         }
-
-        console.log("Fetching classrooms...");
         const classroomResponse = await axios.get(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        console.log("Fetched Classrooms Response:", classroomResponse.data);
         const fetchedClassrooms = classroomResponse.data.results || classroomResponse.data;
         if (Array.isArray(fetchedClassrooms)) {
           setClassrooms(fetchedClassrooms);
@@ -168,7 +161,7 @@ const Page = () => {
       course_name: courseNames, 
     };
   
-    console.log("🚀 JSON Data to Send:", submissionData); // ✅ Debugging before sending
+    // console.log("🚀 JSON Data to Send:", submissionData); 
   
     try {
       let requestBody = submissionData;
@@ -213,7 +206,7 @@ const Page = () => {
     }));
   };
   useEffect(() => {
-    console.log("Updated formData.classrooms:", formData.classrooms);
+    // console.log("Updated formData.classrooms:", formData.classrooms);
   }, [formData.classrooms]);
   
   return (
@@ -236,10 +229,6 @@ const Page = () => {
         Admission Form
       </h1>
       <form onSubmit={handleSubmit} className="space-y-8">
-        <section className="bg-white shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-8 lg:mt-4 border-b-2">
-            Student Information Form
-          </h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div className="relative w-full">
               <label
@@ -385,53 +374,7 @@ const Page = () => {
                 className="peer w-full px-4 py-2 text-sm text-gray-700 bg-white border rounded-full border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder-transparent"
               />
             </div>
-            <div className="mb-4">
-            <label className="block font-semibold text-gray-700">Select Courses:</label>
-            <select
-              name="courses"
-              multiple
-              className="w-full border rounded p-2"
-              value={formData.courses.map(String)}
-              onChange={handleCourseChange}
-            >
-              {courses.length > 0 ? (
-                courses.map((course) => (
-                  <option key={course.id} value={String(course.id)}>
-                    {course.name}
-                  </option>
-                ))
-              ) : (
-                <option disabled>⚠️ Failed to load courses</option>
-              )}
-            </select>
           </div>
-          {/* Classroom Selection Dropdown */}
-          <div className="mb-4">
-            <label className="block font-semibold text-gray-700">Select Classrooms:</label>
-            <select
-              name="classrooms"
-              multiple
-              className="w-full border rounded p-2"
-              value={formData.classrooms.map(String)} // ✅ Convert to string[]
-              onChange={handleClassroomChange}
-            >
-              {classrooms.length > 0 ? (
-                classrooms.map((classroom) => (
-                  <option key={classroom.id} value={String(classroom.id)}>
-                    {classroom.name}
-                  </option>
-                ))
-              ) : (
-                <option disabled>Loading classrooms...</option>
-              )}
-            </select>
-          </div>
-          </div>
-        </section>
-        <section className="bg-white shadow-md p-6">
-          <h2 className="text-2xl font-bold mb-8 mt-4 border-b-2">
-            Other Information
-          </h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div className="relative w-full">
               <label
@@ -577,11 +520,6 @@ const Page = () => {
               )}
             </div>
           </div>
-        </section>
-        <section className="bg-white shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 border-b-2">
-            Contact Information
-          </h2>
           <div className="grid lg:grid-cols-3 flex-col gap-8">
             <div className="relative w-full">
               <label
@@ -733,6 +671,47 @@ const Page = () => {
                 <p className="text-red-500 text-sm">{errors.parent_contact}</p>
               )}
             </div>
+            {/* <div className="mb-4">
+            <label className="block font-semibold text-gray-700">Select Courses:</label>
+            <select
+              name="courses"
+              multiple
+              className="w-full border rounded p-2"
+              value={formData.courses.map(String)}
+              onChange={handleCourseChange}
+            >
+              {courses.length > 0 ? (
+                courses.map((course) => (
+                  <option key={course.id} value={String(course.id)}>
+                    {course.name}
+                  </option>
+                ))
+              ) : (
+                <option disabled>⚠️ Failed to load courses</option>
+              )}
+            </select>
+          </div> */}
+          {/* Classroom Selection Dropdown */}
+          <div className="mb-4">
+            <label className="block font-semibold text-gray-700">Select Classrooms:</label>
+            <select
+              name="classrooms"
+              multiple
+              className="w-full border rounded p-2"
+              value={formData.classrooms.map(String)} // ✅ Convert to string[]
+              onChange={handleClassroomChange}
+            >
+              {classrooms.length > 0 ? (
+                classrooms.map((classroom) => (
+                  <option key={classroom.id} value={String(classroom.id)}>
+                    {classroom.name}
+                  </option>
+                ))
+              ) : (
+                <option disabled>Loading classrooms...</option>
+              )}
+            </select>
+          </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Branch
@@ -754,7 +733,6 @@ const Page = () => {
               />
             </div>
           </div>
-        </section>
         <div className="flex justify-center items-center space-x-4">
           <Button
             bg="secondary"

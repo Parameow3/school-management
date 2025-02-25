@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams, useRouter } from "next/navigation";
+import Dropdown from "@/components/Dropdown";
 
 
-interface Course {
+interface program {
   id: number;
   name: string;
 }
@@ -18,25 +19,27 @@ interface Teacher {
   username: string;
   id: number;
 }
-
+interface Branch{
+  branch: number | null;
+}
 const Page = () => {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   const [formData, setFormData] = useState({
     className: "",
-    courses: [""],
+    Program: [""],
     teacher: "",
     credit: "",
+    branch: null,
     start_date: "",
     end_date: "",
     students: [""], // Initializing with an empty student input
   });
   
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [currentCourse, setCurrentCourse] = useState<string>(""); // Dropdown selection
-  const [selectedCourses, setSelectedCourses] = useState<{ id: number; name: string }[]>([]);
-
+  const [Program, setProgram] = useState<program[]>([]);
+  const [currentProgram, setCurrentProgram] = useState<string>(""); // Dropdown selection
+  const [selectedProgram, setSelectedProgram] = useState<{ id: number; name: string }[]>([]);
 
   const [teachers, setTeachers] = useState<Teacher[]>([]);
 
@@ -45,9 +48,9 @@ const Page = () => {
   const [selectedStudents, setSelectedStudents] = useState<{ id: number; first_name: string }[]>([]);
 
 
-  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingProgram, setLoadingProgram] = useState(true);
   const [loadingTeachers, setLoadingTeachers] = useState(true);
-  const [errorCourses, setErrorCourses] = useState<string | null>(null);
+  const [errorProgram, setErrorProgram] = useState<string | null>(null);
   const [errorTeachers, setErrorTeachers] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,10 +83,10 @@ const Page = () => {
         }
       };
 
-      const fetchCourses = async () => {
+      const fetchProgram = async () => {
         try {
           const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/course/`,
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/program/`,
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("authToken")}`,
@@ -92,15 +95,15 @@ const Page = () => {
           );
           console.log(response.data.results)
           if (Array.isArray(response.data.results)) {
-            setCourses(response.data.results);
+            setProgram(response.data.results);
           } else {
             console.error("Users API response is not an array");
           }
         } catch (err: any) {
           const errorMessage = err.response?.data?.detail || err.message;
-          setErrorCourses(`Error loading courses: ${errorMessage}`);
+          setErrorProgram(`Error loading Program: ${errorMessage}`);
         } finally {
-          setLoadingCourses(false);
+          setLoadingProgram(false);
         }
       };
 
@@ -120,48 +123,36 @@ const Page = () => {
           }
         } catch (err: any) {
           const errorMessage = err.response?.data?.detail || err.message;
-          setErrorCourses(`Error loading courses: ${errorMessage}`);
+          setErrorProgram(`Error loading Program: ${errorMessage}`);
         } finally {
-          setLoadingCourses(false);
+          setLoadingProgram(false);
         }
       };
       fetchStudents();
       fetchTeachers();
-      fetchCourses();
+      fetchProgram();
     }
   }, [isMounted]);
-
-  const handleAddCourse = () => {
-    const course = courses.find((s) => s.id === Number(currentCourse));
+  // const handleBranchChange = (selectedBranchId: number | null) => {
+  //   setFormData({
+  //     ...formData,
+  //     branch: selectedBranchId, 
+  //   });
+  // };  
+  const handleAddProgram = () => {
+    const program = Program.find((s) => s.id === Number(currentProgram));
   
-    if (course && !selectedCourses.some((s) => s.id === course.id)) {
-      setSelectedCourses([...selectedCourses, course]);
-      setCurrentCourse(""); // Reset dropdown
-    } else if (!course) {
+    if (program && !selectedProgram.some((s) => s.id === program.id)) {
+      setSelectedProgram([...selectedProgram, program]);
+      setCurrentProgram(""); // Reset dropdown
+    } else if (!program) {
       console.error("Selected student not found in the list.");
     }
   };
 
-  const handleRemoveCourse = (id: number) => {
-    setSelectedCourses(selectedCourses.filter((s) => s.id !== id));
+  const handleRemoveprogram = (id: number) => {
+    setSelectedProgram(selectedProgram.filter((s) => s.id !== id));
   };
-
-  const handleAddStudent = () => {
-    const student = students.find((s) => s.id === Number(currentStudent));
-  
-    if (student && !selectedStudents.some((s) => s.id === student.id)) {
-      setSelectedStudents([...selectedStudents, student]);
-      setCurrentStudent(""); // Reset dropdown
-    } else if (!student) {
-      console.error("Selected student not found in the list.");
-    }
-  };
-
-  const handleRemoveStudent = (id: number) => {
-    setSelectedStudents(selectedStudents.filter((s) => s.id !== id));
-  };
-
-  
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -172,72 +163,72 @@ const Page = () => {
       [name]: value,
     });
   };
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+
+  //   if (
+  //     !formData.className ||
+  //     !formData.Program ||
+  //     !formData.teacher ||
+  //     !formData.start_date ||
+  //     !formData.end_date
+  //   ) {
+  //     alert("Please fill in all required fields.");
+  //     return;
+  //   }
+
+  //   const startDate = new Date(formData.start_date);
+  //   const endDate = new Date(formData.end_date);
+
+  //   if (startDate >= endDate) {
+  //     alert("Start date must be earlier than end date.");
+  //     return;
+  //   }
+
+  //   const selectedProgramIds = selectedProgram.map(program => program.id);
+
+  //   console.log(selectedProgramIds)
+  //   const postData = {
+  //     name: formData.className,
+  //     Program_id: selectedProgramIds,
+  //     teacher_id: parseInt(formData.teacher),
+  //     start_date: formData.start_date,
+  //     end_date: formData.end_date,
+  //     // student_id: selectedStudentIds,
+  //     branch: formData.branch,
+  //     start_time:formData.start_time,
+  //     end_time:formData.end_time
+
+  //   };
 
 
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (
-      !formData.className ||
-      !formData.courses ||
-      !formData.teacher ||
-      !formData.start_date ||
-      !formData.end_date
-    ) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    const startDate = new Date(formData.start_date);
-    const endDate = new Date(formData.end_date);
-
-    if (startDate >= endDate) {
-      alert("Start date must be earlier than end date.");
-      return;
-    }
-
-    const selectedCourseIds = selectedCourses.map(course => course.id);
-    const selectedStudentIds = selectedStudents.map(student => student.id);
-
-    console.log(selectedCourseIds)
-    const postData = {
-      name: formData.className,
-      courses_id: selectedCourseIds,
-      teacher_id: parseInt(formData.teacher),
-      start_date: formData.start_date,
-      end_date: formData.end_date,
-      student_id: selectedStudentIds,
-    };
-
-
-    try {
-      console.log(postData)
-      await axios.post(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
-        postData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        }
-      );
+  //   try {
+  //     console.log(postData)
+  //     await axios.post(
+  //       `${process.env.NEXT_PUBLIC_BASE_URL}/api/academics/classroom/`,
+  //       postData,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+  //         },
+  //       }
+  //     );
       
-      alert("Update classroom successfully!");
-      router.push('/class/all-class')
+  //     alert("Update classroom successfully!");
+  //     router.push('/class/all-class')
       
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.detail ||
-        error.message ||
-        "An unknown error occurred.";
-      const errorData = error.response?.data;
-      console.error("Error submitting the form:", errorMessage);
-      console.error("Full response data:", errorData);
-      alert(`Error: ${errorMessage}. Details: ${JSON.stringify(errorData)}`);
-    }
-  };
+  //   } catch (error: any) {
+  //     const errorMessage =
+  //       error.response?.data?.detail ||
+  //       error.message ||
+  //       "An unknown error occurred.";
+  //     const errorData = error.response?.data;
+  //     console.error("Error submitting the form:", errorMessage);
+  //     console.error("Full response data:", errorData);
+  //     alert(`Error: ${errorMessage}. Details: ${JSON.stringify(errorData)}`);
+  //   }
+  // };
 
   if (!isMounted) {
     return <div>Loading...</div>;
@@ -297,7 +288,36 @@ const Page = () => {
               </select>
             )}
           </div>
-          
+          <div className="flex flex-col">
+            <label
+              htmlFor="start_time"
+              className="text-sm font-medium text-gray-700"
+            >
+              start Time
+            </label>
+            <input
+              id="start_time"
+              name="start_time"
+              type="time"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            />
+          </div> 
+          <div className="flex flex-col">
+            <label
+              htmlFor="end_time"
+              className="text-sm font-medium text-gray-700"
+            >
+              End Time
+            </label>
+            <input
+              id="end_time"
+              name="end_time"
+              type="time"
+              className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={handleChange}
+            />
+          </div>
           <div className="flex flex-col">
             <label
               htmlFor="start_date"
@@ -329,33 +349,30 @@ const Page = () => {
               onChange={handleChange}
             />
           </div>
-
           <div className="p-4 bg-gray-50 rounded shadow-md ">
-      <label className="text-lg font-semibold text-gray-800 mb-2">Select a course</label>
+      <label className="text-lg font-semibold text-gray-800 mb-2">Select a Program</label>
       <div className="flex items-center mt-4 ">
         <select
           className="w-full h-[40px] p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={currentCourse}
-          onChange={(e) => setCurrentCourse(e.target.value)} // Track dropdown selection
+          value={currentProgram}
+          onChange={(e) => setCurrentProgram(e.target.value)} // Track dropdown selection
         >
-          <option value="">Select a Course</option>
-          {courses.map((course) => (
-            <option key={course.id} value={course.id}>
-              {course.name}
+          <option value="">Select a Program</option>
+          {Program.map((program) => (
+            <option key={program.id} value={program.id}>
+              {program.name}
             </option>
           ))}
         </select>
         <button
           type="button"
-          className="ml-2 text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded"
-          onClick={handleAddCourse} // Add selected student to the table
+          className="ml-2 text-white bg-[#213458] hover:bg-[#213498] px-3 py-1 rounded"
+          onClick={handleAddProgram} // Add selected student to the table
         >
           Add
         </button>
       </div>
-
-      {/* Display selected students in a table */}
-      {selectedCourses.length > 0 && (
+      {selectedProgram.length > 0 && (
         <table className="mt-16 w-full border-collapse border border-gray-300">
           <thead>
             <tr className="bg-gray-200 ">
@@ -365,15 +382,15 @@ const Page = () => {
             </tr>
           </thead>
           <tbody>
-            {selectedCourses.map((course) => (
-              <tr key={course.id}>
-                <td className="border border-gray-300 px-4 py-2">{course.id}</td>
-                <td className="border border-gray-300 px-4 py-2">{course.name}</td>
+            {selectedProgram.map((program) => (
+              <tr key={program.id}>
+                <td className="border border-gray-300 px-4 py-2">{program.id}</td>
+                <td className="border border-gray-300 px-4 py-2">{program.name}</td>
                 <td className="border border-gray-300 px-4 py-2">
                   <button
                     type="button"
                     className="text-white bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
-                    onClick={() => handleRemoveCourse(course.id)} // Remove student from the table
+                    onClick={() => handleRemoveprogram(program.id)} // Remove student from the table
                   >
                     Remove
                   </button>
@@ -385,8 +402,16 @@ const Page = () => {
       )}
       </div>
          
-
-      <div className="p-4 bg-gray-50 rounded shadow-md ">
+      <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Branch
+              </label>
+              {/* <Dropdown
+                value={formData.branch ?? undefined} // Use undefined if branch is null
+                onChange={handleBranchChange}
+              /> */}
+            </div>
+      {/* <div className="p-4 bg-gray-50 rounded shadow-md ">
       <label className="text-lg font-semibold text-gray-800 mb-2">Select a Student</label>
       <div className="flex items-center mt-4 ">
         <select
@@ -409,8 +434,6 @@ const Page = () => {
           Add
         </button>
       </div>
-
-      {/* Display selected students in a table */}
       {selectedStudents.length > 0 && (
         <table className="mt-16 w-full border-collapse border border-gray-300">
           <thead>
@@ -441,17 +464,17 @@ const Page = () => {
       )}
       </div>
 
-
+ */}
 
         </div>
         <div className="flex justify-center mt-6">
-          <button
+          {/* <button
             type="submit"
             onClick={handleSubmit}
             className="w-[184px] px-4 py-2 bg-[#213458] text-white rounded flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-[#214567]"
           >
             Submit
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

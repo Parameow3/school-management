@@ -9,6 +9,9 @@ import Link from "next/link";
 import { PencilSquareIcon } from "@heroicons/react/24/solid";
 
 interface Student {
+  teacher_name: boolean;
+  admin_name: string;
+  program_name: boolean;
   id: number;
   client: string;
   phone: string;
@@ -90,6 +93,7 @@ const Page: React.FC = () => {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+        console.log("student",studentResponse)
         setStudents(studentResponse.data);
 
         const programResponse = await axios.get(
@@ -188,36 +192,55 @@ const Page: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredStudents.length > 0 ? (
-            filteredStudents.map((student) => (
-              <tr key={student.id}>
-                <td className="border px-4 py-2">{student.id}</td>
-                <td className="border px-4 py-2">{student.client}</td>
-                <td className="border px-4 py-2">{student.phone}</td>
-                <td className="border px-4 py-2">{student.number_student}</td>
-                <td className="border px-4 py-2">{getProgramNames(student.programs)}</td>
-                <td className="border px-4 py-2">{student.status_display}</td>
-                <td className="border px-4 py-2">{getUserNames([student.assign_by])}</td>
-                <td className="border px-4 py-2">{getUserNames(student.handle_by)}</td>
-                <td className="border px-4 py-2 flex justify-center">
-                  
+  {filteredStudents.length > 0 ? (
+    filteredStudents.map((student) => (
+      <tr key={student.id}>
+        <td className="border px-4 py-2">{student.id}</td>
+        <td className="border px-4 py-2">{student.client}</td>
+        <td className="border px-4 py-2">{student.phone}</td>
+        <td className="border px-4 py-2 text-center">{student.number_student}</td>
+        <td className="border px-4 py-2">
+          {Array.isArray(student.program_name) ? student.program_name.join(", ") : "No Programs"}
+        </td>
+
+        <td className="border px-4 py-2">{student.status_display}</td>
+
+        {/* ✅ Ensure admin_name is a string */}
+        <td className="border px-4 py-2">{typeof student.admin_name === "string" ? student.admin_name : "Unknown"}</td>
+
+        {/* ✅ Ensure teacher_name is an array before using .join() */}
+        <td className="border px-4 py-2">
+          {Array.isArray(student.teacher_name) ? student.teacher_name.join(", ") : "No Teachers Assigned"}
+        </td>
+
+        {/* Actions */}
+        <td className="border px-4 py-2 flex justify-center">
           <button
             onClick={() => handleEdit(student.id)}
             className="hover:scale-110 transition-transform transform p-2 rounded-full bg-gray-200 hover:bg-gray-300"
           >
             <PencilSquareIcon className="w-5 h-5 text-gray-700" />
           </button>
-          <Image src="/delete.svg" width={20} height={20} alt="delete" onClick={() => handleDeleteClick(student.id)} />
-                 
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan={8} className="border px-4 py-2 text-center">No students found</td>
-            </tr>
-          )}
-        </tbody>
+          <Image
+            src="/delete.svg"
+            width={20}
+            height={20}
+            alt="delete"
+            className="cursor-pointer ml-3"
+            onClick={() => handleDeleteClick(student.id)}
+          />
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan={9} className="border px-4 py-2 text-center text-gray-500">
+        No students found
+      </td>
+    </tr>
+  )}
+</tbody>
+
       </table>
 
       {showModal && <Modal onClose={handleModalClose} onConfirm={handleDeleteConfirm} />}
